@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Magnet exposing (Magnet)
+import Magnet exposing (Magnet, magnet)
 import Html exposing (Html, program, text)
 import Collage exposing (group, rectangle, filled, uniform)
 import Collage.Render exposing (svgBox)
@@ -11,8 +11,7 @@ import Task
 
 type alias Model =
     { magnets : List (Magnet ())
-    , width : Float
-    , height : Float
+    , size : { width : Float, height : Float }
     }
 
 
@@ -23,11 +22,10 @@ type Msg
 init : ( Model, Cmd Msg )
 init =
     ( { magnets =
-            [ Magnet () "Hey" ( 0, 0 )
-            , Magnet () "Hi" ( 100, 100 )
+            [ magnet "Hey" ( 0, 0 )
+            , magnet "Hi" ( 100, 100 )
             ]
-      , width = 0
-      , height = 0
+      , size = { width = 0, height = 0 }
       }
     , Task.perform SetSize Window.size
     )
@@ -43,8 +41,10 @@ update msg model =
     case msg of
         SetSize { width, height } ->
             ( { model
-                | width = toFloat width
-                , height = toFloat height
+                | size =
+                    { width = toFloat width
+                    , height = toFloat height
+                    }
               }
             , Cmd.none
             )
@@ -59,10 +59,10 @@ view model =
                 |> group
 
         bg =
-            rectangle model.width model.height |> filled (uniform Color.lightGray)
+            rectangle model.size.width model.size.height |> filled (uniform Color.lightGray)
     in
         group [ magnets, bg ]
-            |> svgBox ( model.width, model.height )
+            |> svgBox ( model.size.width, model.size.height )
 
 
 main : Program Never Model Msg

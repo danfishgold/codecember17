@@ -10,22 +10,48 @@ type alias Magnet a =
     { data : a
     , text : String
     , position : ( Float, Float )
+    , padding : { width : Float, height : Float }
+    }
+
+
+magnet : String -> ( Float, Float ) -> Magnet ()
+magnet text position =
+    { data = ()
+    , text = text
+    , position = position
+    , padding = { width = 10, height = 10 }
     }
 
 
 view : Magnet a -> Collage msg
-view magnet =
+view { text, position, padding } =
     let
         textNode =
-            magnet.text
+            text
                 |> Text.fromString
                 |> Text.color Color.white
                 |> rendered
 
         bgNode =
-            rectangle (Layout.width textNode + 10) (Layout.height textNode + 10)
+            rectangle
+                (Layout.width textNode + padding.width)
+                (Layout.height textNode + padding.height)
                 |> filled (uniform Color.black)
     in
         group
             [ textNode, bgNode ]
-            |> shift magnet.position
+            |> shift position
+
+
+size : Magnet a -> { width : Float, height : Float }
+size { text, padding } =
+    let
+        textNode =
+            text
+                |> Text.fromString
+                |> Text.color Color.white
+                |> rendered
+    in
+        { width = Layout.width textNode + padding.width
+        , height = Layout.height textNode + padding.height
+        }
