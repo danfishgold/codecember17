@@ -1,0 +1,35 @@
+<!doctype html>
+<head>
+  <title>Magnets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<style>
+  svg text {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    
+    cursor: default;
+  }
+
+  body, svg {
+    padding: 0;
+    margin: 0;
+  }
+</style>
+<body>
+  <div id="main"></div>
+  <script src="elm.js"></script>
+  <script>
+    
+    var node = document.getElementById('main')
+    var app = Elm.Main.embed(node)
+    
+    // Ports
+    // app.ports.incoming.subscribe(function(input) {
+    //     app.ports.outgoing.send(output)
+    // })
+      
+    </script>
+  </body>
