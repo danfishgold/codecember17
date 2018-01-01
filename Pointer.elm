@@ -1,51 +1,41 @@
-module Pointer
+port module Pointer
     exposing
-        ( Point
+        ( Event
+        , start
+        , move
+        , end
+        , cancel
         , inCollage
-        , mouseDown
-        , mouseUp
-        , mouseMove
-        , click
-        , touchStart
-        , touchMove
-        , touchEnd
-        , touchCancel
         )
 
-import Json.Decode as Json
-import Html.Events exposing (on, onWithOptions, defaultOptions)
-import Html exposing (Html, Attribute)
+import Point exposing (Point)
 
 
 --
 
 
-type alias Point =
-    ( Float, Float )
+type alias Event =
+    { pointer : Point
+    , ctrlDown : Bool
+    }
 
 
-mousePoint : Json.Decoder Point
-mousePoint =
-    point
+port mouseDown : (Event -> msg) -> Sub msg
 
 
-point : Json.Decoder Point
-point =
-    Json.map2 (,)
-        (Json.field "offsetX" Json.float)
-        (Json.field "offsetY" Json.float)
+port mouseMove : (Event -> msg) -> Sub msg
 
 
-touchPoint : Json.Decoder Point
-touchPoint =
-    Json.at [ "changedTouches", "0" ] clientPoint
+port mouseUp : (Event -> msg) -> Sub msg
 
 
-clientPoint : Json.Decoder Point
-clientPoint =
-    Json.map2 (,)
-        (Json.field "clientX" Json.float)
-        (Json.field "clientY" Json.float)
+port touchStart : (Event -> msg) -> Sub msg
+
+
+port touchMove : (Event -> msg) -> Sub msg
+
+
+port touchEnd : (Event -> msg) -> Sub msg
 
 
 inCollage : { a | width : Float, height : Float } -> Point -> Point
@@ -53,54 +43,30 @@ inCollage { width, height } ( x, y ) =
     ( x - width / 2, height / 2 - y )
 
 
-click : (Point -> msg) -> Attribute msg
-click msg =
-    on "click" (mousePoint |> Json.map msg)
+cancel : a -> Sub msg
+cancel toMsg =
+    Sub.none
 
 
-mouseDown : (Point -> msg) -> Attribute msg
-mouseDown msg =
-    on "mousedown" (mousePoint |> Json.map msg)
+start : (Event -> msg) -> Sub msg
+start toMsg =
+    Sub.batch
+        [ touchStart toMsg
+        , mouseDown toMsg
+        ]
 
 
-mouseUp : (Point -> msg) -> Attribute msg
-mouseUp msg =
-    on "mouseup" (mousePoint |> Json.map msg)
+move : (Event -> msg) -> Sub msg
+move toMsg =
+    Sub.batch
+        [ touchMove toMsg
+        , mouseMove toMsg
+        ]
 
 
-mouseMove : (Point -> msg) -> Attribute msg
-mouseMove msg =
-    on "mousemove" (mousePoint |> Json.map msg)
-
-
-touchOptions : Html.Events.Options
-touchOptions =
-    { stopPropagation = True, preventDefault = True }
-
-
-touchStart : (Point -> msg) -> Attribute msg
-touchStart msg =
-    onWithOptions "touchstart"
-        touchOptions
-        (Json.map msg touchPoint)
-
-
-touchMove : (Point -> msg) -> Attribute msg
-touchMove msg =
-    onWithOptions "touchmove"
-        touchOptions
-        (Json.map msg touchPoint)
-
-
-touchEnd : (Point -> msg) -> Attribute msg
-touchEnd msg =
-    onWithOptions "touchend"
-        touchOptions
-        (Json.map msg touchPoint)
-
-
-touchCancel : (Point -> msg) -> Attribute msg
-touchCancel msg =
-    onWithOptions "touchcancel"
-        touchOptions
-        (Json.map msg touchPoint)
+end : (Event -> msg) -> Sub msg
+end toMsg =
+    Sub.batch
+        [ touchEnd toMsg
+        , mouseUp toMsg
+        ]

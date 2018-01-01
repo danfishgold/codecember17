@@ -26,10 +26,66 @@
     var node = document.getElementById('main')
     var app = Elm.Main.embed(node)
     
-    // Ports
-    // app.ports.incoming.subscribe(function(input) {
-    //     app.ports.outgoing.send(output)
-    // })
-      
+
+    var parseMouse = function(e) {
+      return {
+        pointer: [e.clientX, e.clientY],
+        ctrlDown: e.ctrlKey
+      }
+    }
+
+    var parseTouch = function(e) {
+      return {
+        pointer: [e.changedTouches[0].clientX, e.changedTouches[0].clientY],
+        ctrlDown: e.ctrlKey
+      }
+    }
+
+    node.addEventListener('mousedown', function(e) {
+      // console.log('mouse down', e)
+      app.ports.mouseDown.send(parseMouse(e))
+      e.stopPropagation()
+    })
+
+    node.addEventListener('mousemove', function(e) {
+      // console.log('mouse move', e)
+      app.ports.mouseMove.send(parseMouse(e))
+      e.stopPropagation()
+    })
+
+    node.addEventListener('mouseup', function(e) {
+      // console.log('mouse up', e)
+      app.ports.mouseUp.send(parseMouse(e))
+      e.stopPropagation()
+    })
+    
+    node.addEventListener('touchstart', function(e) {
+      // console.log('touch start', e)
+      app.ports.touchStart.send(parseTouch(e))
+      e.stopPropagation()
+      e.preventDefault()
+    })
+
+    node.addEventListener('touchmove', function(e) {
+      // console.log('touch move', e)
+      app.ports.touchMove.send(parseTouch(e))
+      e.stopPropagation()
+      e.preventDefault()
+    })
+
+    node.addEventListener('touchend', function(e) {
+      // console.log('touch end', e)
+      app.ports.touchEnd.send(parseTouch(e))
+      e.stopPropagation()
+      e.preventDefault()
+    })
+
+    node.addEventListener('touchcancel', function(e) {
+      // console.log('touch cancel', e)
+      app.ports.touchCancel.send(parseTouch(e))
+      e.stopPropagation()
+      e.preventDefault()
+    })
+
     </script>
   </body>

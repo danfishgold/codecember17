@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Magnet exposing (Magnet, magnet)
-import Html exposing (Html, program, div)
+import Html exposing (Html, program)
 import Collage exposing (group, rectangle, circle, shift, filled, uniform)
 import Collage.Render exposing (svgBox)
 import Window
@@ -9,13 +9,14 @@ import Color
 import Task
 import Pointer
 import Array exposing (Array)
+import Point exposing (Point)
 
 
 type alias Model =
     { magnets : Array (Magnet ())
     , draggingMagnet : Maybe Int
     , size : { width : Float, height : Float }
-    , pointer : Maybe ( Float, Float )
+    , pointer : Maybe Point
     , ctrlDown : Bool
     , mouseDown : Bool
     }
@@ -23,9 +24,9 @@ type alias Model =
 
 type Msg
     = SetSize Window.Size
-    | PointerStart ( Float, Float )
-    | PointerMove ( Float, Float )
-    | PointerEnd ( Float, Float )
+    | PointerStart Point
+    | PointerMove Point
+    | PointerEnd Point
 
 
 init : ( Model, Cmd Msg )
@@ -47,7 +48,13 @@ init =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ Window.resizes SetSize ]
+    Sub.batch
+        [ Window.resizes SetSize
+        , Pointer.start (.pointer >> Pointer.inCollage model.size >> PointerStart)
+        , Pointer.move (.pointer >> Pointer.inCollage model.size >> PointerMove)
+        , Pointer.end (.pointer >> Pointer.inCollage model.size >> PointerEnd)
+        , Pointer.cancel (.pointer >> Pointer.inCollage model.size >> PointerEnd)
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -78,7 +85,12 @@ update msg model =
                 | pointer =
                     Just pointer
                 , magnets =
-                    dragMagnet model.magnets model.draggingMagnet pointer
+                    case model.pointer of
+                        Nothing ->
+                            model.magnets
+
+                        Just oldPointer ->
+                            dragMagnet model.magnets model.draggingMagnet (Point.sub pointer oldPointer)
               }
             , Cmd.none
             )
@@ -94,14 +106,14 @@ update msg model =
             )
 
 
-dragMagnet : Array (Magnet ()) -> Maybe Int -> ( Float, Float ) -> Array (Magnet ())
-dragMagnet magnets draggingIndex newPosition =
+dragMagnet : Array (Magnet ()) -> Maybe Int -> Point -> Array (Magnet ())
+dragMagnet magnets draggingIndex delta =
     case draggingIndex of
         Nothing ->
             magnets
 
         Just idx ->
-            updateArray (Magnet.moveTo newPosition)
+            updateArray (Magnet.moveBy delta)
                 idx
                 magnets
 
@@ -130,16 +142,6 @@ view model =
     in
         group [ pointer, magnets, bg ]
             |> svgBox ( model.size.width, model.size.height )
-            |> List.singleton
-            |> div
-                [ Pointer.mouseDown (Pointer.inCollage model.size >> PointerStart)
-                , Pointer.touchStart (Pointer.inCollage model.size >> PointerStart)
-                , Pointer.mouseMove (Pointer.inCollage model.size >> PointerMove)
-                , Pointer.touchMove (Pointer.inCollage model.size >> PointerMove)
-                , Pointer.mouseUp (Pointer.inCollage model.size >> PointerEnd)
-                , Pointer.touchEnd (Pointer.inCollage model.size >> PointerEnd)
-                , Pointer.touchCancel (Pointer.inCollage model.size >> PointerEnd)
-                ]
 
 
 main : Program Never Model Msg

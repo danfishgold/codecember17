@@ -4,17 +4,22 @@ import Collage exposing (..)
 import Collage.Text as Text
 import Collage.Layout as Layout
 import Color
+import Point
+
+
+type alias Point =
+    Point.Point
 
 
 type alias Magnet a =
     { data : a
     , text : String
-    , position : ( Float, Float )
+    , position : Point
     , padding : { width : Float, height : Float }
     }
 
 
-magnet : String -> ( Float, Float ) -> Magnet ()
+magnet : String -> Point -> Magnet ()
 magnet text position =
     { data = ()
     , text = text
@@ -73,7 +78,7 @@ edges magnet =
         }
 
 
-contains : ( Float, Float ) -> Magnet a -> Bool
+contains : Point -> Magnet a -> Bool
 contains ( x, y ) magnet =
     let
         m =
@@ -82,6 +87,6 @@ contains ( x, y ) magnet =
         m.minX <= x && x <= m.maxX && m.minY <= y && y <= m.maxY
 
 
-moveTo : ( Float, Float ) -> Magnet a -> Magnet a
-moveTo position magnet =
-    { magnet | position = position }
+moveBy : Point -> Magnet a -> Magnet a
+moveBy delta magnet =
+    { magnet | position = Point.add magnet.position delta }
