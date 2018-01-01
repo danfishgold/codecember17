@@ -8,15 +8,70 @@ import Window
 import Color
 import Task
 import Pointer
-import Array exposing (Array)
 import Point exposing (Point)
 
 
+type alias Magnets =
+    { stationary : List (Magnet ())
+    , dragging : Maybe (Magnet ())
+    , sources : List (Magnet ())
+    }
+
+
+allMagnets : Magnets -> List (Magnet ())
+allMagnets { stationary, dragging, sources } =
+    stationary
+        ++ sources
+        ++ (Maybe.map List.singleton dragging |> Maybe.withDefault [])
+
+
+stopDragging : Magnets -> Magnets
+stopDragging magnets =
+    case magnets.dragging of
+        Nothing ->
+            magnets
+
+        Just m ->
+            { magnets
+                | stationary = m :: magnets.stationary
+                , dragging = Nothing
+            }
+
+
+startDragging : Point -> Magnets -> Magnets
+startDragging pointer magnets =
+    let
+        ( newStationary, draggingFromStationary ) =
+            filterFirst (Magnet.contains pointer) magnets.stationary
+
+        dragging =
+            if draggingFromStationary == Nothing then
+                filterFirst (Magnet.contains pointer) magnets.sources
+                    |> Tuple.second
+            else
+                draggingFromStationary
+    in
+        { magnets | stationary = newStationary, dragging = dragging }
+
+
+keepDragging : Point -> Point -> Magnets -> Magnets
+keepDragging oldPointer newPointer magnets =
+    case magnets.dragging of
+        Nothing ->
+            magnets
+
+        Just m ->
+            { magnets
+                | dragging =
+                    Magnet.moveBy (Point.sub newPointer oldPointer) m
+                        |> Just
+            }
+
+
 type alias Model =
-    { magnets : Array (Magnet ())
-    , draggingMagnet : Maybe Int
+    { magnets : Magnets
     , size : { width : Float, height : Float }
-    , pointer : Maybe Point
+    , pointer : Point
     , ctrlDown : Bool
     , mouseDown : Bool
     }
@@ -32,13 +87,16 @@ type Msg
 init : ( Model, Cmd Msg )
 init =
     ( { magnets =
-            Array.fromList
+            { stationary =
+                []
+            , dragging = Nothing
+            , sources =
                 [ magnet "Hey" ( 0, 0 )
                 , magnet "Hi" ( 100, 100 )
                 ]
-      , draggingMagnet = Nothing
+            }
       , size = { width = 0, height = 0 }
-      , pointer = Nothing
+      , pointer = ( 0, 0 )
       , ctrlDown = False
       , mouseDown = False
       }
@@ -73,24 +131,16 @@ update msg model =
         PointerStart pointer ->
             ( { model
                 | mouseDown = True
-                , pointer =
-                    Just pointer
-                , draggingMagnet = indexOfFirst (Magnet.contains pointer) model.magnets
+                , pointer = pointer
+                , magnets = startDragging pointer model.magnets
               }
             , Cmd.none
             )
 
-        PointerMove pointer ->
+        PointerMove newPointer ->
             ( { model
-                | pointer =
-                    Just pointer
-                , magnets =
-                    case model.pointer of
-                        Nothing ->
-                            model.magnets
-
-                        Just oldPointer ->
-                            dragMagnet model.magnets model.draggingMagnet (Point.sub pointer oldPointer)
+                | pointer = newPointer
+                , magnets = keepDragging model.pointer newPointer model.magnets
               }
             , Cmd.none
             )
@@ -98,47 +148,28 @@ update msg model =
         PointerEnd pointer ->
             ( { model
                 | mouseDown = False
-                , pointer =
-                    Just pointer
-                , draggingMagnet = Nothing
+                , pointer = pointer
+                , magnets = stopDragging model.magnets
               }
             , Cmd.none
             )
-
-
-dragMagnet : Array (Magnet ()) -> Maybe Int -> Point -> Array (Magnet ())
-dragMagnet magnets draggingIndex delta =
-    case draggingIndex of
-        Nothing ->
-            magnets
-
-        Just idx ->
-            updateArray (Magnet.moveBy delta)
-                idx
-                magnets
 
 
 view : Model -> Html Msg
 view model =
     let
         magnets =
-            model.magnets
-                |> Array.map Magnet.view
-                |> Array.toList
+            allMagnets model.magnets
+                |> List.map Magnet.view
                 |> group
 
         bg =
             rectangle model.size.width model.size.height |> filled (uniform Color.lightGray)
 
         pointer =
-            case model.pointer of
-                Just p ->
-                    circle 5
-                        |> filled (uniform Color.red)
-                        |> shift p
-
-                Nothing ->
-                    group []
+            circle 5
+                |> filled (uniform Color.red)
+                |> shift model.pointer
     in
         group [ pointer, magnets, bg ]
             |> svgBox ( model.size.width, model.size.height )
@@ -154,31 +185,18 @@ main =
         }
 
 
-indexOfFirst : (a -> Bool) -> Array a -> Maybe Int
-indexOfFirst fn xs =
+filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )
+filterFirst fn xs =
     let
-        recurse fn xs len idx =
-            if idx < len then
-                case Array.get idx xs of
-                    Nothing ->
-                        Nothing
+        recurse fn xs falses =
+            case xs of
+                [] ->
+                    ( falses, Nothing )
 
-                    Just x ->
-                        if fn x then
-                            Just idx
-                        else
-                            recurse fn xs len (idx + 1)
-            else
-                Nothing
+                head :: rest ->
+                    if fn head then
+                        ( rest ++ falses, Just head )
+                    else
+                        recurse fn rest (head :: falses)
     in
-        recurse fn xs (Array.length xs) 0
-
-
-updateArray : (a -> a) -> Int -> Array a -> Array a
-updateArray fn idx xs =
-    case Array.get idx xs of
-        Nothing ->
-            xs
-
-        Just x ->
-            Array.set idx (fn x) xs
+        recurse fn xs []
