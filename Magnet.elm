@@ -9,6 +9,7 @@ import Color
 type alias Magnet a =
     { data : a
     , text : String
+    , position : ( Float, Float )
     }
 
 
@@ -27,3 +28,4 @@ view magnet =
     in
         group
             [ textNode, bgNode ]
+            |> shift magnet.position
