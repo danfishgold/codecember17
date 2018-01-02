@@ -184,11 +184,11 @@ filterFirst fn xs =
         recurse fn xs falses =
             case xs of
                 [] ->
-                    ( falses, Nothing )
+                    ( List.reverse falses, Nothing )
 
                 head :: rest ->
                     if fn head then
-                        ( rest ++ falses, Just head )
+                        ( List.reverse falses ++ rest, Just head )
                     else
                         recurse fn rest (head :: falses)
     in
