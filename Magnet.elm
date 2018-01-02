@@ -5,6 +5,7 @@ import Collage.Text as Text
 import Collage.Layout as Layout
 import Color exposing (Color)
 import Point
+import Pointer
 
 
 type alias Point =
@@ -159,6 +160,22 @@ keepDragging oldPointer newPointer magnets =
                     moveBy (Point.sub newPointer oldPointer) m
                         |> Just
             }
+
+
+drag : Point -> Pointer.Event -> Magnets a -> Magnets a
+drag oldPointer event magnets =
+    case event.state of
+        Pointer.Start ->
+            startDragging event.pointer magnets
+
+        Pointer.Move ->
+            keepDragging oldPointer event.pointer magnets
+
+        Pointer.End ->
+            stopDragging magnets
+
+        Pointer.Cancel ->
+            stopDragging magnets
 
 
 filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )

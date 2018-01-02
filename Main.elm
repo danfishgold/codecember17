@@ -22,9 +22,7 @@ type alias Model =
 
 type Msg
     = SetSize Window.Size
-    | PointerStart Point
-    | PointerMove Point
-    | PointerEnd Point
+    | PointerChange Pointer.Event
 
 
 init : ( Model, Cmd Msg )
@@ -51,10 +49,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Window.resizes SetSize
-        , Pointer.start (.pointer >> Pointer.inCollage model.size >> PointerStart)
-        , Pointer.move (.pointer >> Pointer.inCollage model.size >> PointerMove)
-        , Pointer.end (.pointer >> Pointer.inCollage model.size >> PointerEnd)
-        , Pointer.cancel (.pointer >> Pointer.inCollage model.size >> PointerEnd)
+        , Pointer.eventsInCollage model.size PointerChange
         ]
 
 
@@ -71,31 +66,26 @@ update msg model =
             , Cmd.none
             )
 
-        PointerStart pointer ->
-            ( { model
-                | mouseDown = True
-                , pointer = pointer
-                , magnets = Magnet.startDragging pointer model.magnets
-              }
-            , Cmd.none
-            )
+        PointerChange event ->
+            let
+                mouseDown =
+                    case event.state of
+                        Pointer.Start ->
+                            True
 
-        PointerMove newPointer ->
-            ( { model
-                | pointer = newPointer
-                , magnets = Magnet.keepDragging model.pointer newPointer model.magnets
-              }
-            , Cmd.none
-            )
+                        Pointer.End ->
+                            False
 
-        PointerEnd pointer ->
-            ( { model
-                | mouseDown = False
-                , pointer = pointer
-                , magnets = Magnet.stopDragging model.magnets
-              }
-            , Cmd.none
-            )
+                        _ ->
+                            model.mouseDown
+            in
+                ( { model
+                    | mouseDown = mouseDown
+                    , pointer = event.pointer
+                    , magnets = Magnet.drag model.pointer event model.magnets
+                  }
+                , Cmd.none
+                )
 
 
 view : Model -> Html Msg
