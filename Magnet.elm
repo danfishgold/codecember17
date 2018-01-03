@@ -233,9 +233,15 @@ simpleJoiner a b =
                 ( a, b )
             else
                 ( b, a )
+
+        textOrSpace text =
+            if text == "_" then
+                " "
+            else
+                text
     in
         { data = a.data
-        , text = left.text ++ " " ++ right.text
+        , text = textOrSpace left.text ++ textOrSpace right.text
         , position = position
         , padding = a.padding
         }

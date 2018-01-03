@@ -25,6 +25,24 @@ type Msg
     | PointerChange Pointer.Event
 
 
+letters : List (Magnet Color)
+letters =
+    [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "_" ]
+        |> List.indexedMap (\idx letter -> magnet letter (letterPosition idx) Color.black)
+
+
+letterPosition : Int -> ( Float, Float )
+letterPosition idx =
+    let
+        row =
+            -(idx // 5) + 5
+
+        col =
+            idx % 5
+    in
+        ( toFloat col * 30, toFloat row * 50 )
+
+
 init : ( Model, Cmd Msg )
 init =
     ( { magnets =
@@ -32,9 +50,7 @@ init =
                 []
             , dragging = Nothing
             , sources =
-                [ magnet "Hey" ( 0, 0 ) Color.gray
-                , magnet "Hi" ( 100, 100 ) Color.darkGray
-                ]
+                letters
             }
       , size = { width = 0, height = 0 }
       , pointer = ( 0, 0 )
