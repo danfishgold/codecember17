@@ -227,8 +227,13 @@ simpleJoiner a b =
             , (min aEdges.minY bEdges.minY + max aEdges.maxY bEdges.maxY) / 2
             )
 
+        padding =
+            { width = max a.padding.width b.padding.width
+            , height = max a.padding.height b.padding.height
+            }
+
         ( left, right ) =
-            if aEdges.minX < bEdges.minX then
+            if Tuple.first a.position < Tuple.first b.position then
                 ( a, b )
             else
                 ( b, a )
@@ -242,7 +247,7 @@ simpleJoiner a b =
         { data = a.data
         , text = textOrSpace left.text ++ textOrSpace right.text
         , position = position
-        , padding = a.padding
+        , padding = padding
         }
 
 
