@@ -186,8 +186,7 @@ mergeOrAdd joiner magnet magnets =
 
 adjecentInX : Edges -> Edges -> Bool
 adjecentInX a b =
-    (a.minX > b.maxX && a.minX - b.maxX <= 30)
-        || (b.minX > a.maxX && b.minX - a.maxX <= 30)
+    abs (a.minX - b.maxX) <= 30 || abs (b.minX - a.maxX) <= 30
 
 
 adjecentInY : Edges -> Edges -> Bool
