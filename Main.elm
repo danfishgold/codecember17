@@ -25,20 +25,33 @@ type Msg
     | PointerChange Pointer.Event
 
 
-letters : List (Magnet Color)
+letters : List String
 letters =
     [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "_" ]
-        |> List.indexedMap (\idx letter -> magnet letter (letterPosition idx) Color.black)
 
 
-letterPosition : Int -> ( Float, Float )
-letterPosition idx =
+magnetGroup : List String -> List (Magnet Color)
+magnetGroup strings =
+    strings
+        |> List.indexedMap
+            (\idx str ->
+                magnet str
+                    (magnetPosition (List.length strings) idx)
+                    Color.black
+            )
+
+
+magnetPosition : Int -> Int -> ( Float, Float )
+magnetPosition count idx =
     let
+        sideLength =
+            ceiling <| sqrt <| toFloat count
+
         row =
-            -(idx // 5) + 5
+            -(idx // sideLength) + sideLength
 
         col =
-            idx % 5
+            idx % sideLength
     in
         ( toFloat col * 30, toFloat row * 50 )
 
@@ -50,7 +63,7 @@ init =
                 []
             , dragging = Nothing
             , sources =
-                letters
+                magnetGroup letters
             }
       , size = { width = 0, height = 0 }
       , pointer = ( 0, 0 )
