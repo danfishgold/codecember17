@@ -13,7 +13,22 @@ type alias Point =
 
 
 type alias Size =
-    { width : Float, height : Float }
+    { width : Float
+    , height : Float
+    }
+
+
+type alias Edges =
+    { minX : Float
+    , maxX : Float
+    , minY : Float
+    , maxY : Float
+    }
+
+
+type Data a b
+    = Atom a
+    | Composite b (List a)
 
 
 type alias Magnet a =
@@ -67,7 +82,7 @@ size { text, padding } =
         }
 
 
-edges : Magnet a -> { minX : Float, maxX : Float, minY : Float, maxY : Float }
+edges : Magnet a -> Edges
 edges magnet =
     let
         { width, height } =
@@ -119,19 +134,6 @@ magnetsView color { stationary, dragging, sources } =
         |> group
 
 
-stopDragging : Magnets a -> Magnets a
-stopDragging magnets =
-    case magnets.dragging of
-        Nothing ->
-            magnets
-
-        Just m ->
-            { magnets
-                | stationary = m :: magnets.stationary
-                , dragging = Nothing
-            }
-
-
 startDragging : Point -> Magnets a -> Magnets a
 startDragging pointer magnets =
     let
@@ -160,6 +162,83 @@ keepDragging oldPointer newPointer magnets =
                     moveBy (Point.sub newPointer oldPointer) m
                         |> Just
             }
+
+
+stopDragging : Magnets a -> Magnets a
+stopDragging magnets =
+    case magnets.dragging of
+        Nothing ->
+            magnets
+
+        Just m ->
+            { magnets
+                | stationary = mergeOrAdd simpleJoiner m magnets.stationary
+                , dragging = Nothing
+            }
+
+
+mergeOrAdd : (Magnet a -> Magnet a -> Magnet a) -> Magnet a -> List (Magnet a) -> List (Magnet a)
+mergeOrAdd joiner magnet magnets =
+    magnets
+        |> List.map (\m -> ( m, edges m ))
+        |> recurseMergeOrAdd joiner magnet
+
+
+adjecentInX : Edges -> Edges -> Bool
+adjecentInX a b =
+    (a.minX > b.maxX && a.minX - b.maxX <= 30)
+        || (b.minX > a.maxX && b.minX - a.maxX <= 30)
+
+
+adjecentInY : Edges -> Edges -> Bool
+adjecentInY a b =
+    a.minY <= b.maxY && a.maxY >= b.minY
+
+
+adjecent : Edges -> Edges -> Bool
+adjecent a b =
+    adjecentInX a b && adjecentInY a b
+
+
+recurseMergeOrAdd : (Magnet a -> Magnet a -> Magnet a) -> Magnet a -> List ( Magnet a, Edges ) -> List (Magnet a)
+recurseMergeOrAdd joiner magnet magnetsWithEdges =
+    let
+        magnetEdges =
+            edges magnet
+    in
+        case filterFirst (\( _, currentEdges ) -> adjecent currentEdges magnetEdges) magnetsWithEdges of
+            ( _, Nothing ) ->
+                magnet :: List.map Tuple.first magnetsWithEdges
+
+            ( others, Just ( closeMagnet, _ ) ) ->
+                recurseMergeOrAdd joiner (joiner magnet closeMagnet) others
+
+
+simpleJoiner : Magnet a -> Magnet a -> Magnet a
+simpleJoiner a b =
+    let
+        aEdges =
+            edges a
+
+        bEdges =
+            edges b
+
+        position =
+            ( (min aEdges.minX bEdges.minX + max aEdges.maxX bEdges.maxX) / 2
+            , (min aEdges.minY bEdges.minY + max aEdges.maxY bEdges.maxY) / 2
+            )
+
+        ( left, right ) =
+            if aEdges.minX < bEdges.minX then
+                ( a, b )
+            else
+                ( b, a )
+    in
+        { data = a.data
+        , text = left.text ++ " " ++ right.text
+        , position = position
+        , padding = a.padding
+        }
 
 
 drag : Point -> Pointer.Event -> Magnets a -> Magnets a
