@@ -4,10 +4,6 @@ port module Pointer
         , DragState(..)
         , Pointer
         , Id
-        , start
-        , move
-        , end
-        , cancel
         , inCollage
         , events
         , eventsInCollage
@@ -40,6 +36,7 @@ type alias PortPointer =
 type alias Pointer =
     { id : Id
     , position : Point
+    , source : Source
     }
 
 
@@ -57,20 +54,28 @@ type DragState
     | Cancel
 
 
+type Source
+    = Mouse
+    | Touch
+
+
 type alias Id =
     Id.Id
 
 
-importPointer : PortPointer -> Pointer
-importPointer p =
-    { p | id = Id.fromString p.id }
+importPointer : Source -> PortPointer -> Pointer
+importPointer source { position, id } =
+    { position = position
+    , id = Id.fromString id
+    , source = source
+    }
 
 
-event : DragState -> PortEvent -> Event
-event state { pointers, ctrlDown } =
+event : Source -> DragState -> PortEvent -> Event
+event source state { pointers, ctrlDown } =
     { pointers =
         pointers
-            |> List.map importPointer
+            |> List.map (importPointer source)
             |> List.foldl (\p -> Mapping.add p.id p) Mapping.empty
     , ctrlDown = ctrlDown
     , state = state
@@ -98,42 +103,16 @@ port touchEnd : (PortEvent -> msg) -> Sub msg
 port touchCancel : (PortEvent -> msg) -> Sub msg
 
 
-cancel : (PortEvent -> msg) -> Sub msg
-cancel toMsg =
-    touchCancel toMsg
-
-
-start : (PortEvent -> msg) -> Sub msg
-start toMsg =
-    Sub.batch
-        [ touchStart toMsg
-        , mouseDown toMsg
-        ]
-
-
-move : (PortEvent -> msg) -> Sub msg
-move toMsg =
-    Sub.batch
-        [ touchMove toMsg
-        , mouseMove toMsg
-        ]
-
-
-end : (PortEvent -> msg) -> Sub msg
-end toMsg =
-    Sub.batch
-        [ touchEnd toMsg
-        , mouseUp toMsg
-        ]
-
-
 events : (Event -> msg) -> Sub msg
 events toMsg =
     Sub.batch
-        [ start (event Start >> toMsg)
-        , move (event Move >> toMsg)
-        , end (event End >> toMsg)
-        , cancel (event Cancel >> toMsg)
+        [ touchStart (event Touch Start >> toMsg)
+        , mouseDown (event Mouse Start >> toMsg)
+        , touchMove (event Touch Move >> toMsg)
+        , mouseMove (event Mouse Move >> toMsg)
+        , touchEnd (event Touch End >> toMsg)
+        , mouseUp (event Mouse End >> toMsg)
+        , touchCancel (event Touch Cancel >> toMsg)
         ]
 
 
