@@ -183,10 +183,19 @@ maybePickUp identifier pointer magnets =
                 magnets
 
             Just m ->
-                { magnets
-                    | stationary = newStationary
-                    , dragging = Pointer.Mapping.add identifier m magnets.dragging
-                }
+                let
+                    pickedUp =
+                        case pointer.source of
+                            Pointer.Mouse ->
+                                m
+
+                            Pointer.Touch ->
+                                moveBy ( 0, 25 ) m
+                in
+                    { magnets
+                        | stationary = newStationary
+                        , dragging = Pointer.Mapping.add identifier pickedUp magnets.dragging
+                    }
 
 
 mergeOrAdd : (Magnet a -> Magnet a -> Magnet a) -> Magnet a -> List (Magnet a) -> List (Magnet a)

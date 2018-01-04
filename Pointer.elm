@@ -2,6 +2,7 @@ port module Pointer
     exposing
         ( Event
         , DragState(..)
+        , Source(..)
         , Pointer
         , Id
         , inCollage
