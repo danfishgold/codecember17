@@ -2,10 +2,8 @@ port module Pointer
     exposing
         ( Event
         , DragState(..)
-        , Identifier
         , Pointer
-        , idToString
-        , identifier
+        , Id
         , start
         , move
         , end
@@ -16,6 +14,7 @@ port module Pointer
         )
 
 import Point exposing (Point)
+import Pointer.Id as Id
 
 
 --
@@ -31,28 +30,14 @@ type alias PortEvent =
     }
 
 
-type Identifier
-    = Identifier String
-
-
-identifier : String -> Identifier
-identifier =
-    Identifier
-
-
-idToString : Identifier -> String
-idToString (Identifier string) =
-    string
-
-
 type alias PortPointer =
-    { identifier : String
+    { id : String
     , position : Point
     }
 
 
 type alias Pointer =
-    { identifier : Identifier
+    { id : Id
     , position : Point
     }
 
@@ -71,9 +56,13 @@ type DragState
     | Cancel
 
 
+type alias Id =
+    Id.Id
+
+
 importPointer : PortPointer -> Pointer
 importPointer p =
-    { p | identifier = Identifier p.identifier }
+    { p | id = Id.fromString p.id }
 
 
 event : DragState -> PortEvent -> Event

@@ -29,7 +29,7 @@
 
     var parseMouseEvent = function(e) {
       return {
-        pointers: [{ identifier: 'mouse', position: [e.clientX, e.clientY] }],
+        pointers: [{ id: 'mouse', position: [e.clientX, e.clientY] }],
         ctrlDown: e.ctrlKey
       }
     }
@@ -47,7 +47,7 @@
 
     var parseTouch = function(touch) {
       return {
-        identifier: touch.identifier.toString(),
+        id: touch.identifier.toString(),
         position: [touch.clientX, touch.clientY],
       }
     }

@@ -8,14 +8,14 @@ import Window
 import Color exposing (Color)
 import Task
 import Pointer
-import Pointers exposing (Pointers)
+import Pointer.Mapping exposing (Mapping)
 import Point exposing (Point)
 
 
 type alias Model =
     { magnets : Magnets Color
     , size : { width : Float, height : Float }
-    , pointers : Pointers Point
+    , pointers : Mapping Point
     , ctrlDown : Bool
     , mouseDown : Bool
     }
@@ -62,12 +62,12 @@ init =
     ( { magnets =
             { stationary =
                 []
-            , dragging = Pointers.empty
+            , dragging = Pointer.Mapping.empty
             , sources =
                 magnetGroup letters
             }
       , size = { width = 0, height = 0 }
-      , pointers = Pointers.empty
+      , pointers = Pointer.Mapping.empty
       , ctrlDown = False
       , mouseDown = False
       }
@@ -121,10 +121,10 @@ update msg model =
                             Magnet.keepDragging model.pointers newPointers model.magnets
 
                         Pointer.End ->
-                            Magnet.stopDragging (List.map .identifier event.pointers) model.magnets
+                            Magnet.stopDragging (List.map .id event.pointers) model.magnets
 
                         Pointer.Cancel ->
-                            Magnet.stopDragging (List.map .identifier event.pointers) model.magnets
+                            Magnet.stopDragging (List.map .id event.pointers) model.magnets
             in
                 ( { model
                     | mouseDown = mouseDown
@@ -135,14 +135,14 @@ update msg model =
                 )
 
 
-updatePointers : Pointer.Event -> Pointers Point -> Pointers Point
+updatePointers : Pointer.Event -> Mapping Point -> Mapping Point
 updatePointers event pointers =
     let
-        add { identifier, position } =
-            Pointers.add identifier position
+        add { id, position } =
+            Pointer.Mapping.add id position
 
-        remove { identifier } =
-            Pointers.remove identifier
+        remove { id } =
+            Pointer.Mapping.remove id
     in
         case event.state of
             Pointer.Start ->
@@ -169,7 +169,7 @@ view model =
 
         pointers =
             model.pointers
-                |> Pointers.toList
+                |> Pointer.Mapping.toList
                 |> List.map
                     (\p ->
                         circle 5

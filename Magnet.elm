@@ -6,7 +6,7 @@ import Collage.Layout as Layout
 import Color exposing (Color)
 import Point
 import Pointer
-import Pointers exposing (Pointers)
+import Pointer.Mapping exposing (Mapping)
 
 
 type alias Point =
@@ -119,7 +119,7 @@ moveBy delta magnet =
 
 type alias Magnets a =
     { stationary : List (Magnet a)
-    , dragging : Pointers (Magnet a)
+    , dragging : Mapping (Magnet a)
     , sources : List (Magnet a)
     }
 
@@ -127,7 +127,7 @@ type alias Magnets a =
 magnetsView : (Magnet a -> Color) -> Magnets a -> Collage msg
 magnetsView color { stationary, dragging, sources } =
     List.concat
-        [ Pointers.toList dragging
+        [ Pointer.Mapping.toList dragging
         , stationary
         , sources
         ]
@@ -135,27 +135,27 @@ magnetsView color { stationary, dragging, sources } =
         |> group
 
 
-startDragging : Pointers Point -> Magnets a -> Magnets a
+startDragging : Mapping Point -> Magnets a -> Magnets a
 startDragging pointers magnets =
-    Pointers.foldl maybePickUp magnets pointers
+    Pointer.Mapping.foldl maybePickUp magnets pointers
 
 
-keepDragging : Pointers Point -> Pointers Point -> Magnets a -> Magnets a
+keepDragging : Mapping Point -> Mapping Point -> Magnets a -> Magnets a
 keepDragging oldPointers newPointers magnets =
     { magnets
         | dragging =
-            Pointers.mutualMap3 (\oldP newP m -> moveBy (Point.sub newP oldP) m)
+            Pointer.Mapping.mutualMap3 (\oldP newP m -> moveBy (Point.sub newP oldP) m)
                 oldPointers
                 newPointers
                 magnets.dragging
     }
 
 
-stopDragging : List Pointer.Identifier -> Magnets a -> Magnets a
+stopDragging : List Pointer.Id -> Magnets a -> Magnets a
 stopDragging identifiers magnets =
     let
         ( stillDragging, stoppedDragging ) =
-            Pointers.extract identifiers magnets.dragging
+            Pointer.Mapping.extract identifiers magnets.dragging
     in
         { magnets
             | stationary =
@@ -165,7 +165,7 @@ stopDragging identifiers magnets =
         }
 
 
-maybePickUp : Pointer.Identifier -> Point -> Magnets a -> Magnets a
+maybePickUp : Pointer.Id -> Point -> Magnets a -> Magnets a
 maybePickUp identifier point magnets =
     let
         ( newStationary, draggingFromStationary ) =
@@ -185,7 +185,7 @@ maybePickUp identifier point magnets =
             Just m ->
                 { magnets
                     | stationary = newStationary
-                    , dragging = Pointers.add identifier m magnets.dragging
+                    , dragging = Pointer.Mapping.add identifier m magnets.dragging
                 }
 
 
