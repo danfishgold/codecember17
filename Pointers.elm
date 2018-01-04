@@ -23,6 +23,18 @@ remove identifier (Pointers dict) =
     Pointers (Dict.remove (idToString identifier) dict)
 
 
+extract : List Identifier -> Pointers a -> ( Pointers a, List a )
+extract identifiers (Pointers dict) =
+    let
+        ids =
+            List.map idToString identifiers
+
+        ( extracted, remaining ) =
+            Dict.partition (\id _ -> List.member id ids) dict
+    in
+        ( Pointers remaining, Dict.values extracted )
+
+
 toList : Pointers a -> List a
 toList (Pointers dict) =
     Dict.values dict
@@ -38,23 +50,35 @@ map fn (Pointers dict) =
 
 
 mutualMap3 : (a -> b -> c -> d) -> Pointers a -> Pointers b -> Pointers c -> Pointers d
-mutualMap3 fn (Pointers pa) (Pointers pb) (Pointers pc) =
+mutualMap3 fn pa pb pc =
+    mutualMap2
+        (\( a, b ) c -> fn a b c)
+        (mutualMap2 (,) pa pb)
+        pc
+
+
+mutualMap2 : (a -> b -> c) -> Pointers a -> Pointers b -> Pointers c
+mutualMap2 fn (Pointers pa) (Pointers pb) =
     Dict.merge
         (\k a dict -> dict)
-        (\k a b -> Dict.insert k ( a, b ))
+        (\k a b dict -> Dict.insert k (fn a b) dict)
         (\k b dict -> dict)
         pa
         pb
         Dict.empty
-        |> \pab ->
-            Dict.merge
-                (\k ab dict -> dict)
-                (\k ( a, b ) c -> Dict.insert k (fn a b c))
-                (\k c dict -> dict)
-                pab
-                pc
-                Dict.empty
-                |> fromDict
+        |> fromDict
+
+
+subtract : Pointers a -> Pointers b -> Pointers a
+subtract (Pointers pa) (Pointers pb) =
+    Dict.merge
+        (\k a dict -> Dict.insert k a dict)
+        (\k a b dict -> dict)
+        (\k b dict -> dict)
+        pa
+        pb
+        Dict.empty
+        |> fromDict
 
 
 mapValues : (a -> b) -> Pointers a -> List b

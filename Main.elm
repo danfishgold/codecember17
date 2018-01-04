@@ -111,11 +111,25 @@ update msg model =
 
                 newPointers =
                     updatePointers event model.pointers
+
+                newMagnets =
+                    case event.state of
+                        Pointer.Start ->
+                            Magnet.startDragging newPointers model.magnets
+
+                        Pointer.Move ->
+                            Magnet.keepDragging model.pointers newPointers model.magnets
+
+                        Pointer.End ->
+                            Magnet.stopDragging (List.map .identifier event.pointers) model.magnets
+
+                        Pointer.Cancel ->
+                            Magnet.stopDragging (List.map .identifier event.pointers) model.magnets
             in
                 ( { model
                     | mouseDown = mouseDown
                     , pointers = newPointers
-                    , magnets = Magnet.drag model.pointers newPointers event.state model.magnets
+                    , magnets = newMagnets
                   }
                 , Cmd.none
                 )

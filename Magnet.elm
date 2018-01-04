@@ -135,25 +135,34 @@ magnetsView color { stationary, dragging, sources } =
         |> group
 
 
-drag : Pointers Point -> Pointers Point -> Pointer.DragState -> Magnets a -> Magnets a
-drag oldPointers newPointers state magnets =
-    case state of
-        Pointer.Start ->
-            startDragging newPointers magnets
-
-        Pointer.Move ->
-            keepDragging oldPointers newPointers magnets
-
-        Pointer.End ->
-            stopDragging magnets
-
-        Pointer.Cancel ->
-            stopDragging magnets
-
-
 startDragging : Pointers Point -> Magnets a -> Magnets a
 startDragging pointers magnets =
     Pointers.foldl maybePickUp magnets pointers
+
+
+keepDragging : Pointers Point -> Pointers Point -> Magnets a -> Magnets a
+keepDragging oldPointers newPointers magnets =
+    { magnets
+        | dragging =
+            Pointers.mutualMap3 (\oldP newP m -> moveBy (Point.sub newP oldP) m)
+                oldPointers
+                newPointers
+                magnets.dragging
+    }
+
+
+stopDragging : List Pointer.Identifier -> Magnets a -> Magnets a
+stopDragging identifiers magnets =
+    let
+        ( stillDragging, stoppedDragging ) =
+            Pointers.extract identifiers magnets.dragging
+    in
+        { magnets
+            | stationary =
+                stoppedDragging
+                    |> List.foldl (mergeOrAdd simpleJoiner) magnets.stationary
+            , dragging = stillDragging
+        }
 
 
 maybePickUp : Pointer.Identifier -> Point -> Magnets a -> Magnets a
@@ -178,27 +187,6 @@ maybePickUp identifier point magnets =
                     | stationary = newStationary
                     , dragging = Pointers.add identifier m magnets.dragging
                 }
-
-
-keepDragging : Pointers Point -> Pointers Point -> Magnets a -> Magnets a
-keepDragging oldPointers newPointers magnets =
-    { magnets
-        | dragging =
-            Pointers.mutualMap3 (\oldP newP m -> moveBy (Point.sub newP oldP) m)
-                oldPointers
-                newPointers
-                magnets.dragging
-    }
-
-
-stopDragging : Magnets a -> Magnets a
-stopDragging magnets =
-    { magnets
-        | stationary =
-            Pointers.toList magnets.dragging
-                |> List.foldl (mergeOrAdd simpleJoiner) magnets.stationary
-        , dragging = Pointers.empty
-    }
 
 
 mergeOrAdd : (Magnet a -> Magnet a -> Magnet a) -> Magnet a -> List (Magnet a) -> List (Magnet a)
