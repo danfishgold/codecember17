@@ -7,15 +7,14 @@ import Collage.Render exposing (svgBox)
 import Window
 import Color exposing (Color)
 import Task
-import Pointer
+import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
-import Point exposing (Point)
 
 
 type alias Model =
     { magnets : Magnets Color
     , size : { width : Float, height : Float }
-    , pointers : Mapping Point
+    , pointers : Mapping Pointer
     , ctrlDown : Bool
     , mouseDown : Bool
     }
@@ -121,10 +120,10 @@ update msg model =
                             Magnet.keepDragging model.pointers newPointers model.magnets
 
                         Pointer.End ->
-                            Magnet.stopDragging (List.map .id event.pointers) model.magnets
+                            Magnet.stopDragging event.pointers model.magnets
 
                         Pointer.Cancel ->
-                            Magnet.stopDragging (List.map .id event.pointers) model.magnets
+                            Magnet.stopDragging event.pointers model.magnets
             in
                 ( { model
                     | mouseDown = mouseDown
@@ -135,27 +134,20 @@ update msg model =
                 )
 
 
-updatePointers : Pointer.Event -> Mapping Point -> Mapping Point
+updatePointers : Pointer.Event -> Mapping Pointer -> Mapping Pointer
 updatePointers event pointers =
-    let
-        add { id, position } =
-            Pointer.Mapping.add id position
+    case event.state of
+        Pointer.Start ->
+            Pointer.Mapping.union event.pointers pointers
 
-        remove { id } =
-            Pointer.Mapping.remove id
-    in
-        case event.state of
-            Pointer.Start ->
-                List.foldl add pointers event.pointers
+        Pointer.Move ->
+            Pointer.Mapping.union event.pointers pointers
 
-            Pointer.Move ->
-                List.foldl add pointers event.pointers
+        Pointer.End ->
+            Pointer.Mapping.subtract pointers event.pointers
 
-            Pointer.End ->
-                List.foldl remove pointers event.pointers
-
-            Pointer.Cancel ->
-                List.foldl remove pointers event.pointers
+        Pointer.Cancel ->
+            Pointer.Mapping.subtract pointers event.pointers
 
 
 view : Model -> Html Msg
@@ -171,10 +163,10 @@ view model =
             model.pointers
                 |> Pointer.Mapping.toList
                 |> List.map
-                    (\p ->
+                    (\{ position } ->
                         circle 5
                             |> filled (uniform Color.red)
-                            |> shift p
+                            |> shift position
                     )
                 |> group
     in

@@ -15,6 +15,7 @@ port module Pointer
 
 import Point exposing (Point)
 import Pointer.Id as Id
+import Pointer.Mapping as Mapping exposing (Mapping)
 
 
 --
@@ -43,7 +44,7 @@ type alias Pointer =
 
 
 type alias Event =
-    { pointers : List Pointer
+    { pointers : Mapping Pointer
     , ctrlDown : Bool
     , state : DragState
     }
@@ -67,7 +68,10 @@ importPointer p =
 
 event : DragState -> PortEvent -> Event
 event state { pointers, ctrlDown } =
-    { pointers = List.map importPointer pointers
+    { pointers =
+        pointers
+            |> List.map importPointer
+            |> List.foldl (\p -> Mapping.add p.id p) Mapping.empty
     , ctrlDown = ctrlDown
     , state = state
     }
@@ -145,7 +149,7 @@ pointerInCollage collage pointer =
 
 eventInCollage : Collage a -> Event -> Event
 eventInCollage collage event =
-    { event | pointers = List.map (pointerInCollage collage) event.pointers }
+    { event | pointers = Mapping.map (always (pointerInCollage collage)) event.pointers }
 
 
 eventsInCollage : Collage a -> (Event -> msg) -> Sub msg

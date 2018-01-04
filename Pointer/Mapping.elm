@@ -40,13 +40,11 @@ toList (Inner dict) =
     Dict.values dict
 
 
-map : (Id -> a -> b) -> Mapping a -> List b
+map : (Id -> a -> b) -> Mapping a -> Mapping b
 map fn (Inner dict) =
-    Dict.toList dict
-        |> List.map
-            (\( idString, value ) ->
-                fn (Pointer.Id.fromString idString) value
-            )
+    dict
+        |> Dict.map (\stringId value -> fn (Pointer.Id.fromString stringId) value)
+        |> Inner
 
 
 mutualMap3 : (a -> b -> c -> d) -> Mapping a -> Mapping b -> Mapping c -> Mapping d
@@ -62,18 +60,6 @@ mutualMap2 fn (Inner pa) (Inner pb) =
     Dict.merge
         (\k a dict -> dict)
         (\k a b dict -> Dict.insert k (fn a b) dict)
-        (\k b dict -> dict)
-        pa
-        pb
-        Dict.empty
-        |> fromDict
-
-
-subtract : Mapping a -> Mapping b -> Mapping a
-subtract (Inner pa) (Inner pb) =
-    Dict.merge
-        (\k a dict -> Dict.insert k a dict)
-        (\k a b dict -> dict)
         (\k b dict -> dict)
         pa
         pb
@@ -98,3 +84,30 @@ foldl folder initial (Inner dict) =
             folder (Pointer.Id.fromString stringId) a b
     in
         Dict.foldl newFolder initial dict
+
+
+ids : Mapping a -> List Id
+ids (Inner dict) =
+    Dict.keys dict
+        |> List.map Pointer.Id.fromString
+
+
+union : Mapping a -> Mapping a -> Mapping a
+union (Inner da) (Inner db) =
+    Inner <| Dict.union da db
+
+
+subtract : Mapping a -> Mapping a -> Mapping a
+subtract (Inner da) (Inner db) =
+    Inner <| dictSubtract da db
+
+
+dictSubtract : Dict comparable v -> Dict comparable a -> Dict comparable v
+dictSubtract da db =
+    Dict.merge
+        (\k a dict -> Dict.insert k a dict)
+        (\k a b dict -> dict)
+        (\k b dict -> dict)
+        da
+        db
+        Dict.empty

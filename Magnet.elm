@@ -5,7 +5,7 @@ import Collage.Text as Text
 import Collage.Layout as Layout
 import Color exposing (Color)
 import Point
-import Pointer
+import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 
 
@@ -135,27 +135,27 @@ magnetsView color { stationary, dragging, sources } =
         |> group
 
 
-startDragging : Mapping Point -> Magnets a -> Magnets a
+startDragging : Mapping Pointer -> Magnets a -> Magnets a
 startDragging pointers magnets =
     Pointer.Mapping.foldl maybePickUp magnets pointers
 
 
-keepDragging : Mapping Point -> Mapping Point -> Magnets a -> Magnets a
+keepDragging : Mapping Pointer -> Mapping Pointer -> Magnets a -> Magnets a
 keepDragging oldPointers newPointers magnets =
     { magnets
         | dragging =
-            Pointer.Mapping.mutualMap3 (\oldP newP m -> moveBy (Point.sub newP oldP) m)
+            Pointer.Mapping.mutualMap3 (\oldP newP m -> moveBy (Point.sub newP.position oldP.position) m)
                 oldPointers
                 newPointers
                 magnets.dragging
     }
 
 
-stopDragging : List Pointer.Id -> Magnets a -> Magnets a
-stopDragging identifiers magnets =
+stopDragging : Mapping Pointer -> Magnets a -> Magnets a
+stopDragging pointers magnets =
     let
         ( stillDragging, stoppedDragging ) =
-            Pointer.Mapping.extract identifiers magnets.dragging
+            Pointer.Mapping.extract (Pointer.Mapping.ids pointers) magnets.dragging
     in
         { magnets
             | stationary =
@@ -165,15 +165,15 @@ stopDragging identifiers magnets =
         }
 
 
-maybePickUp : Pointer.Id -> Point -> Magnets a -> Magnets a
-maybePickUp identifier point magnets =
+maybePickUp : Pointer.Id -> Pointer -> Magnets a -> Magnets a
+maybePickUp identifier pointer magnets =
     let
         ( newStationary, draggingFromStationary ) =
-            filterFirst (contains point) magnets.stationary
+            filterFirst (contains pointer.position) magnets.stationary
 
         dragging =
             if draggingFromStationary == Nothing then
-                filterFirst (contains point) magnets.sources
+                filterFirst (contains pointer.position) magnets.sources
                     |> Tuple.second
             else
                 draggingFromStationary
