@@ -8,13 +8,14 @@ import Window
 import Color exposing (Color)
 import Task
 import Pointer
+import Pointers exposing (Pointers)
 import Point exposing (Point)
 
 
 type alias Model =
     { magnets : Magnets Color
     , size : { width : Float, height : Float }
-    , pointer : Point
+    , pointers : Pointers Point
     , ctrlDown : Bool
     , mouseDown : Bool
     }
@@ -61,12 +62,12 @@ init =
     ( { magnets =
             { stationary =
                 []
-            , dragging = Nothing
+            , dragging = Pointers.empty
             , sources =
                 magnetGroup letters
             }
       , size = { width = 0, height = 0 }
-      , pointer = ( 0, 0 )
+      , pointers = Pointers.empty
       , ctrlDown = False
       , mouseDown = False
       }
@@ -107,14 +108,40 @@ update msg model =
 
                         _ ->
                             model.mouseDown
+
+                newPointers =
+                    updatePointers event model.pointers
             in
                 ( { model
                     | mouseDown = mouseDown
-                    , pointer = event.pointer
-                    , magnets = Magnet.drag model.pointer event model.magnets
+                    , pointers = newPointers
+                    , magnets = Magnet.drag model.pointers newPointers event.state model.magnets
                   }
                 , Cmd.none
                 )
+
+
+updatePointers : Pointer.Event -> Pointers Point -> Pointers Point
+updatePointers event pointers =
+    let
+        add { identifier, position } =
+            Pointers.add identifier position
+
+        remove { identifier } =
+            Pointers.remove identifier
+    in
+        case event.state of
+            Pointer.Start ->
+                List.foldl add pointers event.pointers
+
+            Pointer.Move ->
+                List.foldl add pointers event.pointers
+
+            Pointer.End ->
+                List.foldl remove pointers event.pointers
+
+            Pointer.Cancel ->
+                List.foldl remove pointers event.pointers
 
 
 view : Model -> Html Msg
@@ -126,12 +153,18 @@ view model =
         bg =
             rectangle model.size.width model.size.height |> filled (uniform Color.lightGray)
 
-        pointer =
-            circle 5
-                |> filled (uniform Color.red)
-                |> shift model.pointer
+        pointers =
+            model.pointers
+                |> Pointers.toList
+                |> List.map
+                    (\p ->
+                        circle 5
+                            |> filled (uniform Color.red)
+                            |> shift p
+                    )
+                |> group
     in
-        group [ pointer, magnets, bg ]
+        group [ pointers, magnets, bg ]
             |> svgBox ( model.size.width, model.size.height )
 
 

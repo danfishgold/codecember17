@@ -6,6 +6,7 @@ import Collage.Layout as Layout
 import Color exposing (Color)
 import Point
 import Pointer
+import Pointers exposing (Pointers)
 
 
 type alias Point =
@@ -118,7 +119,7 @@ moveBy delta magnet =
 
 type alias Magnets a =
     { stationary : List (Magnet a)
-    , dragging : Maybe (Magnet a)
+    , dragging : Pointers (Magnet a)
     , sources : List (Magnet a)
     }
 
@@ -126,7 +127,7 @@ type alias Magnets a =
 magnetsView : (Magnet a -> Color) -> Magnets a -> Collage msg
 magnetsView color { stationary, dragging, sources } =
     List.concat
-        [ Maybe.map List.singleton dragging |> Maybe.withDefault []
+        [ Pointers.toList dragging
         , stationary
         , sources
         ]
@@ -134,47 +135,70 @@ magnetsView color { stationary, dragging, sources } =
         |> group
 
 
-startDragging : Point -> Magnets a -> Magnets a
-startDragging pointer magnets =
+drag : Pointers Point -> Pointers Point -> Pointer.DragState -> Magnets a -> Magnets a
+drag oldPointers newPointers state magnets =
+    case state of
+        Pointer.Start ->
+            startDragging newPointers magnets
+
+        Pointer.Move ->
+            keepDragging oldPointers newPointers magnets
+
+        Pointer.End ->
+            stopDragging magnets
+
+        Pointer.Cancel ->
+            stopDragging magnets
+
+
+startDragging : Pointers Point -> Magnets a -> Magnets a
+startDragging pointers magnets =
+    Pointers.foldl maybePickUp magnets pointers
+
+
+maybePickUp : Pointer.Identifier -> Point -> Magnets a -> Magnets a
+maybePickUp identifier point magnets =
     let
         ( newStationary, draggingFromStationary ) =
-            filterFirst (contains pointer) magnets.stationary
+            filterFirst (contains point) magnets.stationary
 
         dragging =
             if draggingFromStationary == Nothing then
-                filterFirst (contains pointer) magnets.sources
+                filterFirst (contains point) magnets.sources
                     |> Tuple.second
             else
                 draggingFromStationary
     in
-        { magnets | stationary = newStationary, dragging = dragging }
+        case dragging of
+            Nothing ->
+                magnets
+
+            Just m ->
+                { magnets
+                    | stationary = newStationary
+                    , dragging = Pointers.add identifier m magnets.dragging
+                }
 
 
-keepDragging : Point -> Point -> Magnets a -> Magnets a
-keepDragging oldPointer newPointer magnets =
-    case magnets.dragging of
-        Nothing ->
-            magnets
-
-        Just m ->
-            { magnets
-                | dragging =
-                    moveBy (Point.sub newPointer oldPointer) m
-                        |> Just
-            }
+keepDragging : Pointers Point -> Pointers Point -> Magnets a -> Magnets a
+keepDragging oldPointers newPointers magnets =
+    { magnets
+        | dragging =
+            Pointers.mutualMap3 (\oldP newP m -> moveBy (Point.sub newP oldP) m)
+                oldPointers
+                newPointers
+                magnets.dragging
+    }
 
 
 stopDragging : Magnets a -> Magnets a
 stopDragging magnets =
-    case magnets.dragging of
-        Nothing ->
-            magnets
-
-        Just m ->
-            { magnets
-                | stationary = mergeOrAdd simpleJoiner m magnets.stationary
-                , dragging = Nothing
-            }
+    { magnets
+        | stationary =
+            Pointers.toList magnets.dragging
+                |> List.foldl (mergeOrAdd simpleJoiner) magnets.stationary
+        , dragging = Pointers.empty
+    }
 
 
 mergeOrAdd : (Magnet a -> Magnet a -> Magnet a) -> Magnet a -> List (Magnet a) -> List (Magnet a)
@@ -249,22 +273,6 @@ simpleJoiner a b =
         , position = position
         , padding = padding
         }
-
-
-drag : Point -> Pointer.Event -> Magnets a -> Magnets a
-drag oldPointer event magnets =
-    case event.state of
-        Pointer.Start ->
-            startDragging event.pointer magnets
-
-        Pointer.Move ->
-            keepDragging oldPointer event.pointer magnets
-
-        Pointer.End ->
-            stopDragging magnets
-
-        Pointer.Cancel ->
-            stopDragging magnets
 
 
 filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )

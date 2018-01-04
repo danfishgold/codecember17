@@ -2,6 +2,10 @@ port module Pointer
     exposing
         ( Event
         , DragState(..)
+        , Identifier
+        , Pointer
+        , idToString
+        , identifier
         , start
         , move
         , end
@@ -17,14 +21,44 @@ import Point exposing (Point)
 --
 
 
-type alias SpecificEvent =
-    { pointer : Point
+type alias Collage a =
+    { a | width : Float, height : Float }
+
+
+type alias PortEvent =
+    { pointers : List PortPointer
     , ctrlDown : Bool
     }
 
 
+type Identifier
+    = Identifier String
+
+
+identifier : String -> Identifier
+identifier =
+    Identifier
+
+
+idToString : Identifier -> String
+idToString (Identifier string) =
+    string
+
+
+type alias PortPointer =
+    { identifier : String
+    , position : Point
+    }
+
+
+type alias Pointer =
+    { identifier : Identifier
+    , position : Point
+    }
+
+
 type alias Event =
-    { pointer : Point
+    { pointers : List Pointer
     , ctrlDown : Bool
     , state : DragState
     }
@@ -37,46 +71,46 @@ type DragState
     | Cancel
 
 
-event : DragState -> SpecificEvent -> Event
-event state { pointer, ctrlDown } =
-    { pointer = pointer
+importPointer : PortPointer -> Pointer
+importPointer p =
+    { p | identifier = Identifier p.identifier }
+
+
+event : DragState -> PortEvent -> Event
+event state { pointers, ctrlDown } =
+    { pointers = List.map importPointer pointers
     , ctrlDown = ctrlDown
     , state = state
     }
 
 
-port mouseDown : (SpecificEvent -> msg) -> Sub msg
+port mouseDown : (PortEvent -> msg) -> Sub msg
 
 
-port mouseMove : (SpecificEvent -> msg) -> Sub msg
+port mouseMove : (PortEvent -> msg) -> Sub msg
 
 
-port mouseUp : (SpecificEvent -> msg) -> Sub msg
+port mouseUp : (PortEvent -> msg) -> Sub msg
 
 
-port touchStart : (SpecificEvent -> msg) -> Sub msg
+port touchStart : (PortEvent -> msg) -> Sub msg
 
 
-port touchMove : (SpecificEvent -> msg) -> Sub msg
+port touchMove : (PortEvent -> msg) -> Sub msg
 
 
-port touchEnd : (SpecificEvent -> msg) -> Sub msg
+port touchEnd : (PortEvent -> msg) -> Sub msg
 
 
-port touchCancel : (SpecificEvent -> msg) -> Sub msg
+port touchCancel : (PortEvent -> msg) -> Sub msg
 
 
-inCollage : { a | width : Float, height : Float } -> Point -> Point
-inCollage { width, height } ( x, y ) =
-    ( x - width / 2, height / 2 - y )
-
-
-cancel : (SpecificEvent -> msg) -> Sub msg
+cancel : (PortEvent -> msg) -> Sub msg
 cancel toMsg =
     touchCancel toMsg
 
 
-start : (SpecificEvent -> msg) -> Sub msg
+start : (PortEvent -> msg) -> Sub msg
 start toMsg =
     Sub.batch
         [ touchStart toMsg
@@ -84,7 +118,7 @@ start toMsg =
         ]
 
 
-move : (SpecificEvent -> msg) -> Sub msg
+move : (PortEvent -> msg) -> Sub msg
 move toMsg =
     Sub.batch
         [ touchMove toMsg
@@ -92,7 +126,7 @@ move toMsg =
         ]
 
 
-end : (SpecificEvent -> msg) -> Sub msg
+end : (PortEvent -> msg) -> Sub msg
 end toMsg =
     Sub.batch
         [ touchEnd toMsg
@@ -110,11 +144,21 @@ events toMsg =
         ]
 
 
-eventInCollage : { a | width : Float, height : Float } -> Event -> Event
+inCollage : Collage a -> Point -> Point
+inCollage { width, height } ( x, y ) =
+    ( x - width / 2, height / 2 - y )
+
+
+pointerInCollage : Collage a -> Pointer -> Pointer
+pointerInCollage collage pointer =
+    { pointer | position = inCollage collage pointer.position }
+
+
+eventInCollage : Collage a -> Event -> Event
 eventInCollage collage event =
-    { event | pointer = inCollage collage event.pointer }
+    { event | pointers = List.map (pointerInCollage collage) event.pointers }
 
 
-eventsInCollage : { a | width : Float, height : Float } -> (Event -> msg) -> Sub msg
+eventsInCollage : Collage a -> (Event -> msg) -> Sub msg
 eventsInCollage collage toMsg =
     events (eventInCollage collage >> toMsg)
