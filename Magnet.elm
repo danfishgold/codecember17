@@ -45,12 +45,17 @@ magnet text position data =
     { data = data
     , text = text
     , position = position
-    , padding = { width = 15, height = 15 }
+    , padding = defaultPadding
     }
 
 
-view : Color -> Magnet a -> Collage msg
-view color { text, position, padding } =
+defaultPadding : Size
+defaultPadding =
+    { width = 15, height = 15 }
+
+
+element : Color -> Magnet a -> Collage msg
+element color { text, position, padding } =
     let
         textNode =
             text
@@ -131,7 +136,7 @@ magnetsView color { stationary, dragging, sources } =
         , stationary
         , sources
         ]
-        |> List.map (\m -> view (color m) m)
+        |> List.map (\m -> element (color m) m)
         |> group
 
 
@@ -287,3 +292,60 @@ filterFirst fn xs =
                         recurse fn rest (head :: falses)
     in
         recurse fn xs []
+
+
+organizeSources : Size -> Size -> List (Magnet a) -> List (Magnet a)
+organizeSources area padding sources =
+    let
+        sized =
+            List.map (\m -> ( m, size m )) sources
+
+        rowHeight =
+            sized
+                |> List.map (\( _, { height } ) -> height)
+                |> List.maximum
+                |> Maybe.withDefault 0
+                |> (+) padding.height
+
+        moveTopLeftTo : Point -> ( Magnet a, Size ) -> Magnet a
+        moveTopLeftTo ( x0, y0 ) ( magnet, size ) =
+            { magnet
+                | position =
+                    ( x0 + size.width / 2 - area.width / 2
+                    , area.height / 2 - (y0 + size.height / 2)
+                    )
+            }
+
+        recurse : Point -> List (Magnet a) -> List ( Magnet a, Size ) -> List (Magnet a)
+        recurse ( currentX, currentY ) finished remaining =
+            case remaining of
+                [] ->
+                    finished
+
+                ( magnet, size ) :: rest ->
+                    if currentX + 2 * padding.width + size.width < area.width then
+                        recurse ( currentX + padding.width + size.width, currentY )
+                            (moveTopLeftTo ( currentX + padding.width, currentY )
+                                ( magnet, size )
+                                :: finished
+                            )
+                            rest
+                    else if size.width > area.width then
+                        recurse ( 0, currentY + 2 * (rowHeight) )
+                            (moveTopLeftTo ( 0, currentY + rowHeight )
+                                ( magnet, size )
+                                :: finished
+                            )
+                            rest
+                    else
+                        recurse
+                            ( 0, currentY + rowHeight )
+                            finished
+                            remaining
+    in
+        List.reverse <| recurse ( 0, padding.height ) [] sized
+
+
+reorderSources : Size -> Size -> Magnets a -> Magnets a
+reorderSources area padding magnets =
+    { magnets | sources = organizeSources area padding magnets.sources }

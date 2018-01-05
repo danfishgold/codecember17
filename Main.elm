@@ -27,7 +27,7 @@ type Msg
 
 letters : List String
 letters =
-    [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "_" ]
+    "a b c d e f g h i j k l m n o p q r s t u v w x y z _" |> String.split " "
 
 
 magnetGroup : List String -> List (Magnet Color)
@@ -86,14 +86,21 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SetSize { width, height } ->
-            ( { model
-                | size =
+            let
+                newSize =
                     { width = toFloat width
                     , height = toFloat height
                     }
-              }
-            , Cmd.none
-            )
+            in
+                ( { model
+                    | size = newSize
+                    , magnets =
+                        Magnet.reorderSources newSize
+                            Magnet.defaultPadding
+                            model.magnets
+                  }
+                , Cmd.none
+                )
 
         PointerChange event ->
             let
