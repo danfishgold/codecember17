@@ -1,4 +1,19 @@
-module Pointer.Mapping exposing (..)
+module Pointer.Mapping
+    exposing
+        ( Mapping
+        , fromDict
+        , add
+        , remove
+        , extract
+        , toList
+        , map
+        , mutualMap3
+        , empty
+        , foldl
+        , ids
+        , union
+        , subtract
+        )
 
 import Pointer.Id exposing (Id)
 import Dict exposing (Dict)
@@ -58,23 +73,18 @@ mutualMap3 fn pa pb pc =
 mutualMap2 : (a -> b -> c) -> Mapping a -> Mapping b -> Mapping c
 mutualMap2 fn (Inner pa) (Inner pb) =
     Dict.merge
-        (\k a dict -> dict)
+        (always <| always identity)
         (\k a b dict -> Dict.insert k (fn a b) dict)
-        (\k b dict -> dict)
+        (always <| always identity)
         pa
         pb
         Dict.empty
         |> fromDict
 
 
-mapValues : (a -> b) -> Mapping a -> List b
-mapValues fn pointers =
-    toList pointers |> List.map fn
-
-
 empty : Mapping a
 empty =
-    Inner (Dict.empty)
+    Inner Dict.empty
 
 
 foldl : (Id -> a -> b -> b) -> b -> Mapping a -> b
@@ -106,8 +116,8 @@ dictSubtract : Dict comparable v -> Dict comparable a -> Dict comparable v
 dictSubtract da db =
     Dict.merge
         (\k a dict -> Dict.insert k a dict)
-        (\k a b dict -> dict)
-        (\k b dict -> dict)
+        (always <| always <| always identity)
+        (always <| always identity)
         da
         db
         Dict.empty

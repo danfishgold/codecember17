@@ -1,4 +1,4 @@
-module Point exposing (..)
+module Point exposing (Point, add, sub, div, mul)
 
 
 type alias Point =

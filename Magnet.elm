@@ -1,6 +1,16 @@
-module Magnet exposing (..)
+module Magnet
+    exposing
+        ( Magnets
+        , defaultPadding
+        , category
+        , reorderSources
+        , magnetsView
+        , startDragging
+        , keepDragging
+        , stopDragging
+        )
 
-import Collage exposing (..)
+import Collage exposing (Collage, group, rendered, rectangle, filled, uniform, shift)
 import Collage.Text as Text
 import Collage.Layout as Layout
 import Color exposing (Color)
@@ -12,11 +22,6 @@ import Types exposing (Size, Edges)
 
 type alias Point =
     Point.Point
-
-
-type Data a b
-    = Atom a
-    | Composite b (List a)
 
 
 type alias Magnet a =
@@ -125,11 +130,7 @@ type alias Magnets a =
 category : String -> List String -> Category Color
 category name strings =
     strings
-        |> List.indexedMap
-            (\idx str ->
-                magnet str
-                    Color.black
-            )
+        |> List.map (flip magnet Color.black)
         |> \sources -> { name = name, sources = sources }
 
 
@@ -221,24 +222,24 @@ maybePickUp identifier pointer magnets =
 mergeOrAdd : (Magnet a -> Magnet a -> Magnet a) -> Magnet a -> List (Magnet a) -> List (Magnet a)
 mergeOrAdd joiner magnet magnets =
     let
-        recurse joiner magnet magnetsWithEdges =
+        recurse currentMagnet magnetsWithEdges =
             let
                 magnetEdges =
-                    edges magnet
+                    edges currentMagnet
 
                 isAdjacent ( _, currentEdges ) =
                     adjecent currentEdges magnetEdges
             in
                 case filterFirst isAdjacent magnetsWithEdges of
                     ( _, Nothing ) ->
-                        magnet :: List.map Tuple.first magnetsWithEdges
+                        currentMagnet :: List.map Tuple.first magnetsWithEdges
 
                     ( others, Just ( closeMagnet, _ ) ) ->
-                        recurse joiner (joiner magnet closeMagnet) others
+                        recurse (joiner currentMagnet closeMagnet) others
     in
         magnets
             |> List.map (\m -> ( m, edges m ))
-            |> recurse joiner magnet
+            |> recurse magnet
 
 
 adjecentInX : Edges -> Edges -> Bool
@@ -297,8 +298,8 @@ simpleJoiner a b =
 filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )
 filterFirst fn xs =
     let
-        recurse fn xs falses =
-            case xs of
+        recurse lst falses =
+            case lst of
                 [] ->
                     ( List.reverse falses, Nothing )
 
@@ -306,9 +307,9 @@ filterFirst fn xs =
                     if fn head then
                         ( List.reverse falses ++ rest, Just head )
                     else
-                        recurse fn rest (head :: falses)
+                        recurse rest (head :: falses)
     in
-        recurse fn xs []
+        recurse xs []
 
 
 organizeCategory : Float -> Size -> Size -> List (Magnet a) -> ( List (Magnet a), Float )
@@ -332,7 +333,7 @@ organizeCategory categoryY area padding sources =
                     )
             }
 
-        shouldPlaceHere currentX magnet size =
+        shouldPlaceHere currentX size =
             -- can fit in current row
             (currentX + 2 * padding.width + size.width <= area.width)
                 -- or (can or can't fit && at beginning of row)
@@ -345,7 +346,7 @@ organizeCategory categoryY area padding sources =
                     ( finished, categoryY + currentY + rowHeight )
 
                 ( magnet, size ) :: rest ->
-                    if shouldPlaceHere currentX magnet size then
+                    if shouldPlaceHere currentX size then
                         recurse ( currentX + padding.width + size.width, currentY )
                             (moveTopLeftTo ( currentX + padding.width, currentY )
                                 ( magnet, size )

@@ -1,6 +1,6 @@
-module Main exposing (..)
+module Main exposing (main)
 
-import Magnet exposing (Magnet, Magnets)
+import Magnet exposing (Magnets)
 import Html exposing (Html, program)
 import Collage exposing (group, rectangle, circle, shift, filled, uniform)
 import Collage.Render exposing (svgBox)
@@ -23,7 +23,7 @@ type alias Model =
 
 type Msg
     = SetSize Window.Size
-    | PointerChange Pointer.Event
+    | PointerEvent Pointer.Event
 
 
 letters : List String
@@ -56,7 +56,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Window.resizes SetSize
-        , Pointer.eventsInCollage model.size PointerChange
+        , Pointer.eventsInCollage model.size PointerEvent
         ]
 
 
@@ -80,7 +80,7 @@ update msg model =
                 , Cmd.none
                 )
 
-        PointerChange event ->
+        PointerEvent event ->
             let
                 mouseDown =
                     case event.state of
