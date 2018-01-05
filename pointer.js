@@ -7,7 +7,8 @@ function parseMouseEvent(e) {
 
 function parseTouchEvent(e) {
     var pointers = [];
-    for (var touch of e.changedTouches) {
+    for (var i = 0; i < e.changedTouches.length; i++) {
+        var touch = e.changedTouches[i]
         pointers.push(parseTouch(touch))
     }
     return {
