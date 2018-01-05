@@ -316,6 +316,13 @@ organizeSources area padding sources =
                     )
             }
 
+        shouldPlaceHere currentX magnet size =
+            -- can fit in current row
+            (currentX + 2 * padding.width + size.width <= area.width)
+                -- or (can fit || can't fit && at beginning of row)
+                ||
+                    (currentX == 0)
+
         recurse : Point -> List (Magnet a) -> List ( Magnet a, Size ) -> List (Magnet a)
         recurse ( currentX, currentY ) finished remaining =
             case remaining of
@@ -323,16 +330,9 @@ organizeSources area padding sources =
                     finished
 
                 ( magnet, size ) :: rest ->
-                    if currentX + 2 * padding.width + size.width < area.width then
+                    if shouldPlaceHere currentX magnet size then
                         recurse ( currentX + padding.width + size.width, currentY )
                             (moveTopLeftTo ( currentX + padding.width, currentY )
-                                ( magnet, size )
-                                :: finished
-                            )
-                            rest
-                    else if size.width > area.width then
-                        recurse ( 0, currentY + 2 * (rowHeight) )
-                            (moveTopLeftTo ( 0, currentY + rowHeight )
                                 ( magnet, size )
                                 :: finished
                             )
