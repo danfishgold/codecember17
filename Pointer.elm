@@ -129,7 +129,10 @@ pointerInCollage collage pointer =
 
 eventInCollage : Collage a -> Event -> Event
 eventInCollage collage event =
-    { event | pointers = Mapping.map (always (pointerInCollage collage)) event.pointers }
+    { event
+        | pointers =
+            Mapping.map (always (pointerInCollage collage)) event.pointers
+    }
 
 
 eventsInCollage : Collage a -> (Event -> msg) -> Sub msg

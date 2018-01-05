@@ -149,7 +149,10 @@ keepDragging : Mapping Pointer -> Mapping Pointer -> Magnets a -> Magnets a
 keepDragging oldPointers newPointers magnets =
     { magnets
         | dragging =
-            Pointer.Mapping.mutualMap3 (\oldP newP m -> moveBy (Point.sub newP.position oldP.position) m)
+            Pointer.Mapping.mutualMap3
+                (\oldP newP m ->
+                    moveBy (Point.sub newP.position oldP.position) m
+                )
                 oldPointers
                 newPointers
                 magnets.dragging
@@ -199,15 +202,34 @@ maybePickUp identifier pointer magnets =
                 in
                     { magnets
                         | stationary = newStationary
-                        , dragging = Pointer.Mapping.add identifier pickedUp magnets.dragging
+                        , dragging =
+                            Pointer.Mapping.add identifier
+                                pickedUp
+                                magnets.dragging
                     }
 
 
 mergeOrAdd : (Magnet a -> Magnet a -> Magnet a) -> Magnet a -> List (Magnet a) -> List (Magnet a)
 mergeOrAdd joiner magnet magnets =
-    magnets
-        |> List.map (\m -> ( m, edges m ))
-        |> recurseMergeOrAdd joiner magnet
+    let
+        recurse joiner magnet magnetsWithEdges =
+            let
+                magnetEdges =
+                    edges magnet
+
+                isAdjacent ( _, currentEdges ) =
+                    adjecent currentEdges magnetEdges
+            in
+                case filterFirst isAdjacent magnetsWithEdges of
+                    ( _, Nothing ) ->
+                        magnet :: List.map Tuple.first magnetsWithEdges
+
+                    ( others, Just ( closeMagnet, _ ) ) ->
+                        recurse joiner (joiner magnet closeMagnet) others
+    in
+        magnets
+            |> List.map (\m -> ( m, edges m ))
+            |> recurse joiner magnet
 
 
 adjecentInX : Edges -> Edges -> Bool
@@ -223,20 +245,6 @@ adjecentInY a b =
 adjecent : Edges -> Edges -> Bool
 adjecent a b =
     adjecentInX a b && adjecentInY a b
-
-
-recurseMergeOrAdd : (Magnet a -> Magnet a -> Magnet a) -> Magnet a -> List ( Magnet a, Edges ) -> List (Magnet a)
-recurseMergeOrAdd joiner magnet magnetsWithEdges =
-    let
-        magnetEdges =
-            edges magnet
-    in
-        case filterFirst (\( _, currentEdges ) -> adjecent currentEdges magnetEdges) magnetsWithEdges of
-            ( _, Nothing ) ->
-                magnet :: List.map Tuple.first magnetsWithEdges
-
-            ( others, Just ( closeMagnet, _ ) ) ->
-                recurseMergeOrAdd joiner (joiner magnet closeMagnet) others
 
 
 simpleJoiner : Magnet a -> Magnet a -> Magnet a
@@ -265,7 +273,7 @@ simpleJoiner a b =
                 ( b, a )
 
         textOrSpace text =
-            if text == "_" then
+            if text == "[space]" then
                 " "
             else
                 text
@@ -307,7 +315,6 @@ organizeSources area padding sources =
                 |> Maybe.withDefault 0
                 |> (+) padding.height
 
-        moveTopLeftTo : Point -> ( Magnet a, Size ) -> Magnet a
         moveTopLeftTo ( x0, y0 ) ( magnet, size ) =
             { magnet
                 | position =
@@ -319,11 +326,10 @@ organizeSources area padding sources =
         shouldPlaceHere currentX magnet size =
             -- can fit in current row
             (currentX + 2 * padding.width + size.width <= area.width)
-                -- or (can fit || can't fit && at beginning of row)
+                -- or (can or can't fit && at beginning of row)
                 ||
                     (currentX == 0)
 
-        recurse : Point -> List (Magnet a) -> List ( Magnet a, Size ) -> List (Magnet a)
         recurse ( currentX, currentY ) finished remaining =
             case remaining of
                 [] ->
