@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Magnet exposing (Magnet, Magnets, magnet)
+import Magnet exposing (Magnet, Magnets)
 import Html exposing (Html, program)
 import Collage exposing (group, rectangle, circle, shift, filled, uniform)
 import Collage.Render exposing (svgBox)
@@ -30,32 +30,6 @@ letters =
     "a b c d e f g h i j k l m n o p q r s t u v w x y z [space]" |> String.split " "
 
 
-magnetGroup : List String -> List (Magnet Color)
-magnetGroup strings =
-    strings
-        |> List.indexedMap
-            (\idx str ->
-                magnet str
-                    (magnetPosition (List.length strings) idx)
-                    Color.black
-            )
-
-
-magnetPosition : Int -> Int -> ( Float, Float )
-magnetPosition count idx =
-    let
-        sideLength =
-            ceiling <| sqrt <| toFloat count
-
-        row =
-            -(idx // sideLength) + sideLength
-
-        col =
-            idx % sideLength
-    in
-        ( toFloat col * 30, toFloat row * 50 )
-
-
 init : ( Model, Cmd Msg )
 init =
     ( { magnets =
@@ -63,7 +37,10 @@ init =
                 []
             , dragging = Pointer.Mapping.empty
             , sources =
-                magnetGroup letters
+                [ Magnet.category "Letters" letters
+                , Magnet.category "Nouns" [ "burrito", "pizza" ]
+                , Magnet.category "Verbs" [ "eat", "drink", "go" ]
+                ]
             }
       , size = { width = 0, height = 0 }
       , pointers = Pointer.Mapping.empty

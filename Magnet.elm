@@ -40,11 +40,11 @@ type alias Magnet a =
     }
 
 
-magnet : String -> Point -> a -> Magnet a
-magnet text position data =
+magnet : String -> a -> Magnet a
+magnet text data =
     { data = data
     , text = text
-    , position = position
+    , position = ( 0, 0 )
     , padding = defaultPadding
     }
 
@@ -122,11 +122,33 @@ moveBy delta magnet =
 --
 
 
+type alias Category a =
+    { name : String
+    , sources : List (Magnet a)
+    }
+
+
 type alias Magnets a =
     { stationary : List (Magnet a)
     , dragging : Mapping (Magnet a)
-    , sources : List (Magnet a)
+    , sources : List (Category a)
     }
+
+
+category : String -> List String -> Category Color
+category name strings =
+    strings
+        |> List.indexedMap
+            (\idx str ->
+                magnet str
+                    Color.black
+            )
+        |> \sources -> { name = name, sources = sources }
+
+
+allSources : List (Category a) -> List (Magnet a)
+allSources categories =
+    List.concatMap .sources categories
 
 
 magnetsView : (Magnet a -> Color) -> Magnets a -> Collage msg
@@ -134,7 +156,7 @@ magnetsView color { stationary, dragging, sources } =
     List.concat
         [ Pointer.Mapping.toList dragging
         , stationary
-        , sources
+        , allSources sources
         ]
         |> List.map (\m -> element (color m) m)
         |> group
@@ -181,7 +203,7 @@ maybePickUp identifier pointer magnets =
 
         dragging =
             if draggingFromStationary == Nothing then
-                filterFirst (contains pointer.position) magnets.sources
+                filterFirst (contains pointer.position) (allSources magnets.sources)
                     |> Tuple.second
             else
                 draggingFromStationary
@@ -302,8 +324,8 @@ filterFirst fn xs =
         recurse fn xs []
 
 
-organizeSources : Size -> Size -> List (Magnet a) -> List (Magnet a)
-organizeSources area padding sources =
+organizeCategory : Float -> Size -> Size -> List (Magnet a) -> ( List (Magnet a), Float )
+organizeCategory categoryY area padding sources =
     let
         sized =
             List.map (\m -> ( m, size m )) sources
@@ -319,7 +341,7 @@ organizeSources area padding sources =
             { magnet
                 | position =
                     ( x0 + size.width / 2 - area.width / 2
-                    , area.height / 2 - (y0 + size.height / 2)
+                    , area.height / 2 - (categoryY + y0 + size.height / 2)
                     )
             }
 
@@ -333,7 +355,7 @@ organizeSources area padding sources =
         recurse ( currentX, currentY ) finished remaining =
             case remaining of
                 [] ->
-                    finished
+                    ( finished, categoryY + currentY + rowHeight )
 
                 ( magnet, size ) :: rest ->
                     if shouldPlaceHere currentX magnet size then
@@ -349,9 +371,22 @@ organizeSources area padding sources =
                             finished
                             remaining
     in
-        List.reverse <| recurse ( 0, padding.height ) [] sized
+        recurse ( 0, padding.height ) [] sized |> Tuple.mapFirst List.reverse
 
 
 reorderSources : Size -> Size -> Magnets a -> Magnets a
 reorderSources area padding magnets =
-    { magnets | sources = organizeSources area padding magnets.sources }
+    let
+        folder category ( previous, currentY ) =
+            let
+                ( organized, nextY ) =
+                    organizeCategory currentY area padding category.sources
+            in
+                ( { category | sources = organized } :: previous, nextY )
+    in
+        { magnets
+            | sources =
+                List.foldl folder ( [], 0 ) magnets.sources
+                    |> Tuple.first
+                    |> List.reverse
+        }
