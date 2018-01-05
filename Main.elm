@@ -9,11 +9,12 @@ import Color exposing (Color)
 import Task
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
+import Types exposing (Size)
 
 
 type alias Model =
     { magnets : Magnets Color
-    , size : { width : Float, height : Float }
+    , size : Size
     , pointers : Mapping Pointer
     , ctrlDown : Bool
     , mouseDown : Bool

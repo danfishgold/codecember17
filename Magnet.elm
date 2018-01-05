@@ -7,24 +7,11 @@ import Color exposing (Color)
 import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
+import Types exposing (Size, Edges)
 
 
 type alias Point =
     Point.Point
-
-
-type alias Size =
-    { width : Float
-    , height : Float
-    }
-
-
-type alias Edges =
-    { minX : Float
-    , maxX : Float
-    , minY : Float
-    , maxY : Float
-    }
 
 
 type Data a b

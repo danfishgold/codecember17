@@ -13,13 +13,10 @@ port module Pointer
 import Point exposing (Point)
 import Pointer.Id as Id
 import Pointer.Mapping as Mapping exposing (Mapping)
+import Types exposing (Collage)
 
 
 --
-
-
-type alias Collage a =
-    { a | width : Float, height : Float }
 
 
 type alias PortEvent =
