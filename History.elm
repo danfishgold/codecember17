@@ -112,28 +112,29 @@ reset history =
 buttons : (History a -> msg) -> Size -> History a -> Collage msg
 buttons setHistory area history =
     let
-        texts =
+        rects =
             [ "undo", "redo", "reset" ]
-
-        enabled =
-            [ canUndo history, canRedo history, not <| isInitial history ]
-
-        msgs =
-            [ setHistory (undo history), setHistory (redo history), setHistory (reset history) ]
-
-        positions =
-            TextRect.centerPositionsForRows
-                (area.height - 100)
-                area
-                TextRect.defaultPadding
-                TextRect.defaultPadding
-                texts
+                |> List.map TextRect.rect
+                |> TextRect.organizeInRows (area.height - 100)
+                    area
+                    TextRect.defaultPadding
                 |> Tuple.first
 
+        enabled =
+            [ canUndo history
+            , canRedo history
+            , not (isInitial history)
+            ]
+
+        msgs =
+            [ setHistory (undo history)
+            , setHistory (redo history)
+            , setHistory (reset history)
+            ]
+
         elements =
-            texts
-                |> List.map (TextRect.view Color.white Color.black TextRect.defaultPadding)
-                |> List.map2 Collage.shift positions
+            rects
+                |> List.map (TextRect.view Color.white Color.black)
                 |> List.map2 Collage.Events.onClick msgs
                 |> filter enabled
     in

@@ -15,7 +15,7 @@ import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Types exposing (Size, Edges)
-import TextRect
+import TextRect exposing (size, edges, contains, moveBy)
 
 
 type alias Point =
@@ -40,44 +40,8 @@ magnet text data =
 
 
 element : Color -> Magnet a -> Collage msg
-element background { text, position, padding } =
-    TextRect.view background Color.white padding text
-        |> shift position
-
-
-size : Magnet a -> Size
-size { padding, text } =
-    TextRect.size padding text
-
-
-edges : Magnet a -> Edges
-edges magnet =
-    let
-        { width, height } =
-            size magnet
-
-        ( x0, y0 ) =
-            magnet.position
-    in
-        { minX = x0 - width / 2
-        , maxX = x0 + width / 2
-        , minY = y0 - height / 2
-        , maxY = y0 + height / 2
-        }
-
-
-contains : Point -> Magnet a -> Bool
-contains ( x, y ) magnet =
-    let
-        m =
-            edges magnet
-    in
-        m.minX <= x && x <= m.maxX && m.minY <= y && y <= m.maxY
-
-
-moveBy : Point -> Magnet a -> Magnet a
-moveBy delta magnet =
-    { magnet | position = Point.add magnet.position delta }
+element background magnet =
+    TextRect.view background Color.white magnet
 
 
 
@@ -282,31 +246,13 @@ filterFirst fn xs =
         recurse xs []
 
 
-organizeCategory : Float -> Size -> Size -> List (Magnet a) -> ( List (Magnet a), Float )
-organizeCategory categoryY area padding sources =
-    let
-        ( positions, nextY ) =
-            TextRect.centerPositionsForRows
-                categoryY
-                area
-                padding
-                padding
-                (List.map .text sources)
-    in
-        ( List.map2 (\magnet position -> { magnet | position = position })
-            sources
-            positions
-        , nextY
-        )
-
-
 reorderSources : Size -> Size -> Magnets a -> Magnets a
 reorderSources area padding magnets =
     let
         folder category ( previous, currentY ) =
             let
                 ( organized, nextY ) =
-                    organizeCategory currentY area padding category.sources
+                    TextRect.organizeInRows currentY area padding category.sources
             in
                 ( { category | sources = organized } :: previous, nextY )
     in

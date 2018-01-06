@@ -1,6 +1,17 @@
-module TextRect exposing (defaultPadding, view, size, centerPositionsForRows)
+module TextRect
+    exposing
+        ( rect
+        , defaultPadding
+        , view
+        , size
+        , edges
+        , contains
+        , moveBy
+        , centerPositionsForRows
+        , organizeInRows
+        )
 
-import Collage exposing (Collage, group, rendered, rectangle, filled, uniform)
+import Collage exposing (Collage, group, rendered, rectangle, filled, uniform, shift)
 import Collage.Text as Text
 import Collage.Layout as Layout
 import Types exposing (Size, Edges)
@@ -8,13 +19,29 @@ import Color exposing (Color)
 import Point exposing (Point)
 
 
+type alias TextRect a =
+    { a
+        | position : Point
+        , padding : Size
+        , text : String
+    }
+
+
+rect : String -> TextRect {}
+rect text =
+    { position = ( 0, 0 )
+    , padding = defaultPadding
+    , text = text
+    }
+
+
 defaultPadding : Size
 defaultPadding =
     { width = 15, height = 15 }
 
 
-view : Color -> Color -> Size -> String -> Collage msg
-view background textColor padding text =
+view : Color -> Color -> TextRect a -> Collage msg
+view background textColor { padding, text, position } =
     let
         textNode =
             text
@@ -30,10 +57,11 @@ view background textColor padding text =
     in
         group
             [ textNode, bgNode ]
+            |> shift position
 
 
-size : Size -> String -> Size
-size padding text =
+size : TextRect a -> Size
+size { padding, text } =
     let
         textNode =
             text
@@ -46,11 +74,41 @@ size padding text =
         }
 
 
-centerPositionsForRows : Float -> Size -> Size -> Size -> List String -> ( List Point, Float )
-centerPositionsForRows offsetY area padding rectPadding strings =
+edges : TextRect a -> Edges
+edges rect =
+    let
+        { width, height } =
+            size rect
+
+        ( x0, y0 ) =
+            rect.position
+    in
+        { minX = x0 - width / 2
+        , maxX = x0 + width / 2
+        , minY = y0 - height / 2
+        , maxY = y0 + height / 2
+        }
+
+
+contains : Point -> TextRect a -> Bool
+contains ( x, y ) rect =
+    let
+        r =
+            edges rect
+    in
+        r.minX <= x && x <= r.maxX && r.minY <= y && y <= r.maxY
+
+
+moveBy : Point -> TextRect a -> TextRect a
+moveBy delta rect =
+    { rect | position = Point.add rect.position delta }
+
+
+centerPositionsForRows : Float -> Size -> Size -> List (TextRect a) -> ( List Point, Float )
+centerPositionsForRows offsetY area padding rects =
     let
         sizes =
-            List.map (size rectPadding) strings
+            List.map size rects
 
         rowHeight =
             sizes
@@ -91,3 +149,20 @@ centerPositionsForRows offsetY area padding rectPadding strings =
                             remaining
     in
         recurse ( 0, padding.height ) [] sizes |> Tuple.mapFirst List.reverse
+
+
+organizeInRows : Float -> Size -> Size -> List (TextRect a) -> ( List (TextRect a), Float )
+organizeInRows offsetY area padding rects =
+    let
+        ( positions, nextY ) =
+            centerPositionsForRows
+                offsetY
+                area
+                padding
+                rects
+    in
+        ( List.map2 (\rect position -> { rect | position = position })
+            rects
+            positions
+        , nextY
+        )
