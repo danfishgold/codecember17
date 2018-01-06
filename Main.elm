@@ -11,13 +11,14 @@ import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Types exposing (Size)
 import History exposing (History)
+import History.Buttons exposing (HistoryButtons)
 import TextRect
 import Button exposing (Button)
 
 
 type alias Model =
     { magnets : History (Magnets Color)
-    , buttons : List (Button Msg)
+    , buttons : HistoryButtons Msg
     , size : Size
     , pointers : Mapping Pointer
     , ctrlDown : Bool
@@ -53,7 +54,7 @@ initialMagnets =
 init : ( Model, Cmd Msg )
 init =
     ( { magnets = initialMagnets
-      , buttons = History.buttons UpdateHistory initialMagnets
+      , buttons = History.Buttons.buttons UpdateHistory initialMagnets
       , size = { width = 0, height = 0 }
       , pointers = Pointer.Mapping.empty
       , ctrlDown = False
@@ -99,19 +100,22 @@ update msg model =
                 newPointers =
                     updatePointers event model.pointers
 
-                ( ( newButtons, remainingPointers ), buttonCmd ) =
+                buttonList =
+                    History.Buttons.toList model.buttons
+
+                ( ( newButtonList, remainingPointers ), buttonCmd ) =
                     case event.state of
                         Pointer.Start ->
-                            ( Button.startClick newPointers model.buttons, Cmd.none )
+                            ( Button.startClick newPointers buttonList, Cmd.none )
 
                         Pointer.Move ->
-                            ( ( model.buttons, newPointers ), Cmd.none )
+                            ( ( buttonList, newPointers ), Cmd.none )
 
                         Pointer.End ->
-                            Button.endClick event.pointers model.buttons
+                            Button.endClick event.pointers buttonList
 
                         Pointer.Cancel ->
-                            Button.endClick event.pointers model.buttons
+                            Button.endClick event.pointers buttonList
 
                 magnetModifier =
                     case event.state of
@@ -137,7 +141,7 @@ update msg model =
                     | mouseDown = mouseDown
                     , pointers = newPointers
                     , magnets = newMagnets
-                    , buttons = newButtons
+                    , buttons = History.Buttons.fromList newButtonList
                   }
                 , buttonCmd
                 )
@@ -157,7 +161,7 @@ repositionElements model =
                 (Magnet.repositionSources model.size TextRect.defaultPadding)
                 model.magnets
         , buttons =
-            Button.repositionButtons model.size TextRect.defaultPadding model.buttons
+            History.Buttons.reposition model.size TextRect.defaultPadding model.buttons
     }
 
 
@@ -199,7 +203,7 @@ view model =
                 |> group
 
         buttons =
-            Button.buttonsView model.size model.buttons
+            History.Buttons.view model.size model.buttons
     in
         group [ pointers, magnets, buttons, bg ]
             |> svgBox ( model.size.width, model.size.height )

@@ -1,4 +1,4 @@
-module Button exposing (Button, button, startClick, endClick, buttonsView, repositionButtons)
+module Button exposing (Button, button, startClick, endClick)
 
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
@@ -8,8 +8,6 @@ import Types exposing (Size)
 import Set exposing (Set)
 import Pointer.Id
 import Task
-import Collage exposing (Collage, group)
-import Color
 
 
 type alias Button msg =
@@ -93,19 +91,3 @@ foldReduce fn xs ys =
             fn a remainingYs |> Tuple.mapFirst (\newZ -> newZ :: prevZs)
     in
         List.foldl folder ( [], ys ) xs |> Tuple.mapFirst List.reverse
-
-
-buttonsView : Size -> List (Button msg) -> Collage msg
-buttonsView area buttons =
-    buttons
-        |> List.map (TextRect.view Color.white Color.black)
-        |> group
-
-
-repositionButtons : Size -> Size -> List (Button msg) -> List (Button msg)
-repositionButtons area padding buttons =
-    TextRect.organizeInRows (area.height - 100)
-        area
-        padding
-        buttons
-        |> Tuple.first

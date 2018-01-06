@@ -1,15 +1,15 @@
 module History
     exposing
         ( History
-        , Msg
+        , Msg(..)
         , initial
         , update
-        , buttons
         , modify
         , modifyInPlace
+        , canUndo
+        , canRedo
+        , isInitial
         )
-
-import Button exposing (Button)
 
 
 type alias History a =
@@ -124,17 +124,3 @@ clear history =
 
         Nothing ->
             initial history.current
-
-
-buttons : (Msg -> msg) -> History a -> List (Button msg)
-buttons updateHistory history =
-    [ Button.button "undo"
-        (updateHistory Undo)
-        (canUndo history)
-    , Button.button "redo"
-        (updateHistory Redo)
-        (canRedo history)
-    , Button.button "clear"
-        (updateHistory Clear)
-        (not <| isInitial history)
-    ]
