@@ -2,8 +2,6 @@ module History
     exposing
         ( History
         , initial
-        , undo
-        , redo
         , buttons
         , modify
         , modifyInPlace
@@ -39,6 +37,11 @@ canUndo history =
 canRedo : History a -> Bool
 canRedo history =
     not <| List.isEmpty history.next
+
+
+isInitial : History a -> Bool
+isInitial history =
+    List.isEmpty history.previous && List.isEmpty history.next
 
 
 add : a -> History a -> History a
@@ -96,24 +99,42 @@ redo history =
             history
 
 
-buttons : msg -> msg -> Size -> History a -> Collage msg
-buttons onUndo onRedo area history =
+reset : History a -> History a
+reset history =
+    case List.head <| List.drop (List.length history.previous - 1) history.previous of
+        Just base ->
+            initial base
+
+        Nothing ->
+            initial history.current
+
+
+buttons : (History a -> msg) -> Size -> History a -> Collage msg
+buttons setHistory area history =
     let
         texts =
-            [ "undo", "redo" ]
+            [ "undo", "redo", "reset" ]
 
         enabled =
-            [ canUndo history, canRedo history ]
+            [ canUndo history, canRedo history, not <| isInitial history ]
+
+        msgs =
+            [ setHistory (undo history), setHistory (redo history), setHistory (reset history) ]
 
         positions =
-            TextRect.centerPositionsForRows (area.height - 100) area TextRect.defaultPadding TextRect.defaultPadding texts
+            TextRect.centerPositionsForRows
+                (area.height - 100)
+                area
+                TextRect.defaultPadding
+                TextRect.defaultPadding
+                texts
                 |> Tuple.first
 
         elements =
             texts
                 |> List.map (TextRect.view Color.white Color.black TextRect.defaultPadding)
                 |> List.map2 Collage.shift positions
-                |> List.map2 Collage.Events.onClick [ onUndo, onRedo ]
+                |> List.map2 Collage.Events.onClick msgs
                 |> filter enabled
     in
         group elements

@@ -26,8 +26,7 @@ type alias Model =
 type Msg
     = SetSize Window.Size
     | PointerEvent Pointer.Event
-    | Undo
-    | Redo
+    | SetHistory (History (Magnets Color))
 
 
 letters : List String
@@ -124,14 +123,8 @@ update msg model =
                 , Cmd.none
                 )
 
-        Undo ->
-            ( { model | magnets = History.undo model.magnets }
-                |> reorderSources
-            , Cmd.none
-            )
-
-        Redo ->
-            ( { model | magnets = History.redo model.magnets }
+        SetHistory magnets ->
+            ( { model | magnets = magnets }
                 |> reorderSources
             , Cmd.none
             )
@@ -185,7 +178,7 @@ view model =
                 |> group
 
         buttons =
-            History.buttons Undo Redo model.size model.magnets
+            History.buttons SetHistory model.size model.magnets
     in
         group [ magnets, buttons, bg ]
             |> svgBox ( model.size.width, model.size.height )
