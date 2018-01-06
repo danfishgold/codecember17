@@ -82,7 +82,7 @@ update msg model =
                     , height = toFloat height
                     }
             in
-                ( { model | size = newSize } |> repositionElements, Cmd.none )
+                ( { model | size = newSize } |> refreshElements, Cmd.none )
 
         PointerEvent event ->
             let
@@ -141,28 +141,34 @@ update msg model =
                     | mouseDown = mouseDown
                     , pointers = newPointers
                     , magnets = newMagnets
-                    , buttons = History.Buttons.fromList newButtonList
+                    , buttons =
+                        History.Buttons.fromList newButtonList
                   }
+                    |> refreshElements
                 , buttonCmd
                 )
 
         UpdateHistory historyMsg ->
             ( { model | magnets = History.update historyMsg model.magnets }
-                |> repositionElements
+                |> refreshElements
             , Cmd.none
             )
 
 
-repositionElements : Model -> Model
-repositionElements model =
-    { model
-        | magnets =
+refreshElements : Model -> Model
+refreshElements model =
+    let
+        newMagnets =
             History.modifyInPlace
                 (Magnet.repositionSources model.size TextRect.defaultPadding)
                 model.magnets
-        , buttons =
-            History.Buttons.reposition model.size TextRect.defaultPadding model.buttons
-    }
+    in
+        { model
+            | magnets = newMagnets
+            , buttons =
+                History.Buttons.reposition model.size TextRect.defaultPadding model.buttons
+                    |> History.Buttons.updateEnabled newMagnets
+        }
 
 
 updatePointers : Pointer.Event -> Mapping Pointer -> Mapping Pointer

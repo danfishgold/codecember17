@@ -78,5 +78,5 @@ view : Size -> HistoryButtons msg -> Collage msg
 view area buttons =
     buttons
         |> toList
-        |> List.map (TextRect.view Color.white Color.black)
+        |> List.map Button.view
         |> group

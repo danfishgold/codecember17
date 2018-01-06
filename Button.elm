@@ -1,4 +1,4 @@
-module Button exposing (Button, button, startClick, endClick)
+module Button exposing (Button, button, startClick, endClick, view)
 
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
@@ -8,6 +8,8 @@ import Types exposing (Size)
 import Set exposing (Set)
 import Pointer.Id
 import Task
+import Collage exposing (Collage)
+import Color
 
 
 type alias Button msg =
@@ -91,3 +93,11 @@ foldReduce fn xs ys =
             fn a remainingYs |> Tuple.mapFirst (\newZ -> newZ :: prevZs)
     in
         List.foldl folder ( [], ys ) xs |> Tuple.mapFirst List.reverse
+
+
+view : Button msg -> Collage msg
+view button =
+    if button.enabled then
+        TextRect.view Color.white Color.black button
+    else
+        TextRect.view Color.white Color.gray button
