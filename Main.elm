@@ -13,7 +13,7 @@ import Types exposing (Size)
 import History exposing (History)
 import History.Buttons exposing (HistoryButtons)
 import TextRect
-import Button exposing (Button)
+import Button
 
 
 type alias Model =
@@ -209,7 +209,7 @@ view model =
                 |> group
 
         buttons =
-            History.Buttons.view model.size model.buttons
+            History.Buttons.view model.buttons
     in
         group [ pointers, magnets, buttons, bg ]
             |> svgBox ( model.size.width, model.size.height )

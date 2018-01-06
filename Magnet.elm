@@ -9,13 +9,13 @@ module Magnet
         , stopDragging
         )
 
-import Collage exposing (Collage, group, shift)
+import Collage exposing (Collage, group)
 import Color exposing (Color)
 import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Types exposing (Size, Edges)
-import TextRect exposing (size, edges, contains, moveBy)
+import TextRect exposing (edges, contains, moveBy)
 
 
 type alias Point =

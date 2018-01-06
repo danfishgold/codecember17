@@ -14,7 +14,6 @@ import Button exposing (Button)
 import Types exposing (Size)
 import TextRect
 import Collage exposing (Collage, group)
-import Color
 
 
 type alias HistoryButtons msg =
@@ -74,8 +73,8 @@ reposition area padding buttons =
         |> fromList
 
 
-view : Size -> HistoryButtons msg -> Collage msg
-view area buttons =
+view : HistoryButtons msg -> Collage msg
+view buttons =
     buttons
         |> toList
         |> List.map Button.view
