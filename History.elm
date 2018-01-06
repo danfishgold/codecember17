@@ -120,7 +120,7 @@ clear : History a -> History a
 clear history =
     case List.head <| List.drop (List.length history.previous - 1) history.previous of
         Just base ->
-            initial base
+            add base history
 
         Nothing ->
-            initial history.current
+            history
