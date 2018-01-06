@@ -2,6 +2,7 @@ module Pointer.Mapping
     exposing
         ( Mapping
         , fromDict
+        , fromList
         , add
         , remove
         , extract
@@ -53,6 +54,13 @@ extract ids (Inner dict) =
 toList : Mapping a -> List a
 toList (Inner dict) =
     Dict.values dict
+
+
+fromList : (a -> Id) -> List a -> Mapping a
+fromList keyFn xs =
+    List.map (\x -> ( Pointer.Id.toString <| keyFn x, x )) xs
+        |> Dict.fromList
+        |> fromDict
 
 
 map : (Id -> a -> b) -> Mapping a -> Mapping b

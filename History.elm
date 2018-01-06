@@ -1,17 +1,15 @@
 module History
     exposing
         ( History
+        , Msg
         , initial
+        , update
         , buttons
         , modify
         , modifyInPlace
         )
 
-import TextRect
-import Collage exposing (Collage, shift, group)
-import Collage.Events
-import Types exposing (Size)
-import Color
+import Button exposing (Button)
 
 
 type alias History a =
@@ -21,12 +19,31 @@ type alias History a =
     }
 
 
+type Msg
+    = Undo
+    | Redo
+    | Clear
+
+
 initial : a -> History a
 initial base =
     { previous = []
     , current = base
     , next = []
     }
+
+
+update : Msg -> History a -> History a
+update msg history =
+    case msg of
+        Undo ->
+            undo history
+
+        Redo ->
+            redo history
+
+        Clear ->
+            clear history
 
 
 canUndo : History a -> Bool
@@ -99,8 +116,8 @@ redo history =
             history
 
 
-reset : History a -> History a
-reset history =
+clear : History a -> History a
+clear history =
     case List.head <| List.drop (List.length history.previous - 1) history.previous of
         Just base ->
             initial base
@@ -109,47 +126,15 @@ reset history =
             initial history.current
 
 
-buttons : (History a -> msg) -> Size -> History a -> Collage msg
-buttons setHistory area history =
-    let
-        rects =
-            [ "undo", "redo", "reset" ]
-                |> List.map TextRect.rect
-                |> TextRect.organizeInRows (area.height - 100)
-                    area
-                    TextRect.defaultPadding
-                |> Tuple.first
-
-        enabled =
-            [ canUndo history
-            , canRedo history
-            , not (isInitial history)
-            ]
-
-        msgs =
-            [ setHistory (undo history)
-            , setHistory (redo history)
-            , setHistory (reset history)
-            ]
-
-        elements =
-            rects
-                |> List.map (TextRect.view Color.white Color.black)
-                |> List.map2 Collage.Events.onClick msgs
-                |> filter enabled
-    in
-        group elements
-
-
-filter : List Bool -> List a -> List a
-filter mask xs =
-    List.map2
-        (\ok x ->
-            if ok then
-                Just x
-            else
-                Nothing
-        )
-        mask
-        xs
-        |> List.filterMap identity
+buttons : (Msg -> msg) -> History a -> List (Button msg)
+buttons updateHistory history =
+    [ Button.button "undo"
+        (updateHistory Undo)
+        (canUndo history)
+    , Button.button "redo"
+        (updateHistory Redo)
+        (canRedo history)
+    , Button.button "clear"
+        (updateHistory Clear)
+        (not <| isInitial history)
+    ]

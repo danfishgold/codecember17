@@ -12,10 +12,12 @@ import Pointer.Mapping exposing (Mapping)
 import Types exposing (Size)
 import History exposing (History)
 import TextRect
+import Button exposing (Button)
 
 
 type alias Model =
     { magnets : History (Magnets Color)
+    , buttons : List (Button Msg)
     , size : Size
     , pointers : Mapping Pointer
     , ctrlDown : Bool
@@ -26,7 +28,7 @@ type alias Model =
 type Msg
     = SetSize Window.Size
     | PointerEvent Pointer.Event
-    | SetHistory (History (Magnets Color))
+    | UpdateHistory History.Msg
 
 
 letters : List String
@@ -34,22 +36,24 @@ letters =
     "a b c d e f g h i j k l m n o p q r s t u v w x y z [space]" |> String.split " "
 
 
-initialMagnets : Magnets Color
+initialMagnets : History (Magnets Color)
 initialMagnets =
-    { stationary =
-        []
-    , dragging = Pointer.Mapping.empty
-    , sources =
-        [ Magnet.category "Letters" letters
-        , Magnet.category "Nouns" [ "burrito", "pizza" ]
-        , Magnet.category "Verbs" [ "eat", "drink", "go" ]
-        ]
-    }
+    History.initial
+        { stationary =
+            []
+        , dragging = Pointer.Mapping.empty
+        , sources =
+            [ Magnet.category "Letters" letters
+            , Magnet.category "Nouns" [ "burrito", "pizza" ]
+            , Magnet.category "Verbs" [ "eat", "drink", "go" ]
+            ]
+        }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { magnets = History.initial initialMagnets
+    ( { magnets = initialMagnets
+      , buttons = History.buttons UpdateHistory initialMagnets
       , size = { width = 0, height = 0 }
       , pointers = Pointer.Mapping.empty
       , ctrlDown = False
@@ -77,7 +81,7 @@ update msg model =
                     , height = toFloat height
                     }
             in
-                ( { model | size = newSize } |> reorderSources, Cmd.none )
+                ( { model | size = newSize } |> repositionElements, Cmd.none )
 
         PointerEvent event ->
             let
@@ -95,13 +99,27 @@ update msg model =
                 newPointers =
                     updatePointers event model.pointers
 
+                ( ( newButtons, remainingPointers ), buttonCmd ) =
+                    case event.state of
+                        Pointer.Start ->
+                            ( Button.startClick newPointers model.buttons, Cmd.none )
+
+                        Pointer.Move ->
+                            ( ( model.buttons, newPointers ), Cmd.none )
+
+                        Pointer.End ->
+                            Button.endClick event.pointers model.buttons
+
+                        Pointer.Cancel ->
+                            Button.endClick event.pointers model.buttons
+
                 magnetModifier =
                     case event.state of
                         Pointer.Start ->
-                            Magnet.startDragging newPointers
+                            Magnet.startDragging remainingPointers
 
                         Pointer.Move ->
-                            Magnet.keepDragging model.pointers newPointers
+                            Magnet.keepDragging model.pointers remainingPointers
 
                         Pointer.End ->
                             Magnet.stopDragging event.pointers
@@ -119,24 +137,27 @@ update msg model =
                     | mouseDown = mouseDown
                     , pointers = newPointers
                     , magnets = newMagnets
+                    , buttons = newButtons
                   }
-                , Cmd.none
+                , buttonCmd
                 )
 
-        SetHistory magnets ->
-            ( { model | magnets = magnets }
-                |> reorderSources
+        UpdateHistory historyMsg ->
+            ( { model | magnets = History.update historyMsg model.magnets }
+                |> repositionElements
             , Cmd.none
             )
 
 
-reorderSources : Model -> Model
-reorderSources model =
+repositionElements : Model -> Model
+repositionElements model =
     { model
         | magnets =
             History.modifyInPlace
-                (Magnet.reorderSources model.size TextRect.defaultPadding)
+                (Magnet.repositionSources model.size TextRect.defaultPadding)
                 model.magnets
+        , buttons =
+            Button.repositionButtons model.size TextRect.defaultPadding model.buttons
     }
 
 
@@ -178,9 +199,9 @@ view model =
                 |> group
 
         buttons =
-            History.buttons SetHistory model.size model.magnets
+            Button.buttonsView model.size model.buttons
     in
-        group [ magnets, buttons, bg ]
+        group [ pointers, magnets, buttons, bg ]
             |> svgBox ( model.size.width, model.size.height )
 
 

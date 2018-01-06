@@ -2,7 +2,7 @@ module Magnet
     exposing
         ( Magnets
         , category
-        , reorderSources
+        , repositionSources
         , magnetsView
         , startDragging
         , keepDragging
@@ -246,8 +246,8 @@ filterFirst fn xs =
         recurse xs []
 
 
-reorderSources : Size -> Size -> Magnets a -> Magnets a
-reorderSources area padding magnets =
+repositionSources : Size -> Size -> Magnets a -> Magnets a
+repositionSources area padding magnets =
     let
         folder category ( previous, currentY ) =
             let
