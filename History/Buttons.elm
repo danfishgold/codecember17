@@ -65,12 +65,21 @@ updateEnabled history { undo, redo, clear } =
 
 reposition : Size -> Size -> HistoryButtons msg -> HistoryButtons msg
 reposition area padding buttons =
-    TextRect.organizeInRows (area.height - 100)
-        area
-        padding
-        (toList buttons)
-        |> Tuple.first
-        |> fromList
+    let
+        y0 =
+            buttons
+                |> toList
+                |> List.map (TextRect.size >> .height)
+                |> List.maximum
+                |> Maybe.withDefault 0
+                |> (+) (2 * padding.height)
+    in
+        TextRect.organizeInRows (area.height - y0)
+            area
+            padding
+            (toList buttons)
+            |> Tuple.first
+            |> fromList
 
 
 view : HistoryButtons msg -> Collage msg
