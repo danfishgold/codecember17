@@ -10,6 +10,7 @@ import Task
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Types exposing (Size)
+import TextRect
 
 
 type alias Model =
@@ -74,7 +75,7 @@ update msg model =
                     | size = newSize
                     , magnets =
                         Magnet.reorderSources newSize
-                            Magnet.defaultPadding
+                            TextRect.defaultPadding
                             model.magnets
                   }
                 , Cmd.none

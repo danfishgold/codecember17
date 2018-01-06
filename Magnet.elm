@@ -1,7 +1,6 @@
 module Magnet
     exposing
         ( Magnets
-        , defaultPadding
         , category
         , reorderSources
         , magnetsView
@@ -10,14 +9,13 @@ module Magnet
         , stopDragging
         )
 
-import Collage exposing (Collage, group, rendered, rectangle, filled, uniform, shift)
-import Collage.Text as Text
-import Collage.Layout as Layout
+import Collage exposing (Collage, group, shift)
 import Color exposing (Color)
 import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Types exposing (Size, Edges)
+import TextRect
 
 
 type alias Point =
@@ -37,47 +35,19 @@ magnet text data =
     { data = data
     , text = text
     , position = ( 0, 0 )
-    , padding = defaultPadding
+    , padding = TextRect.defaultPadding
     }
 
 
-defaultPadding : Size
-defaultPadding =
-    { width = 15, height = 15 }
-
-
 element : Color -> Magnet a -> Collage msg
-element color { text, position, padding } =
-    let
-        textNode =
-            text
-                |> Text.fromString
-                |> Text.color Color.white
-                |> rendered
-
-        bgNode =
-            rectangle
-                (Layout.width textNode + padding.width)
-                (Layout.height textNode + padding.height)
-                |> filled (uniform color)
-    in
-        group
-            [ textNode, bgNode ]
-            |> shift position
+element background { text, position, padding } =
+    TextRect.view background Color.white padding text
+        |> shift position
 
 
 size : Magnet a -> Size
-size { text, padding } =
-    let
-        textNode =
-            text
-                |> Text.fromString
-                |> Text.color Color.white
-                |> rendered
-    in
-        { width = Layout.width textNode + padding.width
-        , height = Layout.height textNode + padding.height
-        }
+size { padding, text } =
+    TextRect.size padding text
 
 
 edges : Magnet a -> Edges
@@ -315,51 +285,19 @@ filterFirst fn xs =
 organizeCategory : Float -> Size -> Size -> List (Magnet a) -> ( List (Magnet a), Float )
 organizeCategory categoryY area padding sources =
     let
-        sized =
-            List.map (\m -> ( m, size m )) sources
-
-        rowHeight =
-            sized
-                |> List.map (\( _, { height } ) -> height)
-                |> List.maximum
-                |> Maybe.withDefault 0
-                |> (+) padding.height
-
-        moveTopLeftTo ( x0, y0 ) ( magnet, size ) =
-            { magnet
-                | position =
-                    ( x0 + size.width / 2 - area.width / 2
-                    , area.height / 2 - (categoryY + y0 + size.height / 2)
-                    )
-            }
-
-        shouldPlaceHere currentX size =
-            -- can fit in current row
-            (currentX + 2 * padding.width + size.width <= area.width)
-                -- or (can or can't fit && at beginning of row)
-                ||
-                    (currentX == 0)
-
-        recurse ( currentX, currentY ) finished remaining =
-            case remaining of
-                [] ->
-                    ( finished, categoryY + currentY + rowHeight )
-
-                ( magnet, size ) :: rest ->
-                    if shouldPlaceHere currentX size then
-                        recurse ( currentX + padding.width + size.width, currentY )
-                            (moveTopLeftTo ( currentX + padding.width, currentY )
-                                ( magnet, size )
-                                :: finished
-                            )
-                            rest
-                    else
-                        recurse
-                            ( 0, currentY + rowHeight )
-                            finished
-                            remaining
+        ( positions, nextY ) =
+            TextRect.centerPositionsForRows
+                categoryY
+                area
+                padding
+                padding
+                (List.map .text sources)
     in
-        recurse ( 0, padding.height ) [] sized |> Tuple.mapFirst List.reverse
+        ( List.map2 (\magnet position -> { magnet | position = position })
+            sources
+            positions
+        , nextY
+        )
 
 
 reorderSources : Size -> Size -> Magnets a -> Magnets a
