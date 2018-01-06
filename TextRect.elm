@@ -40,12 +40,17 @@ defaultPadding =
     { width = 15, height = 15 }
 
 
+textText : String -> Text.Text
+textText text =
+    text
+        |> Text.fromString
+
+
 view : Color -> Color -> TextRect a -> Collage msg
 view background textColor { padding, text, position } =
     let
         textNode =
-            text
-                |> Text.fromString
+            textText text
                 |> Text.color textColor
                 |> rendered
 
@@ -64,10 +69,7 @@ size : TextRect a -> Size
 size { padding, text } =
     let
         textNode =
-            text
-                |> Text.fromString
-                |> Text.color Color.white
-                |> rendered
+            textText text |> rendered
     in
         { width = Layout.width textNode + padding.width
         , height = Layout.height textNode + padding.height
