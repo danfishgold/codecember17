@@ -4,9 +4,7 @@ import Magnet exposing (Magnets)
 import Html exposing (Html, program)
 import Collage exposing (group, rectangle, circle, shift, filled, uniform)
 import Collage.Render exposing (svgBox)
-import Window
 import Color exposing (Color)
-import Task
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Types exposing (Size)
@@ -14,6 +12,7 @@ import History exposing (History)
 import History.Buttons exposing (HistoryButtons)
 import TextRect
 import Button
+import ElementSize
 
 
 type alias Model =
@@ -27,7 +26,7 @@ type alias Model =
 
 
 type Msg
-    = SetSize Window.Size
+    = SetSize Size
     | PointerEvent Pointer.Event
     | UpdateHistory History.Msg
 
@@ -60,14 +59,14 @@ init =
       , ctrlDown = False
       , mouseDown = False
       }
-    , Task.perform SetSize Window.size
+    , ElementSize.get
     )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Window.resizes SetSize
+        [ ElementSize.changes SetSize
         , Pointer.eventsInCollage model.size PointerEvent
         ]
 
@@ -75,14 +74,8 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SetSize { width, height } ->
-            let
-                newSize =
-                    { width = toFloat width
-                    , height = toFloat height
-                    }
-            in
-                ( { model | size = newSize } |> refreshElements, Cmd.none )
+        SetSize size ->
+            ( { model | size = size } |> refreshElements, Cmd.none )
 
         PointerEvent event ->
             let

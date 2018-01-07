@@ -4,6 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <style>
+
   svg text {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -13,20 +14,29 @@
     cursor: default;
   }
 
-  body, svg {
-    padding: 0;
-    margin: 0;
+  /* https://stackoverflow.com/questions/1719452/how-to-make-a-div-always-full-screen */
+  html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
   }
+
+  #main {
+      min-height: 100%; 
+  }
+
 </style>
 <body>
   <div id="main"></div>
   <script src="elm.js"></script>
   <script src="pointer.js"></script>
+  <script src="size.js"></script>
   <script>
     
     var node = document.getElementById('main')
     var app = Elm.Main.embed(node)
     addPointerEventListeners(app, node)
+    addSizeEventListeners(app, node)
 
     </script>
   </body>
