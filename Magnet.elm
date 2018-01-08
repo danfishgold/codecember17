@@ -39,9 +39,31 @@ magnet text data =
     }
 
 
-element : Color -> Magnet a -> Collage msg
-element background magnet =
-    TextRect.view background Color.white magnet
+addPadding : Float -> Magnet a -> Magnet a
+addPadding delta magnet =
+    { magnet
+        | padding =
+            { width = magnet.padding.width + delta
+            , height = magnet.padding.height + delta
+            }
+    }
+
+
+setAlpha : Float -> Color -> Color
+setAlpha alpha c =
+    let
+        { red, green, blue } =
+            Color.toRgb c
+    in
+        Color.rgba red green blue alpha
+
+
+element : Color -> Magnet a -> Bool -> Collage msg
+element background magnet isDragging =
+    if isDragging then
+        TextRect.view (setAlpha 0.8 background) Color.white (addPadding 5 magnet)
+    else
+        TextRect.view background Color.white magnet
 
 
 
@@ -77,10 +99,11 @@ magnetsView : (Magnet a -> Color) -> Magnets a -> Collage msg
 magnetsView color { stationary, dragging, sources } =
     List.concat
         [ Pointer.Mapping.toList dragging
+            |> List.map (\m -> element (color m) m True)
         , stationary
-        , allSources sources
+            ++ allSources sources
+            |> List.map (\m -> element (color m) m False)
         ]
-        |> List.map (\m -> element (color m) m)
         |> group
 
 
