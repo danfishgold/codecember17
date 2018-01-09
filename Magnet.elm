@@ -176,27 +176,23 @@ maybePickUp identifier pointer magnets =
                     }
 
 
-mergeOrAdd : (Magnet a -> Magnet a -> Magnet a) -> Magnet a -> List (Magnet a) -> List (Magnet a)
-mergeOrAdd joiner magnet magnets =
+mergeOrAdd : (Magnet a -> Magnet a -> Maybe (List (Magnet a))) -> Magnet a -> List (Magnet a) -> List (Magnet a)
+mergeOrAdd joiner droppedMagnet magnets =
     let
-        recurse currentMagnet magnetsWithEdges =
-            let
-                magnetEdges =
-                    edges currentMagnet
-
-                isAdjacent ( _, currentEdges ) =
-                    adjecent currentEdges magnetEdges
-            in
-                case filterFirst isAdjacent magnetsWithEdges of
-                    ( _, Nothing ) ->
-                        currentMagnet :: List.map Tuple.first magnetsWithEdges
-
-                    ( others, Just ( closeMagnet, _ ) ) ->
-                        recurse (joiner currentMagnet closeMagnet) others
+        isAdjacent magnet =
+            adjecent (edges magnet) (edges droppedMagnet)
     in
-        magnets
-            |> List.map (\m -> ( m, edges m ))
-            |> recurse magnet
+        case filterFirst isAdjacent magnets of
+            ( _, Nothing ) ->
+                droppedMagnet :: magnets
+
+            ( others, Just closeMagnet ) ->
+                case joiner droppedMagnet closeMagnet of
+                    Nothing ->
+                        droppedMagnet :: magnets
+
+                    Just newMagnets ->
+                        newMagnets ++ others
 
 
 adjecentInX : Edges -> Edges -> Bool
@@ -214,7 +210,7 @@ adjecent a b =
     adjecentInX a b && adjecentInY a b
 
 
-simpleJoiner : Magnet a -> Magnet a -> Magnet a
+simpleJoiner : Magnet a -> Magnet a -> Maybe (List (Magnet a))
 simpleJoiner a b =
     let
         aEdges =
@@ -245,11 +241,14 @@ simpleJoiner a b =
             else
                 text
     in
-        { data = a.data
-        , text = textOrSpace left.text ++ textOrSpace right.text
-        , position = position
-        , padding = padding
-        }
+        Just
+            [ { data = a.data
+              , text = textOrSpace left.text ++ textOrSpace right.text
+              , position = position
+              , padding = padding
+              , highlighted = False
+              }
+            ]
 
 
 filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )
