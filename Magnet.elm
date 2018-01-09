@@ -27,7 +27,7 @@ type alias Magnet data =
     , text : String
     , position : Point
     , padding : Size
-    , highlighted : Bool
+    , highlighted : Maybe Color
     }
 
 
@@ -37,7 +37,7 @@ magnet text data =
     , text = text
     , position = ( 0, 0 )
     , padding = TextRect.defaultPadding
-    , highlighted = False
+    , highlighted = Nothing
     }
 
 
@@ -64,10 +64,7 @@ element : Color -> Magnet data -> Bool -> Collage msg
 element background magnet isDragging =
     let
         bg =
-            if magnet.highlighted then
-                Color.red
-            else
-                background
+            magnet.highlighted |> Maybe.withDefault background
     in
         if isDragging then
             TextRect.view (setAlpha 0.8 bg) Color.white (addPadding 5 magnet)
@@ -145,7 +142,7 @@ stopDragging pointers magnets =
         { magnets
             | stationary =
                 stoppedDragging
-                    |> List.map (setHighlight False)
+                    |> List.map (setHighlight Nothing)
                     |> List.foldl (mergeOrAdd simpleJoiner) magnets.stationary
             , dragging = stillDragging
         }
@@ -257,7 +254,7 @@ simpleJoiner a b =
               , text = textOrSpace left.text ++ textOrSpace right.text
               , position = position
               , padding = padding
-              , highlighted = False
+              , highlighted = Nothing
               }
             ]
 
@@ -269,11 +266,13 @@ highlightNear stationary dragging =
             edges dragging
     in
         stationary
-            |> List.any (edges >> adjecent draggingEdges)
+            |> filterFirst (edges >> adjecent draggingEdges)
+            |> Tuple.second
+            |> Maybe.map (relativePosition dragging >> highlightColor)
             |> flip setHighlight dragging
 
 
-setHighlight : Bool -> Magnet data -> Magnet data
+setHighlight : Maybe Color -> Magnet data -> Magnet data
 setHighlight highlighted magnet =
     { magnet | highlighted = highlighted }
 
@@ -311,3 +310,69 @@ repositionSources area padding magnets =
                     |> Tuple.first
                     |> List.reverse
         }
+
+
+type RelativePosition
+    = Left
+    | Right
+    | Up
+    | Down
+    | On
+
+
+relativePosition : Magnet a -> Magnet a -> Maybe RelativePosition
+relativePosition a b =
+    let
+        ( aEdges, bEdges ) =
+            ( edges a, edges b )
+
+        withinX =
+            aEdges.minX < bEdges.maxX && aEdges.maxX > bEdges.minX
+
+        withinY =
+            aEdges.minY < bEdges.maxY && aEdges.maxY > bEdges.minY
+    in
+        case ( withinX, withinY ) of
+            ( True, True ) ->
+                Just On
+
+            ( False, True ) ->
+                if aEdges.maxX < bEdges.minX then
+                    Just Left
+                else if aEdges.minX > bEdges.maxX then
+                    Just Right
+                else
+                    Nothing
+
+            ( True, False ) ->
+                if aEdges.maxY < bEdges.minY then
+                    Just Up
+                else if aEdges.minY > bEdges.maxY then
+                    Just Down
+                else
+                    Nothing
+
+            ( False, False ) ->
+                Nothing
+
+
+highlightColor : Maybe RelativePosition -> Color
+highlightColor pos =
+    case pos of
+        Nothing ->
+            Color.black
+
+        Just Left ->
+            Color.darkRed
+
+        Just Right ->
+            Color.lightRed
+
+        Just Up ->
+            Color.darkBlue
+
+        Just Down ->
+            Color.lightBlue
+
+        Just On ->
+            Color.darkGreen
