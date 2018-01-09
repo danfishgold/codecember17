@@ -22,8 +22,8 @@ type alias Point =
     Point.Point
 
 
-type alias Magnet a =
-    { data : a
+type alias Magnet data =
+    { data : data
     , text : String
     , position : Point
     , padding : Size
@@ -31,7 +31,7 @@ type alias Magnet a =
     }
 
 
-magnet : String -> a -> Magnet a
+magnet : String -> data -> Magnet data
 magnet text data =
     { data = data
     , text = text
@@ -41,7 +41,7 @@ magnet text data =
     }
 
 
-addPadding : Float -> Magnet a -> Magnet a
+addPadding : Float -> Magnet data -> Magnet data
 addPadding delta magnet =
     { magnet
         | padding =
@@ -60,7 +60,7 @@ setAlpha alpha c =
         Color.rgba red green blue alpha
 
 
-element : Color -> Magnet a -> Bool -> Collage msg
+element : Color -> Magnet data -> Bool -> Collage msg
 element background magnet isDragging =
     let
         bg =
@@ -79,16 +79,16 @@ element background magnet isDragging =
 --
 
 
-type alias Category a =
+type alias Category data =
     { name : String
-    , sources : List (Magnet a)
+    , sources : List (Magnet data)
     }
 
 
-type alias Magnets a =
-    { stationary : List (Magnet a)
-    , dragging : Mapping (Magnet a)
-    , sources : List (Category a)
+type alias Magnets data =
+    { stationary : List (Magnet data)
+    , dragging : Mapping (Magnet data)
+    , sources : List (Category data)
     }
 
 
@@ -99,12 +99,12 @@ category name strings =
         |> \sources -> { name = name, sources = sources }
 
 
-allSources : List (Category a) -> List (Magnet a)
+allSources : List (Category data) -> List (Magnet data)
 allSources categories =
     List.concatMap .sources categories
 
 
-magnetsView : (Magnet a -> Color) -> Magnets a -> Collage msg
+magnetsView : (Magnet data -> Color) -> Magnets data -> Collage msg
 magnetsView color { stationary, dragging, sources } =
     List.concat
         [ Pointer.Mapping.toList dragging
@@ -116,12 +116,12 @@ magnetsView color { stationary, dragging, sources } =
         |> group
 
 
-startDragging : Mapping Pointer -> Magnets a -> Magnets a
+startDragging : Mapping Pointer -> Magnets data -> Magnets data
 startDragging pointers magnets =
     Pointer.Mapping.foldl maybePickUp magnets pointers
 
 
-keepDragging : Mapping Pointer -> Mapping Pointer -> Magnets a -> Magnets a
+keepDragging : Mapping Pointer -> Mapping Pointer -> Magnets data -> Magnets data
 keepDragging oldPointers newPointers magnets =
     { magnets
         | dragging =
@@ -136,7 +136,7 @@ keepDragging oldPointers newPointers magnets =
     }
 
 
-stopDragging : Mapping Pointer -> Magnets a -> Magnets a
+stopDragging : Mapping Pointer -> Magnets data -> Magnets data
 stopDragging pointers magnets =
     let
         ( stillDragging, stoppedDragging ) =
@@ -151,7 +151,7 @@ stopDragging pointers magnets =
         }
 
 
-maybePickUp : Pointer.Id -> Pointer -> Magnets a -> Magnets a
+maybePickUp : Pointer.Id -> Pointer -> Magnets data -> Magnets data
 maybePickUp identifier pointer magnets =
     let
         ( newStationary, draggingFromStationary ) =
@@ -187,7 +187,7 @@ maybePickUp identifier pointer magnets =
                     }
 
 
-mergeOrAdd : (Magnet a -> Magnet a -> Maybe (List (Magnet a))) -> Magnet a -> List (Magnet a) -> List (Magnet a)
+mergeOrAdd : (Magnet data -> Magnet data -> Maybe (List (Magnet data))) -> Magnet data -> List (Magnet data) -> List (Magnet data)
 mergeOrAdd joiner droppedMagnet magnets =
     let
         isAdjacent magnet =
@@ -221,7 +221,7 @@ adjecent a b =
     adjecentInX a b && adjecentInY a b
 
 
-simpleJoiner : Magnet a -> Magnet a -> Maybe (List (Magnet a))
+simpleJoiner : Magnet data -> Magnet data -> Maybe (List (Magnet data))
 simpleJoiner a b =
     let
         aEdges =
@@ -262,7 +262,7 @@ simpleJoiner a b =
             ]
 
 
-highlightNear : List (Magnet a) -> Magnet a -> Magnet a
+highlightNear : List (Magnet data) -> Magnet data -> Magnet data
 highlightNear stationary dragging =
     let
         draggingEdges =
@@ -273,7 +273,7 @@ highlightNear stationary dragging =
             |> flip setHighlight dragging
 
 
-setHighlight : Bool -> Magnet a -> Magnet a
+setHighlight : Bool -> Magnet data -> Magnet data
 setHighlight highlighted magnet =
     { magnet | highlighted = highlighted }
 
@@ -295,7 +295,7 @@ filterFirst fn xs =
         recurse xs []
 
 
-repositionSources : Size -> Size -> Magnets a -> Magnets a
+repositionSources : Size -> Size -> Magnets data -> Magnets data
 repositionSources area padding magnets =
     let
         folder category ( previous, currentY ) =
