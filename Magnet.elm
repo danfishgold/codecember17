@@ -27,6 +27,7 @@ type alias Magnet a =
     , text : String
     , position : Point
     , padding : Size
+    , highlighted : Bool
     }
 
 
@@ -36,6 +37,7 @@ magnet text data =
     , text = text
     , position = ( 0, 0 )
     , padding = TextRect.defaultPadding
+    , highlighted = False
     }
 
 
@@ -60,10 +62,17 @@ setAlpha alpha c =
 
 element : Color -> Magnet a -> Bool -> Collage msg
 element background magnet isDragging =
-    if isDragging then
-        TextRect.view (setAlpha 0.8 background) Color.white (addPadding 5 magnet)
-    else
-        TextRect.view background Color.white magnet
+    let
+        bg =
+            if magnet.highlighted then
+                Color.red
+            else
+                background
+    in
+        if isDragging then
+            TextRect.view (setAlpha 0.8 bg) Color.white (addPadding 5 magnet)
+        else
+            TextRect.view bg Color.white magnet
 
 
 
@@ -123,6 +132,7 @@ keepDragging oldPointers newPointers magnets =
                 oldPointers
                 newPointers
                 magnets.dragging
+                |> Pointer.Mapping.map (\id m -> highlightNear magnets.stationary m)
     }
 
 
@@ -135,6 +145,7 @@ stopDragging pointers magnets =
         { magnets
             | stationary =
                 stoppedDragging
+                    |> List.map (setHighlight False)
                     |> List.foldl (mergeOrAdd simpleJoiner) magnets.stationary
             , dragging = stillDragging
         }
@@ -249,6 +260,22 @@ simpleJoiner a b =
               , highlighted = False
               }
             ]
+
+
+highlightNear : List (Magnet a) -> Magnet a -> Magnet a
+highlightNear stationary dragging =
+    let
+        draggingEdges =
+            edges dragging
+    in
+        stationary
+            |> List.any (edges >> adjecent draggingEdges)
+            |> flip setHighlight dragging
+
+
+setHighlight : Bool -> Magnet a -> Magnet a
+setHighlight highlighted magnet =
+    { magnet | highlighted = highlighted }
 
 
 filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )
