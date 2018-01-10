@@ -35,7 +35,7 @@ type alias Magnets data =
 category : String -> List String -> Category {}
 category name strings =
     strings
-        |> List.map (flip Base.magnet (Base.data Color.black))
+        |> List.map (flip Base.magnet (Base.data Color.black Color.white))
         |> \sources -> { name = name, sources = sources }
 
 

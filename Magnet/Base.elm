@@ -13,7 +13,8 @@ type alias Point =
 
 type alias Data a =
     { a
-        | color : Color
+        | background : Color
+        , textColor : Color
         , canMergeWithSources : Bool
     }
 
@@ -37,9 +38,12 @@ magnet text data =
     }
 
 
-data : Color -> Data {}
-data color =
-    { color = color, canMergeWithSources = False }
+data : Color -> Color -> Data {}
+data background textColor =
+    { background = background
+    , textColor = textColor
+    , canMergeWithSources = False
+    }
 
 
 addPadding : Float -> Magnet data -> Magnet data
@@ -70,12 +74,12 @@ element : Bool -> Magnet data -> Collage msg
 element isDragging magnet =
     let
         bg =
-            magnet.highlighted |> Maybe.withDefault magnet.data.color
+            magnet.highlighted |> Maybe.withDefault magnet.data.background
     in
         if isDragging then
-            TextRect.view (setAlpha 0.8 bg) Color.white (addPadding 5 magnet)
+            TextRect.view (setAlpha 0.8 bg) magnet.data.textColor (addPadding 5 magnet)
         else
-            TextRect.view bg Color.white magnet
+            TextRect.view bg magnet.data.textColor magnet
 
 
 type RelativePosition
