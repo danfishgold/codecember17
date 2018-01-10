@@ -16,64 +16,7 @@ import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Types exposing (Size, Edges)
 import TextRect exposing (edges, contains, moveBy)
-
-
-type alias Point =
-    Point.Point
-
-
-type alias Magnet data =
-    { data : data
-    , text : String
-    , position : Point
-    , padding : Size
-    , highlighted : Maybe Color
-    }
-
-
-magnet : String -> data -> Magnet data
-magnet text data =
-    { data = data
-    , text = text
-    , position = ( 0, 0 )
-    , padding = TextRect.defaultPadding
-    , highlighted = Nothing
-    }
-
-
-addPadding : Float -> Magnet data -> Magnet data
-addPadding delta magnet =
-    { magnet
-        | padding =
-            { width = magnet.padding.width + delta
-            , height = magnet.padding.height + delta
-            }
-    }
-
-
-setAlpha : Float -> Color -> Color
-setAlpha alpha c =
-    let
-        { red, green, blue } =
-            Color.toRgb c
-    in
-        Color.rgba red green blue alpha
-
-
-element : Color -> Magnet data -> Bool -> Collage msg
-element background magnet isDragging =
-    let
-        bg =
-            magnet.highlighted |> Maybe.withDefault background
-    in
-        if isDragging then
-            TextRect.view (setAlpha 0.8 bg) Color.white (addPadding 5 magnet)
-        else
-            TextRect.view bg Color.white magnet
-
-
-
---
+import Magnet.Base as Base exposing (Magnet, RelativePosition(..), near, relativePosition, setHighlight)
 
 
 type alias Category data =
@@ -89,10 +32,10 @@ type alias Magnets data =
     }
 
 
-category : String -> List String -> Category Color
+category : String -> List String -> Category {}
 category name strings =
     strings
-        |> List.map (flip magnet Color.black)
+        |> List.map (flip Base.magnet (Base.data Color.black))
         |> \sources -> { name = name, sources = sources }
 
 
@@ -105,10 +48,10 @@ magnetsView : (Magnet data -> Color) -> Magnets data -> Collage msg
 magnetsView color { stationary, dragging, sources } =
     List.concat
         [ Pointer.Mapping.toList dragging
-            |> List.map (\m -> element (color m) m True)
+            |> List.map (\m -> Base.element (color m) m True)
         , stationary
             ++ allSources sources
-            |> List.map (\m -> element (color m) m False)
+            |> List.map (\m -> Base.element (color m) m False)
         ]
         |> group
 
@@ -203,29 +146,6 @@ mergeOrAdd joiner droppedMagnet magnets =
                         newMagnets ++ others
 
 
-near : Edges -> Edges -> Bool
-near a b =
-    let
-        betweenX =
-            between (b.minX - 30) (b.maxX + 30)
-
-        betweenY =
-            between (b.minY - 30) (b.maxY + 30)
-    in
-        (betweenX a.minX || betweenX a.maxX)
-            && (betweenY a.minY || betweenY a.maxY)
-
-
-between : Float -> Float -> Float -> Bool
-between a b x =
-    a <= x && x <= b
-
-
-ordered : Float -> Float -> Float -> Bool
-ordered a b c =
-    between a c b
-
-
 simpleJoiner : Magnet data -> Magnet data -> Maybe (List (Magnet data))
 simpleJoiner a b =
     let
@@ -280,11 +200,6 @@ highlightNear stationary dragging =
             |> flip setHighlight dragging
 
 
-setHighlight : Maybe Color -> Magnet data -> Magnet data
-setHighlight highlighted magnet =
-    { magnet | highlighted = highlighted }
-
-
 filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )
 filterFirst fn xs =
     let
@@ -318,50 +233,6 @@ repositionSources area padding magnets =
                     |> Tuple.first
                     |> List.reverse
         }
-
-
-type RelativePosition
-    = Left
-    | Right
-    | Up
-    | Down
-    | On
-
-
-{-| The position of `a` relative to `b`
--}
-relativePosition : Magnet a -> Magnet a -> Maybe RelativePosition
-relativePosition a b =
-    let
-        ( aEdges, bEdges ) =
-            ( edges a, edges b )
-
-        ( ( aX, aY ), ( bX, bY ) ) =
-            ( a.position, b.position )
-
-        ( insideX, insideY ) =
-            ( aX |> between bEdges.minX bEdges.maxX
-            , aY |> between bEdges.minY bEdges.maxY
-            )
-    in
-        case ( insideX, insideY ) of
-            ( True, True ) ->
-                Just On
-
-            ( True, False ) ->
-                if aY > bY then
-                    Just Up
-                else
-                    Just Down
-
-            ( False, True ) ->
-                if aX > bX then
-                    Just Right
-                else
-                    Just Left
-
-            ( False, False ) ->
-                Nothing
 
 
 highlightColor : Maybe RelativePosition -> Color

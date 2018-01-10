@@ -16,7 +16,7 @@ import ElementSize
 
 
 type alias Model =
-    { magnets : History (Magnets Color)
+    { magnets : History (Magnets {})
     , buttons : HistoryButtons Msg
     , size : Size
     , pointers : Mapping Pointer
@@ -36,7 +36,7 @@ letters =
     "a b c d e f g h i j k l m n o p q r s t u v w x y z [space]" |> String.split " "
 
 
-initialMagnets : History (Magnets Color)
+initialMagnets : History (Magnets {})
 initialMagnets =
     History.initial
         { stationary =
@@ -184,7 +184,7 @@ view : Model -> Html Msg
 view model =
     let
         magnets =
-            Magnet.magnetsView .data model.magnets.current
+            Magnet.magnetsView (.data >> .color) model.magnets.current
 
         bg =
             rectangle model.size.width model.size.height

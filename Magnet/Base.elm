@@ -1,0 +1,140 @@
+module Magnet.Base exposing (..)
+
+import Collage exposing (Collage, group)
+import Color exposing (Color)
+import Point
+import Types exposing (Size, Edges)
+import TextRect exposing (edges, contains, moveBy)
+
+
+type alias Point =
+    Point.Point
+
+
+type alias Data a =
+    { a
+        | color : Color
+        , canMergeWithSources : Bool
+    }
+
+
+type alias Magnet data =
+    { data : Data data
+    , text : String
+    , position : Point
+    , padding : Size
+    , highlighted : Maybe Color
+    }
+
+
+magnet : String -> Data data -> Magnet data
+magnet text data =
+    { data = data
+    , text = text
+    , position = ( 0, 0 )
+    , padding = TextRect.defaultPadding
+    , highlighted = Nothing
+    }
+
+
+data : Color -> Data {}
+data color =
+    { color = color, canMergeWithSources = False }
+
+
+addPadding : Float -> Magnet data -> Magnet data
+addPadding delta magnet =
+    { magnet
+        | padding =
+            { width = magnet.padding.width + delta
+            , height = magnet.padding.height + delta
+            }
+    }
+
+
+setAlpha : Float -> Color -> Color
+setAlpha alpha c =
+    let
+        { red, green, blue } =
+            Color.toRgb c
+    in
+        Color.rgba red green blue alpha
+
+
+setHighlight : Maybe Color -> Magnet data -> Magnet data
+setHighlight highlighted magnet =
+    { magnet | highlighted = highlighted }
+
+
+element : Color -> Magnet data -> Bool -> Collage msg
+element background magnet isDragging =
+    let
+        bg =
+            magnet.highlighted |> Maybe.withDefault background
+    in
+        if isDragging then
+            TextRect.view (setAlpha 0.8 bg) Color.white (addPadding 5 magnet)
+        else
+            TextRect.view bg Color.white magnet
+
+
+type RelativePosition
+    = Left
+    | Right
+    | Up
+    | Down
+    | On
+
+
+{-| The position of `a` relative to `b`
+-}
+relativePosition : Magnet a -> Magnet a -> Maybe RelativePosition
+relativePosition a b =
+    let
+        ( aEdges, bEdges ) =
+            ( edges a, edges b )
+
+        ( ( aX, aY ), ( bX, bY ) ) =
+            ( a.position, b.position )
+
+        ( insideX, insideY ) =
+            ( aX |> between bEdges.minX bEdges.maxX
+            , aY |> between bEdges.minY bEdges.maxY
+            )
+    in
+        case ( insideX, insideY ) of
+            ( True, True ) ->
+                Just On
+
+            ( True, False ) ->
+                if aY > bY then
+                    Just Up
+                else
+                    Just Down
+
+            ( False, True ) ->
+                if aX > bX then
+                    Just Right
+                else
+                    Just Left
+
+            ( False, False ) ->
+                Nothing
+
+
+near : Edges -> Edges -> Bool
+near a b =
+    let
+        betweenX =
+            between (b.minX - 30) (b.maxX + 30)
+
+        betweenY =
+            between (b.minY - 30) (b.maxY + 30)
+    in
+        (betweenX a.minX || betweenX a.maxX)
+            && (betweenY a.minY || betweenY a.maxY)
+
+
+between : Float -> Float -> Float -> Bool
+between a b x =
+    a <= x && x <= b
