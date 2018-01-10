@@ -5,12 +5,19 @@ import Magnet.Category as Category exposing (Category)
 import TextRect exposing (edges)
 
 
+{-|
+Interaction droppedMagnet other isTheOtherASource =
+    Just (magnets to add, sources to add)
+   or
+    Nothing -- the interaction failed
+
+-}
 type alias Interaction data =
-    Magnet data -> Magnet data -> Maybe ( List (Magnet data), List (Category data) )
+    Magnet data -> Magnet data -> Bool -> Maybe ( List (Magnet data), List (Category data) )
 
 
 simple : Interaction data
-simple a b =
+simple a b isSource =
     let
         aEdges =
             edges a
@@ -54,18 +61,56 @@ simple a b =
 
 interactOrAdd : Interaction data -> Magnet data -> ( List (Magnet data), List (Category data) ) -> ( List (Magnet data), List (Category data) )
 interactOrAdd interaction droppedMagnet ( magnets, sources ) =
+    Nothing
+        |> maybeOr (\_ -> interactWithMagnets interaction droppedMagnet ( magnets, sources ))
+        |> maybeOr (\_ -> interactWithSources interaction droppedMagnet ( magnets, sources ))
+        |> Maybe.withDefault ( droppedMagnet :: magnets, sources )
+
+
+interactWithMagnets : Interaction data -> Magnet data -> ( List (Magnet data), List (Category data) ) -> Maybe ( List (Magnet data), List (Category data) )
+interactWithMagnets interaction droppedMagnet ( magnets, sources ) =
     let
         isNear magnet =
             near (edges magnet) (edges droppedMagnet)
     in
         case filterFirst isNear magnets of
             ( _, Nothing ) ->
-                ( droppedMagnet :: magnets, sources )
+                Nothing
 
             ( others, Just closeMagnet ) ->
-                case interaction droppedMagnet closeMagnet of
+                case interaction droppedMagnet closeMagnet False of
                     Nothing ->
-                        ( droppedMagnet :: magnets, sources )
+                        Just ( droppedMagnet :: magnets, sources )
 
                     Just ( newMagnets, newSources ) ->
-                        ( newMagnets ++ others, Category.merge newSources sources )
+                        Just ( newMagnets ++ others, Category.merge newSources sources )
+
+
+interactWithSources : Interaction data -> Magnet data -> ( List (Magnet data), List (Category data) ) -> Maybe ( List (Magnet data), List (Category data) )
+interactWithSources interaction droppedMagnet ( magnets, sources ) =
+    if droppedMagnet.data.interactsWithSources then
+        let
+            isNear source =
+                near (edges source) (edges droppedMagnet)
+        in
+            case filterFirst isNear (Category.allSources sources) of
+                ( _, Nothing ) ->
+                    Nothing
+
+                ( others, Just closeMagnet ) ->
+                    case interaction droppedMagnet closeMagnet False of
+                        Nothing ->
+                            Just ( droppedMagnet :: magnets, sources )
+
+                        Just ( newMagnets, newSources ) ->
+                            Just ( newMagnets ++ others, Category.merge newSources sources )
+    else
+        Nothing
+
+
+maybeOr : (() -> Maybe a) -> Maybe a -> Maybe a
+maybeOr lazyOther current =
+    if current == Nothing then
+        lazyOther ()
+    else
+        current
