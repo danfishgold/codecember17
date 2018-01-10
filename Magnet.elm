@@ -187,10 +187,10 @@ maybePickUp identifier pointer magnets =
 mergeOrAdd : (Magnet data -> Magnet data -> Maybe (List (Magnet data))) -> Magnet data -> List (Magnet data) -> List (Magnet data)
 mergeOrAdd joiner droppedMagnet magnets =
     let
-        isAdjacent magnet =
-            adjecent (edges magnet) (edges droppedMagnet)
+        isNear magnet =
+            near (edges magnet) (edges droppedMagnet)
     in
-        case filterFirst isAdjacent magnets of
+        case filterFirst isNear magnets of
             ( _, Nothing ) ->
                 droppedMagnet :: magnets
 
@@ -203,19 +203,27 @@ mergeOrAdd joiner droppedMagnet magnets =
                         newMagnets ++ others
 
 
-adjecentInX : Edges -> Edges -> Bool
-adjecentInX a b =
-    abs (a.minX - b.maxX) <= 30 || abs (b.minX - a.maxX) <= 30
+near : Edges -> Edges -> Bool
+near a b =
+    let
+        betweenX =
+            between (b.minX - 30) (b.maxX + 30)
+
+        betweenY =
+            between (b.minY - 30) (b.maxY + 30)
+    in
+        (betweenX a.minX || betweenX a.maxX)
+            && (betweenY a.minY || betweenY a.maxY)
 
 
-adjecentInY : Edges -> Edges -> Bool
-adjecentInY a b =
-    a.minY <= b.maxY && a.maxY >= b.minY
+between : Float -> Float -> Float -> Bool
+between a b x =
+    a <= x && x <= b
 
 
-adjecent : Edges -> Edges -> Bool
-adjecent a b =
-    adjecentInX a b && adjecentInY a b
+ordered : Float -> Float -> Float -> Bool
+ordered a b c =
+    between a c b
 
 
 simpleJoiner : Magnet data -> Magnet data -> Maybe (List (Magnet data))
@@ -266,7 +274,7 @@ highlightNear stationary dragging =
             edges dragging
     in
         stationary
-            |> filterFirst (edges >> adjecent draggingEdges)
+            |> filterFirst (edges >> near draggingEdges)
             |> Tuple.second
             |> Maybe.map (relativePosition dragging >> highlightColor)
             |> flip setHighlight dragging
@@ -320,37 +328,37 @@ type RelativePosition
     | On
 
 
+{-| The position of `a` relative to `b`
+-}
 relativePosition : Magnet a -> Magnet a -> Maybe RelativePosition
 relativePosition a b =
     let
         ( aEdges, bEdges ) =
             ( edges a, edges b )
 
-        withinX =
-            aEdges.minX < bEdges.maxX && aEdges.maxX > bEdges.minX
+        ( ( aX, aY ), ( bX, bY ) ) =
+            ( a.position, b.position )
 
-        withinY =
-            aEdges.minY < bEdges.maxY && aEdges.maxY > bEdges.minY
+        ( insideX, insideY ) =
+            ( aX |> between bEdges.minX bEdges.maxX
+            , aY |> between bEdges.minY bEdges.maxY
+            )
     in
-        case ( withinX, withinY ) of
+        case ( insideX, insideY ) of
             ( True, True ) ->
                 Just On
 
+            ( True, False ) ->
+                if aY > bY then
+                    Just Up
+                else
+                    Just Down
+
             ( False, True ) ->
-                if aEdges.maxX < bEdges.minX then
-                    Just Left
-                else if aEdges.minX > bEdges.maxX then
+                if aX > bX then
                     Just Right
                 else
-                    Nothing
-
-            ( True, False ) ->
-                if aEdges.maxY < bEdges.minY then
-                    Just Up
-                else if aEdges.minY > bEdges.maxY then
-                    Just Down
-                else
-                    Nothing
+                    Just Left
 
             ( False, False ) ->
                 Nothing
