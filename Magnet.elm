@@ -44,14 +44,14 @@ allSources categories =
     List.concatMap .sources categories
 
 
-magnetsView : (Magnet data -> Color) -> Magnets data -> Collage msg
-magnetsView color { stationary, dragging, sources } =
+magnetsView : Magnets data -> Collage msg
+magnetsView { stationary, dragging, sources } =
     List.concat
         [ Pointer.Mapping.toList dragging
-            |> List.map (\m -> Base.element (color m) m True)
+            |> List.map (Base.element True)
         , stationary
             ++ allSources sources
-            |> List.map (\m -> Base.element (color m) m False)
+            |> List.map (Base.element False)
         ]
         |> group
 

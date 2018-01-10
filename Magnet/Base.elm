@@ -66,11 +66,11 @@ setHighlight highlighted magnet =
     { magnet | highlighted = highlighted }
 
 
-element : Color -> Magnet data -> Bool -> Collage msg
-element background magnet isDragging =
+element : Bool -> Magnet data -> Collage msg
+element isDragging magnet =
     let
         bg =
-            magnet.highlighted |> Maybe.withDefault background
+            magnet.highlighted |> Maybe.withDefault magnet.data.color
     in
         if isDragging then
             TextRect.view (setAlpha 0.8 bg) Color.white (addPadding 5 magnet)

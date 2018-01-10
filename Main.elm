@@ -184,7 +184,7 @@ view : Model -> Html Msg
 view model =
     let
         magnets =
-            Magnet.magnetsView (.data >> .color) model.magnets.current
+            Magnet.magnetsView model.magnets.current
 
         bg =
             rectangle model.size.width model.size.height
