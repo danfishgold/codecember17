@@ -19,18 +19,14 @@ import TextRect exposing (edges, contains, moveBy)
 import Magnet.Base as Base
     exposing
         ( Magnet
-        , Interaction
         , RelativePosition(..)
         , near
         , relativePosition
         , setHighlight
+        , filterFirst
         )
-
-
-type alias Category data =
-    { name : String
-    , sources : List (Magnet data)
-    }
+import Magnet.Category as Category exposing (Category)
+import Magnet.Interaction as Interaction exposing (Interaction)
 
 
 type alias Magnets data =
@@ -47,18 +43,13 @@ category name strings =
         |> \sources -> { name = name, sources = sources }
 
 
-allSources : List (Category data) -> List (Magnet data)
-allSources categories =
-    List.concatMap .sources categories
-
-
 magnetsView : Magnets data -> Collage msg
 magnetsView { stationary, dragging, sources } =
     List.concat
         [ Pointer.Mapping.toList dragging
             |> List.map (Base.element True)
         , stationary
-            ++ allSources sources
+            ++ Category.allSources sources
             |> List.map (Base.element False)
         ]
         |> group
@@ -89,13 +80,15 @@ stopDragging pointers magnets =
     let
         ( stillDragging, stoppedDragging ) =
             Pointer.Mapping.extract (Pointer.Mapping.ids pointers) magnets.dragging
+
+        ( newStationary, newSources ) =
+            stoppedDragging
+                |> List.map (setHighlight Nothing)
+                |> List.foldl (Interaction.interactOrAdd Interaction.simple) ( magnets.stationary, magnets.sources )
     in
-        { magnets
-            | stationary =
-                stoppedDragging
-                    |> List.map (setHighlight Nothing)
-                    |> List.foldl (interactOrAdd Base.simpleInteraction) magnets.stationary
-            , dragging = stillDragging
+        { stationary = newStationary
+        , sources = newSources
+        , dragging = stillDragging
         }
 
 
@@ -107,7 +100,7 @@ maybePickUp identifier pointer magnets =
 
         dragging =
             if draggingFromStationary == Nothing then
-                filterFirst (contains pointer.position) (allSources magnets.sources)
+                filterFirst (contains pointer.position) (Category.allSources magnets.sources)
                     |> Tuple.second
             else
                 draggingFromStationary
@@ -135,25 +128,6 @@ maybePickUp identifier pointer magnets =
                     }
 
 
-interactOrAdd : Interaction data -> Magnet data -> List (Magnet data) -> List (Magnet data)
-interactOrAdd interaction droppedMagnet magnets =
-    let
-        isNear magnet =
-            near (edges magnet) (edges droppedMagnet)
-    in
-        case filterFirst isNear magnets of
-            ( _, Nothing ) ->
-                droppedMagnet :: magnets
-
-            ( others, Just closeMagnet ) ->
-                case interaction droppedMagnet closeMagnet of
-                    Nothing ->
-                        droppedMagnet :: magnets
-
-                    Just newMagnets ->
-                        newMagnets ++ others
-
-
 highlightNear : List (Magnet data) -> Magnet data -> Magnet data
 highlightNear stationary dragging =
     let
@@ -165,23 +139,6 @@ highlightNear stationary dragging =
             |> Tuple.second
             |> Maybe.map (relativePosition dragging >> highlightColor)
             |> flip setHighlight dragging
-
-
-filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )
-filterFirst fn xs =
-    let
-        recurse lst falses =
-            case lst of
-                [] ->
-                    ( List.reverse falses, Nothing )
-
-                head :: rest ->
-                    if fn head then
-                        ( List.reverse falses ++ rest, Just head )
-                    else
-                        recurse rest (head :: falses)
-    in
-        recurse xs []
 
 
 repositionSources : Size -> Size -> Magnets data -> Magnets data

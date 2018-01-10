@@ -11,10 +11,6 @@ type alias Point =
     Point.Point
 
 
-type alias Interaction data =
-    Magnet data -> Magnet data -> Maybe (List (Magnet data))
-
-
 type alias Data a =
     { a
         | background : Color
@@ -148,42 +144,18 @@ between a b x =
     a <= x && x <= b
 
 
-simpleInteraction : Magnet data -> Magnet data -> Maybe (List (Magnet data))
-simpleInteraction a b =
+filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )
+filterFirst fn xs =
     let
-        aEdges =
-            edges a
+        recurse lst falses =
+            case lst of
+                [] ->
+                    ( List.reverse falses, Nothing )
 
-        bEdges =
-            edges b
-
-        position =
-            ( (min aEdges.minX bEdges.minX + max aEdges.maxX bEdges.maxX) / 2
-            , (min aEdges.minY bEdges.minY + max aEdges.maxY bEdges.maxY) / 2
-            )
-
-        padding =
-            { width = max a.padding.width b.padding.width
-            , height = max a.padding.height b.padding.height
-            }
-
-        ( left, right ) =
-            if Tuple.first a.position < Tuple.first b.position then
-                ( a, b )
-            else
-                ( b, a )
-
-        textOrSpace text =
-            if text == "[space]" then
-                " "
-            else
-                text
+                head :: rest ->
+                    if fn head then
+                        ( List.reverse falses ++ rest, Just head )
+                    else
+                        recurse rest (head :: falses)
     in
-        Just
-            [ { data = a.data
-              , text = textOrSpace left.text ++ textOrSpace right.text
-              , position = position
-              , padding = padding
-              , highlighted = Nothing
-              }
-            ]
+        recurse xs []

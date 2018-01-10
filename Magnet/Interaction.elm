@@ -1,0 +1,71 @@
+module Magnet.Interaction exposing (..)
+
+import Magnet.Base exposing (Magnet, filterFirst, near)
+import Magnet.Category as Category exposing (Category)
+import TextRect exposing (edges)
+
+
+type alias Interaction data =
+    Magnet data -> Magnet data -> Maybe ( List (Magnet data), List (Category data) )
+
+
+simple : Interaction data
+simple a b =
+    let
+        aEdges =
+            edges a
+
+        bEdges =
+            edges b
+
+        position =
+            ( (min aEdges.minX bEdges.minX + max aEdges.maxX bEdges.maxX) / 2
+            , (min aEdges.minY bEdges.minY + max aEdges.maxY bEdges.maxY) / 2
+            )
+
+        padding =
+            { width = max a.padding.width b.padding.width
+            , height = max a.padding.height b.padding.height
+            }
+
+        ( left, right ) =
+            if Tuple.first a.position < Tuple.first b.position then
+                ( a, b )
+            else
+                ( b, a )
+
+        textOrSpace text =
+            if text == "[space]" then
+                " "
+            else
+                text
+    in
+        Just
+            ( [ { data = a.data
+                , text = textOrSpace left.text ++ textOrSpace right.text
+                , position = position
+                , padding = padding
+                , highlighted = Nothing
+                }
+              ]
+            , []
+            )
+
+
+interactOrAdd : Interaction data -> Magnet data -> ( List (Magnet data), List (Category data) ) -> ( List (Magnet data), List (Category data) )
+interactOrAdd interaction droppedMagnet ( magnets, sources ) =
+    let
+        isNear magnet =
+            near (edges magnet) (edges droppedMagnet)
+    in
+        case filterFirst isNear magnets of
+            ( _, Nothing ) ->
+                ( droppedMagnet :: magnets, sources )
+
+            ( others, Just closeMagnet ) ->
+                case interaction droppedMagnet closeMagnet of
+                    Nothing ->
+                        ( droppedMagnet :: magnets, sources )
+
+                    Just ( newMagnets, newSources ) ->
+                        ( newMagnets ++ others, Category.merge newSources sources )
