@@ -30,3 +30,28 @@ merge cats1 cats2 =
 allSources : List (Category data) -> List (Magnet data)
 allSources categories =
     List.concatMap .sources categories
+
+
+filterFirst : (Magnet data -> Bool) -> List (Category data) -> ( List (Category data), Maybe (Magnet data) )
+filterFirst fn cats =
+    let
+        recurse cats falses =
+            case cats of
+                [] ->
+                    ( List.reverse falses, Nothing )
+
+                head :: rest ->
+                    case Magnet.Base.filterFirst fn head.sources of
+                        ( _, Nothing ) ->
+                            recurse rest (head :: falses)
+
+                        ( otherSources, Just successfulSource ) ->
+                            ( List.concat
+                                [ List.reverse falses
+                                , [ { head | sources = otherSources } ]
+                                , rest
+                                ]
+                            , Just successfulSource
+                            )
+    in
+        recurse cats []

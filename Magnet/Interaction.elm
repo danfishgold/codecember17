@@ -78,12 +78,11 @@ interactWithMagnets interaction droppedMagnet ( magnets, sources ) =
                 Nothing
 
             ( others, Just closeMagnet ) ->
-                case interaction droppedMagnet closeMagnet False of
-                    Nothing ->
-                        Just ( droppedMagnet :: magnets, sources )
-
-                    Just ( newMagnets, newSources ) ->
-                        Just ( newMagnets ++ others, Category.merge newSources sources )
+                interaction droppedMagnet closeMagnet False
+                    |> Maybe.map
+                        (\( newMagnets, newSources ) ->
+                            ( newMagnets ++ others, Category.merge newSources sources )
+                        )
 
 
 interactWithSources : Interaction data -> Magnet data -> ( List (Magnet data), List (Category data) ) -> Maybe ( List (Magnet data), List (Category data) )
@@ -93,17 +92,16 @@ interactWithSources interaction droppedMagnet ( magnets, sources ) =
             isNear source =
                 near (edges source) (edges droppedMagnet)
         in
-            case filterFirst isNear (Category.allSources sources) of
+            case Category.filterFirst isNear sources of
                 ( _, Nothing ) ->
                     Nothing
 
-                ( others, Just closeMagnet ) ->
-                    case interaction droppedMagnet closeMagnet False of
-                        Nothing ->
-                            Just ( droppedMagnet :: magnets, sources )
-
-                        Just ( newMagnets, newSources ) ->
-                            Just ( newMagnets ++ others, Category.merge newSources sources )
+                ( others, Just closeSource ) ->
+                    interaction droppedMagnet closeSource True
+                        |> Maybe.map
+                            (\( newMagnets, newSources ) ->
+                                ( newMagnets ++ magnets, Category.merge newSources others )
+                            )
     else
         Nothing
 
