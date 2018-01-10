@@ -16,7 +16,15 @@ import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Types exposing (Size, Edges)
 import TextRect exposing (edges, contains, moveBy)
-import Magnet.Base as Base exposing (Magnet, RelativePosition(..), near, relativePosition, setHighlight)
+import Magnet.Base as Base
+    exposing
+        ( Magnet
+        , Interaction
+        , RelativePosition(..)
+        , near
+        , relativePosition
+        , setHighlight
+        )
 
 
 type alias Category data =
@@ -86,7 +94,7 @@ stopDragging pointers magnets =
             | stationary =
                 stoppedDragging
                     |> List.map (setHighlight Nothing)
-                    |> List.foldl (mergeOrAdd simpleJoiner) magnets.stationary
+                    |> List.foldl (interactOrAdd Base.simpleInteraction) magnets.stationary
             , dragging = stillDragging
         }
 
@@ -127,8 +135,8 @@ maybePickUp identifier pointer magnets =
                     }
 
 
-mergeOrAdd : (Magnet data -> Magnet data -> Maybe (List (Magnet data))) -> Magnet data -> List (Magnet data) -> List (Magnet data)
-mergeOrAdd joiner droppedMagnet magnets =
+interactOrAdd : Interaction data -> Magnet data -> List (Magnet data) -> List (Magnet data)
+interactOrAdd interaction droppedMagnet magnets =
     let
         isNear magnet =
             near (edges magnet) (edges droppedMagnet)
@@ -138,53 +146,12 @@ mergeOrAdd joiner droppedMagnet magnets =
                 droppedMagnet :: magnets
 
             ( others, Just closeMagnet ) ->
-                case joiner droppedMagnet closeMagnet of
+                case interaction droppedMagnet closeMagnet of
                     Nothing ->
                         droppedMagnet :: magnets
 
                     Just newMagnets ->
                         newMagnets ++ others
-
-
-simpleJoiner : Magnet data -> Magnet data -> Maybe (List (Magnet data))
-simpleJoiner a b =
-    let
-        aEdges =
-            edges a
-
-        bEdges =
-            edges b
-
-        position =
-            ( (min aEdges.minX bEdges.minX + max aEdges.maxX bEdges.maxX) / 2
-            , (min aEdges.minY bEdges.minY + max aEdges.maxY bEdges.maxY) / 2
-            )
-
-        padding =
-            { width = max a.padding.width b.padding.width
-            , height = max a.padding.height b.padding.height
-            }
-
-        ( left, right ) =
-            if Tuple.first a.position < Tuple.first b.position then
-                ( a, b )
-            else
-                ( b, a )
-
-        textOrSpace text =
-            if text == "[space]" then
-                " "
-            else
-                text
-    in
-        Just
-            [ { data = a.data
-              , text = textOrSpace left.text ++ textOrSpace right.text
-              , position = position
-              , padding = padding
-              , highlighted = Nothing
-              }
-            ]
 
 
 highlightNear : List (Magnet data) -> Magnet data -> Magnet data

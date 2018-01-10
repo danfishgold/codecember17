@@ -11,11 +11,15 @@ type alias Point =
     Point.Point
 
 
+type alias Interaction data =
+    Magnet data -> Magnet data -> Maybe (List (Magnet data))
+
+
 type alias Data a =
     { a
         | background : Color
         , textColor : Color
-        , canMergeWithSources : Bool
+        , interactsWithSources : Bool
     }
 
 
@@ -42,7 +46,7 @@ data : Color -> Color -> Data {}
 data background textColor =
     { background = background
     , textColor = textColor
-    , canMergeWithSources = False
+    , interactsWithSources = False
     }
 
 
@@ -142,3 +146,44 @@ near a b =
 between : Float -> Float -> Float -> Bool
 between a b x =
     a <= x && x <= b
+
+
+simpleInteraction : Magnet data -> Magnet data -> Maybe (List (Magnet data))
+simpleInteraction a b =
+    let
+        aEdges =
+            edges a
+
+        bEdges =
+            edges b
+
+        position =
+            ( (min aEdges.minX bEdges.minX + max aEdges.maxX bEdges.maxX) / 2
+            , (min aEdges.minY bEdges.minY + max aEdges.maxY bEdges.maxY) / 2
+            )
+
+        padding =
+            { width = max a.padding.width b.padding.width
+            , height = max a.padding.height b.padding.height
+            }
+
+        ( left, right ) =
+            if Tuple.first a.position < Tuple.first b.position then
+                ( a, b )
+            else
+                ( b, a )
+
+        textOrSpace text =
+            if text == "[space]" then
+                " "
+            else
+                text
+    in
+        Just
+            [ { data = a.data
+              , text = textOrSpace left.text ++ textOrSpace right.text
+              , position = position
+              , padding = padding
+              , highlighted = Nothing
+              }
+            ]
