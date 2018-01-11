@@ -11,6 +11,7 @@ module TextRect
         , centerPositionsForRows
         , organizeInRows
         , listCenter
+        , organizeInRowAround
         )
 
 import Collage exposing (Collage, group, rendered, rectangle, filled, uniform, shift)
@@ -198,3 +199,24 @@ listCenter rects =
     in
         Maybe.map4 center minX maxX minY maxY
             |> Maybe.withDefault ( 0, 0 )
+
+
+organizeInRowAround : Point -> Float -> List (TextRect a) -> List (TextRect a)
+organizeInRowAround ( x0, y0 ) padding rects =
+    let
+        widths =
+            List.map (size >> .width) rects
+
+        totalWidth =
+            List.sum widths + padding * toFloat (List.length rects - 1)
+
+        offset =
+            x0 - totalWidth / 2
+
+        rights =
+            List.scanl (\width prevX -> prevX + padding + width) offset widths
+
+        centerXs =
+            List.map2 (\right width -> right + width / 2) rights widths
+    in
+        List.map2 (\x rect -> { rect | position = ( x, y0 ) }) centerXs rects
