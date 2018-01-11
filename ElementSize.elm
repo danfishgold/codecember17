@@ -1,6 +1,6 @@
 port module ElementSize exposing (get, changes)
 
-import Types exposing (Size)
+import Util exposing (Size)
 
 
 port getSize : () -> Cmd msg

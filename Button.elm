@@ -4,7 +4,7 @@ import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Point exposing (Point)
 import TextRect
-import Types exposing (Size)
+import Util exposing (Size)
 import Set exposing (Set)
 import Pointer.Id
 import Task

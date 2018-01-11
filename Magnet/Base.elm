@@ -3,7 +3,7 @@ module Magnet.Base exposing (..)
 import Collage exposing (Collage, group)
 import Color exposing (Color)
 import Point
-import Types exposing (Size, Edges)
+import Util exposing (Size, Edges, filterFirst)
 import TextRect exposing (edges, contains, moveBy)
 
 
@@ -142,20 +142,3 @@ near a b =
 between : Float -> Float -> Float -> Bool
 between a b x =
     a <= x && x <= b
-
-
-filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )
-filterFirst fn xs =
-    let
-        recurse lst falses =
-            case lst of
-                [] ->
-                    ( List.reverse falses, Nothing )
-
-                head :: rest ->
-                    if fn head then
-                        ( List.reverse falses ++ rest, Just head )
-                    else
-                        recurse rest (head :: falses)
-    in
-        recurse xs []

@@ -14,7 +14,7 @@ import Color exposing (Color)
 import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
-import Types exposing (Size, Edges)
+import Util exposing (Size, Edges, filterFirst)
 import TextRect exposing (edges, contains, moveBy)
 import Magnet.Base as Base
     exposing
@@ -23,7 +23,6 @@ import Magnet.Base as Base
         , near
         , relativePosition
         , setHighlight
-        , filterFirst
         )
 import Magnet.Category as Category exposing (Category)
 import Magnet.Interaction as Interaction exposing (Interaction)

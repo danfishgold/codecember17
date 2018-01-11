@@ -11,7 +11,7 @@ module History.Buttons
 
 import History exposing (History)
 import Button exposing (Button)
-import Types exposing (Size)
+import Util exposing (Size)
 import TextRect
 import Collage exposing (Collage, group)
 

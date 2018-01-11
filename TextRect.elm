@@ -14,7 +14,7 @@ module TextRect
 import Collage exposing (Collage, group, rendered, rectangle, filled, uniform, shift)
 import Collage.Text as Text
 import Collage.Layout as Layout
-import Types exposing (Size, Edges)
+import Util exposing (Size, Edges)
 import Color exposing (Color)
 import Point exposing (Point)
 

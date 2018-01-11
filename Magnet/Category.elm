@@ -1,6 +1,7 @@
 module Magnet.Category exposing (..)
 
 import Magnet.Base exposing (Magnet)
+import Util
 
 
 type alias Category data =
@@ -41,7 +42,7 @@ filterFirst fn cats =
                     ( List.reverse falses, Nothing )
 
                 head :: rest ->
-                    case Magnet.Base.filterFirst fn head.sources of
+                    case Util.filterFirst fn head.sources of
                         ( _, Nothing ) ->
                             recurse rest (head :: falses)
 

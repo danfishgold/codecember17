@@ -7,7 +7,7 @@ import Collage.Render exposing (svgBox)
 import Color exposing (Color)
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
-import Types exposing (Size)
+import Util exposing (Size)
 import History exposing (History)
 import History.Buttons exposing (HistoryButtons)
 import TextRect

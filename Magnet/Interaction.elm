@@ -1,8 +1,9 @@
 module Magnet.Interaction exposing (..)
 
-import Magnet.Base exposing (Magnet, filterFirst, near)
+import Magnet.Base exposing (Magnet, near)
 import Magnet.Category as Category exposing (Category)
 import TextRect exposing (edges)
+import Util exposing (filterFirst, maybeOr)
 
 
 {-|
@@ -104,11 +105,3 @@ interactWithSources interaction droppedMagnet ( magnets, sources ) =
                             )
     else
         Nothing
-
-
-maybeOr : (() -> Maybe a) -> Maybe a -> Maybe a
-maybeOr lazyOther current =
-    if current == Nothing then
-        lazyOther ()
-    else
-        current
