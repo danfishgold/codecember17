@@ -21,7 +21,6 @@ import Magnet.Interaction as Interaction
     exposing
         ( Interaction
         , RelativePosition(..)
-        , near
         )
 
 
@@ -60,7 +59,7 @@ keepDragging oldPointers newPointers magnets =
                 oldPointers
                 newPointers
                 magnets.dragging
-                |> Pointer.Mapping.map (\id m -> highlightNear magnets.stationary m)
+                |> Pointer.Mapping.map (\id m -> highlightNear Interaction.simple magnets.stationary m)
     }
 
 
@@ -117,17 +116,13 @@ maybePickUp identifier pointer magnets =
                     }
 
 
-highlightNear : List (Magnet data) -> Magnet data -> Magnet data
-highlightNear stationary dragging =
-    let
-        draggingEdges =
-            edges dragging
-    in
-        stationary
-            |> filterFirst (edges >> near draggingEdges)
-            |> Tuple.second
-            |> Maybe.map (Interaction.relativePosition dragging >> highlightColor)
-            |> flip setHighlight dragging
+highlightNear : Interaction data -> List (Magnet data) -> Magnet data -> Magnet data
+highlightNear interaction stationary dragging =
+    stationary
+        |> filterFirst (Interaction.willInteract interaction False dragging)
+        |> Tuple.second
+        |> Maybe.map (Interaction.relativePosition dragging >> highlightColor)
+        |> flip setHighlight dragging
 
 
 repositionSources : Size -> Size -> Magnets data -> Magnets data
