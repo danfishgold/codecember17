@@ -13,7 +13,7 @@ import Color exposing (Color)
 import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
-import Util exposing (Size, Edges, filterFirst)
+import Util exposing (Size, Edges, filterFirst, maybeOr)
 import TextRect exposing (edges, contains, moveBy)
 import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
@@ -59,7 +59,13 @@ keepDragging oldPointers newPointers magnets =
                 oldPointers
                 newPointers
                 magnets.dragging
-                |> Pointer.Mapping.map (\id m -> highlightNear Interaction.horizontal magnets.stationary m)
+                |> Pointer.Mapping.map
+                    (\id m ->
+                        highlightNear Interaction.horizontal
+                            magnets.stationary
+                            magnets.sources
+                            m
+                    )
     }
 
 
@@ -116,13 +122,28 @@ maybePickUp identifier pointer magnets =
                     }
 
 
-highlightNear : Interaction data -> List (Magnet data) -> Magnet data -> Magnet data
-highlightNear interaction stationary dragging =
-    stationary
-        |> filterFirst (Interaction.willInteract interaction False dragging)
-        |> Tuple.second
-        |> Maybe.map (Interaction.relativePosition dragging >> highlightColor)
-        |> flip setHighlight dragging
+highlightNear : Interaction data -> List (Magnet data) -> List (Category data) -> Magnet data -> Magnet data
+highlightNear interaction stationary sources dragging =
+    let
+        stationaryInteraction () =
+            stationary
+                |> filterFirst (Interaction.willInteract interaction False dragging)
+                |> Tuple.second
+
+        sourceInteraction () =
+            if dragging.data.interactsWithSources then
+                sources
+                    |> Category.allSources
+                    |> filterFirst (Interaction.willInteract interaction True dragging)
+                    |> Tuple.second
+            else
+                Nothing
+    in
+        Nothing
+            |> maybeOr stationaryInteraction
+            |> maybeOr sourceInteraction
+            |> Maybe.map (Interaction.relativePosition dragging >> highlightColor)
+            |> flip setHighlight dragging
 
 
 repositionSources : Size -> Size -> Magnets data -> Magnets data
