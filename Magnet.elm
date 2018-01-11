@@ -164,17 +164,5 @@ highlightColor pos =
         Nothing ->
             Color.black
 
-        Just Left ->
-            Color.darkRed
-
-        Just Right ->
-            Color.lightRed
-
-        Just Up ->
-            Color.darkBlue
-
-        Just Down ->
-            Color.lightBlue
-
-        Just On ->
+        Just _ ->
             Color.darkGreen
