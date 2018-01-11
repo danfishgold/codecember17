@@ -4,13 +4,11 @@ module Magnet.Interaction
         , horizontal
         , willInteract
         , interactOrAdd
-        , RelativePosition(..)
-        , relativePosition
         )
 
 import Magnet.Base exposing (Magnet)
 import Magnet.Category as Category exposing (Category)
-import TextRect exposing (edges)
+import TextRect exposing (edges, RelativePosition(..), relativePosition)
 import Util exposing (Edges, filterFirst, maybeOr, between)
 
 
@@ -68,7 +66,7 @@ interactWithMagnets :
 interactWithMagnets interaction droppedMagnet ( magnets, sources ) =
     let
         isNear magnet =
-            near (edges magnet) (edges droppedMagnet)
+            relativePosition magnet droppedMagnet /= Nothing
     in
         case filterFirst isNear magnets of
             ( _, Nothing ) ->
@@ -90,7 +88,7 @@ interactWithSources :
 interactWithSources interaction droppedMagnet ( magnets, sources ) =
     let
         isNear source =
-            near (edges source) (edges droppedMagnet)
+            relativePosition source droppedMagnet /= Nothing
     in
         case Category.filterFirst isNear sources of
             ( _, Nothing ) ->
@@ -102,66 +100,6 @@ interactWithSources interaction droppedMagnet ( magnets, sources ) =
                         (\( newMagnets, newSources ) ->
                             ( newMagnets ++ magnets, Category.merge newSources others )
                         )
-
-
-type RelativePosition
-    = Left
-    | Right
-    | Up
-    | Down
-    | On
-
-
-{-| The position of `a` relative to `b`
--}
-relativePosition : Magnet a -> Magnet a -> Maybe RelativePosition
-relativePosition a b =
-    let
-        ( aEdges, bEdges ) =
-            ( edges a, edges b )
-
-        ( ( aX, aY ), ( bX, bY ) ) =
-            ( a.position, b.position )
-
-        ( insideX, insideY ) =
-            ( aX |> between bEdges.minX bEdges.maxX
-            , aY |> between bEdges.minY bEdges.maxY
-            )
-    in
-        if near aEdges bEdges then
-            case ( insideX, insideY ) of
-                ( True, True ) ->
-                    Just On
-
-                ( True, False ) ->
-                    if aY > bY then
-                        Just Up
-                    else
-                        Just Down
-
-                ( False, True ) ->
-                    if aX > bX then
-                        Just Right
-                    else
-                        Just Left
-
-                ( False, False ) ->
-                    Nothing
-        else
-            Nothing
-
-
-near : Edges -> Edges -> Bool
-near a b =
-    let
-        betweenX =
-            between (b.minX - 30) (b.maxX + 30)
-
-        betweenY =
-            between (b.minY - 30) (b.maxY + 30)
-    in
-        (betweenX a.minX || betweenX a.maxX)
-            && (betweenY a.minY || betweenY a.maxY)
 
 
 horizontal : Interaction data
@@ -183,16 +121,8 @@ horizontal isSource a b =
 simpleInteractor : Interactor data
 simpleInteractor isSource a b =
     let
-        aEdges =
-            edges a
-
-        bEdges =
-            edges b
-
         position =
-            ( (min aEdges.minX bEdges.minX + max aEdges.maxX bEdges.maxX) / 2
-            , (min aEdges.minY bEdges.minY + max aEdges.maxY bEdges.maxY) / 2
-            )
+            TextRect.listCenter [ a, b ]
 
         padding =
             { width = max a.padding.width b.padding.width

@@ -14,14 +14,10 @@ import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Util exposing (Size, Edges, filterFirst, maybeOr)
-import TextRect exposing (edges, contains, moveBy)
+import TextRect exposing (RelativePosition(..), relativePosition, edges, contains, moveBy)
 import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
-import Magnet.Interaction as Interaction
-    exposing
-        ( Interaction
-        , RelativePosition(..)
-        )
+import Magnet.Interaction as Interaction exposing (Interaction)
 
 
 type alias Magnets data =
@@ -139,7 +135,7 @@ highlightNear interaction stationary sources dragging =
         Nothing
             |> maybeOr stationaryInteraction
             |> maybeOr sourceInteraction
-            |> Maybe.map (Interaction.relativePosition dragging >> highlightColor)
+            |> Maybe.map (relativePosition dragging >> highlightColor)
             |> flip setHighlight dragging
 
 
