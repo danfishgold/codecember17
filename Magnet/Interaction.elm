@@ -7,60 +7,44 @@ import Util exposing (filterFirst, maybeOr, between)
 
 
 {-|
-Interaction droppedMagnet other isTheOtherASource =
+Interactor droppedMagnet other isTheOtherASource =
     Just (magnets to add, sources to add)
    or
     Nothing -- the interaction failed
-
 -}
-type alias Interaction data =
+type alias Interactor data =
     Magnet data -> Magnet data -> Bool -> Maybe ( List (Magnet data), List (Category data) )
 
 
-simple : Interaction data
-simple a b isSource =
-    let
-        aEdges =
-            edges a
-
-        bEdges =
-            edges b
-
-        position =
-            ( (min aEdges.minX bEdges.minX + max aEdges.maxX bEdges.maxX) / 2
-            , (min aEdges.minY bEdges.minY + max aEdges.maxY bEdges.maxY) / 2
-            )
-
-        padding =
-            { width = max a.padding.width b.padding.width
-            , height = max a.padding.height b.padding.height
-            }
-
-        ( left, right ) =
-            if Tuple.first a.position < Tuple.first b.position then
-                ( a, b )
-            else
-                ( b, a )
-
-        textOrSpace text =
-            if text == "[space]" then
-                " "
-            else
-                text
-    in
-        Just
-            ( [ { data = a.data
-                , text = textOrSpace left.text ++ textOrSpace right.text
-                , position = position
-                , padding = padding
-                , highlighted = Nothing
-                }
-              ]
-            , []
-            )
+{-|
+I want to highlight magnets which can interact, so instead of calculating the result
+each time while the dragged magnet is still dragging, I can just check whether
+there's an interactor function at all
+-}
+type alias Interaction data =
+    Magnet data -> Magnet data -> Bool -> Maybe (Interactor data)
 
 
-interactOrAdd : Interaction data -> Magnet data -> ( List (Magnet data), List (Category data) ) -> ( List (Magnet data), List (Category data) )
+apply : Interaction data -> Interactor data
+apply interaction a b isSource =
+    case interaction a b isSource of
+        Nothing ->
+            Nothing
+
+        Just interactor ->
+            interactor a b isSource
+
+
+willInteract : Interaction data -> Magnet data -> Magnet data -> Bool -> Bool
+willInteract interaction a b isSource =
+    interaction a b isSource /= Nothing
+
+
+interactOrAdd :
+    Interaction data
+    -> Magnet data
+    -> ( List (Magnet data), List (Category data) )
+    -> ( List (Magnet data), List (Category data) )
 interactOrAdd interaction droppedMagnet ( magnets, sources ) =
     Nothing
         |> maybeOr (\_ -> interactWithMagnets interaction droppedMagnet ( magnets, sources ))
@@ -68,7 +52,11 @@ interactOrAdd interaction droppedMagnet ( magnets, sources ) =
         |> Maybe.withDefault ( droppedMagnet :: magnets, sources )
 
 
-interactWithMagnets : Interaction data -> Magnet data -> ( List (Magnet data), List (Category data) ) -> Maybe ( List (Magnet data), List (Category data) )
+interactWithMagnets :
+    Interaction data
+    -> Magnet data
+    -> ( List (Magnet data), List (Category data) )
+    -> Maybe ( List (Magnet data), List (Category data) )
 interactWithMagnets interaction droppedMagnet ( magnets, sources ) =
     let
         isNear magnet =
@@ -79,14 +67,18 @@ interactWithMagnets interaction droppedMagnet ( magnets, sources ) =
                 Nothing
 
             ( others, Just closeMagnet ) ->
-                interaction droppedMagnet closeMagnet False
+                apply interaction droppedMagnet closeMagnet False
                     |> Maybe.map
                         (\( newMagnets, newSources ) ->
                             ( newMagnets ++ others, Category.merge newSources sources )
                         )
 
 
-interactWithSources : Interaction data -> Magnet data -> ( List (Magnet data), List (Category data) ) -> Maybe ( List (Magnet data), List (Category data) )
+interactWithSources :
+    Interaction data
+    -> Magnet data
+    -> ( List (Magnet data), List (Category data) )
+    -> Maybe ( List (Magnet data), List (Category data) )
 interactWithSources interaction droppedMagnet ( magnets, sources ) =
     if droppedMagnet.data.interactsWithSources then
         let
@@ -98,7 +90,7 @@ interactWithSources interaction droppedMagnet ( magnets, sources ) =
                     Nothing
 
                 ( others, Just closeSource ) ->
-                    interaction droppedMagnet closeSource True
+                    apply interaction droppedMagnet closeSource True
                         |> Maybe.map
                             (\( newMagnets, newSources ) ->
                                 ( newMagnets ++ magnets, Category.merge newSources others )
@@ -149,3 +141,51 @@ relativePosition a b =
 
             ( False, False ) ->
                 Nothing
+
+
+simple : Interaction data
+simple a b isSource =
+    Just simpleInteractor
+
+
+simpleInteractor : Interactor data
+simpleInteractor a b isSource =
+    let
+        aEdges =
+            edges a
+
+        bEdges =
+            edges b
+
+        position =
+            ( (min aEdges.minX bEdges.minX + max aEdges.maxX bEdges.maxX) / 2
+            , (min aEdges.minY bEdges.minY + max aEdges.maxY bEdges.maxY) / 2
+            )
+
+        padding =
+            { width = max a.padding.width b.padding.width
+            , height = max a.padding.height b.padding.height
+            }
+
+        ( left, right ) =
+            if Tuple.first a.position < Tuple.first b.position then
+                ( a, b )
+            else
+                ( b, a )
+
+        textOrSpace text =
+            if text == "[space]" then
+                " "
+            else
+                text
+    in
+        Just
+            ( [ { data = a.data
+                , text = textOrSpace left.text ++ textOrSpace right.text
+                , position = position
+                , padding = padding
+                , highlighted = Nothing
+                }
+              ]
+            , []
+            )
