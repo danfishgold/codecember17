@@ -45,8 +45,6 @@ initialMagnets =
         , dragging = Pointer.Mapping.empty
         , sources =
             [ category "Letters" letters
-            , category "Nouns" [ "burrito", "pizza" ]
-            , category "Verbs" [ "eat", "drink", "go" ]
             ]
         }
 
