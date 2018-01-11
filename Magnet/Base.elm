@@ -80,16 +80,3 @@ element isDragging magnet =
             TextRect.view (setAlpha 0.8 bg) magnet.data.textColor (addPadding 5 magnet)
         else
             TextRect.view bg magnet.data.textColor magnet
-
-
-near : Edges -> Edges -> Bool
-near a b =
-    let
-        betweenX =
-            between (b.minX - 30) (b.maxX + 30)
-
-        betweenY =
-            between (b.minY - 30) (b.maxY + 30)
-    in
-        (betweenX a.minX || betweenX a.maxX)
-            && (betweenY a.minY || betweenY a.maxY)

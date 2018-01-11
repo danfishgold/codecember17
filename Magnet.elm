@@ -15,14 +15,14 @@ import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Util exposing (Size, Edges, filterFirst)
 import TextRect exposing (edges, contains, moveBy)
-import Magnet.Base as Base
-    exposing
-        ( Magnet
-        , near
-        , setHighlight
-        )
+import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
-import Magnet.Interaction as Interaction exposing (Interaction, RelativePosition(..))
+import Magnet.Interaction as Interaction
+    exposing
+        ( Interaction
+        , RelativePosition(..)
+        , near
+        )
 
 
 type alias Magnets data =

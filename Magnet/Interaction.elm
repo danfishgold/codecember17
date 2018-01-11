@@ -1,9 +1,9 @@
 module Magnet.Interaction exposing (..)
 
-import Magnet.Base exposing (Magnet, near)
+import Magnet.Base exposing (Magnet)
 import Magnet.Category as Category exposing (Category)
 import TextRect exposing (edges)
-import Util exposing (filterFirst, maybeOr, between)
+import Util exposing (Edges, filterFirst, maybeOr, between)
 
 
 {-|
@@ -141,6 +141,19 @@ relativePosition a b =
 
             ( False, False ) ->
                 Nothing
+
+
+near : Edges -> Edges -> Bool
+near a b =
+    let
+        betweenX =
+            between (b.minX - 30) (b.maxX + 30)
+
+        betweenY =
+            between (b.minY - 30) (b.maxY + 30)
+    in
+        (betweenX a.minX || betweenX a.maxX)
+            && (betweenY a.minY || betweenY a.maxY)
 
 
 simple : Interaction data
