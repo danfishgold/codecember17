@@ -131,13 +131,10 @@ highlightNear interaction stationary sources dragging =
                 |> Tuple.second
 
         sourceInteraction () =
-            if dragging.data.interactsWithSources then
-                sources
-                    |> Category.allSources
-                    |> filterFirst (Interaction.willInteract interaction True dragging)
-                    |> Tuple.second
-            else
-                Nothing
+            sources
+                |> Category.allSources
+                |> filterFirst (Interaction.willInteract interaction True dragging)
+                |> Tuple.second
     in
         Nothing
             |> maybeOr stationaryInteraction

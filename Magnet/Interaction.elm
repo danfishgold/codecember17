@@ -88,23 +88,20 @@ interactWithSources :
     -> ( List (Magnet data), List (Category data) )
     -> Maybe ( List (Magnet data), List (Category data) )
 interactWithSources interaction droppedMagnet ( magnets, sources ) =
-    if droppedMagnet.data.interactsWithSources then
-        let
-            isNear source =
-                near (edges source) (edges droppedMagnet)
-        in
-            case Category.filterFirst isNear sources of
-                ( _, Nothing ) ->
-                    Nothing
+    let
+        isNear source =
+            near (edges source) (edges droppedMagnet)
+    in
+        case Category.filterFirst isNear sources of
+            ( _, Nothing ) ->
+                Nothing
 
-                ( others, Just closeSource ) ->
-                    apply interaction True droppedMagnet closeSource
-                        |> Maybe.map
-                            (\( newMagnets, newSources ) ->
-                                ( newMagnets ++ magnets, Category.merge newSources others )
-                            )
-    else
-        Nothing
+            ( others, Just closeSource ) ->
+                apply interaction True droppedMagnet closeSource
+                    |> Maybe.map
+                        (\( newMagnets, newSources ) ->
+                            ( newMagnets ++ magnets, Category.merge newSources others )
+                        )
 
 
 type RelativePosition
@@ -169,15 +166,18 @@ near a b =
 
 horizontal : Interaction data
 horizontal isSource a b =
-    case relativePosition a b of
-        Just Left ->
-            Just simpleInteractor
+    if isSource then
+        Nothing
+    else
+        case relativePosition a b of
+            Just Left ->
+                Just simpleInteractor
 
-        Just Right ->
-            Just simpleInteractor
+            Just Right ->
+                Just simpleInteractor
 
-        _ ->
-            Nothing
+            _ ->
+                Nothing
 
 
 simpleInteractor : Interactor data

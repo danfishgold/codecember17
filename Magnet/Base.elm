@@ -15,7 +15,6 @@ type alias Data a =
     { a
         | background : Color
         , textColor : Color
-        , interactsWithSources : Bool
     }
 
 
@@ -42,7 +41,6 @@ data : Color -> Color -> Data {}
 data background textColor =
     { background = background
     , textColor = textColor
-    , interactsWithSources = False
     }
 
 
