@@ -14,10 +14,11 @@ import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
 import Util exposing (Size, Edges, filterFirst, maybeOr)
-import TextRect exposing (RelativePosition(..), relativePosition, edges, contains, moveBy)
+import TextRect exposing (edges, contains, moveBy)
 import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
 import Magnet.Interaction as Interaction exposing (Interaction)
+import RelativePosition exposing (RelativePosition(..), relativePosition)
 
 
 type alias Magnets data =

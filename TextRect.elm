@@ -1,6 +1,7 @@
 module TextRect
     exposing
-        ( rect
+        ( TextRect
+        , rect
         , defaultPadding
         , view
         , size
@@ -10,8 +11,6 @@ module TextRect
         , centerPositionsForRows
         , organizeInRows
         , listCenter
-        , RelativePosition(..)
-        , relativePosition
         )
 
 import Collage exposing (Collage, group, rendered, rectangle, filled, uniform, shift)
@@ -171,66 +170,6 @@ organizeInRows offsetY area padding rects =
             positions
         , nextY
         )
-
-
-type RelativePosition
-    = Left
-    | Right
-    | Up
-    | Down
-    | On
-
-
-{-| The position of `a` relative to `b`
--}
-relativePosition : TextRect a -> TextRect a -> Maybe RelativePosition
-relativePosition a b =
-    let
-        ( aEdges, bEdges ) =
-            ( edges a, edges b )
-
-        ( ( aX, aY ), ( bX, bY ) ) =
-            ( a.position, b.position )
-
-        ( insideX, insideY ) =
-            ( aX |> between bEdges.minX bEdges.maxX
-            , aY |> between bEdges.minY bEdges.maxY
-            )
-    in
-        if near aEdges bEdges then
-            case ( insideX, insideY ) of
-                ( True, True ) ->
-                    Just On
-
-                ( True, False ) ->
-                    if aY > bY then
-                        Just Up
-                    else
-                        Just Down
-
-                ( False, True ) ->
-                    if aX > bX then
-                        Just Right
-                    else
-                        Just Left
-
-                ( False, False ) ->
-                    Nothing
-        else
-            Nothing
-
-
-near : Edges -> Edges -> Bool
-near a b =
-    let
-        betweenX =
-            between (b.minX - 30) (b.maxX + 30)
-
-        betweenY =
-            between (b.minY - 30) (b.maxY + 30)
-    in
-        (betweenX a.minX || betweenX a.maxX)
-            && (betweenY a.minY || betweenY a.maxY)
 
 
 listCenter : List (TextRect a) -> Point

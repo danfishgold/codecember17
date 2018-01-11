@@ -8,7 +8,7 @@ module Magnet.Interaction
 
 import Magnet.Base exposing (Magnet)
 import Magnet.Category as Category exposing (Category)
-import TextRect exposing (edges, RelativePosition(..), relativePosition)
+import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
 import Util exposing (Edges, filterFirst, maybeOr, between)
 
 
@@ -109,28 +109,25 @@ horizontal isSource a b =
     else
         case relativePosition a b of
             Just Left ->
-                Just simpleInteractor
+                Just (simpleInteractor Left)
 
             Just Right ->
-                Just simpleInteractor
+                Just (simpleInteractor Right)
 
             _ ->
                 Nothing
 
 
-simpleInteractor : Interactor data
-simpleInteractor isSource a b =
+simpleInteractor : RelativePosition -> Interactor data
+simpleInteractor rPos isSource a b =
     let
-        position =
-            TextRect.listCenter [ a, b ]
-
         padding =
             { width = max a.padding.width b.padding.width
             , height = max a.padding.height b.padding.height
             }
 
         ( left, right ) =
-            if Tuple.first a.position < Tuple.first b.position then
+            if rPos == Left then
                 ( a, b )
             else
                 ( b, a )
@@ -144,10 +141,11 @@ simpleInteractor isSource a b =
         Just
             ( [ { data = a.data
                 , text = textOrSpace left.text ++ textOrSpace right.text
-                , position = position
+                , position = ( 0, 0 )
                 , padding = padding
                 , highlighted = Nothing
                 }
+                    |> keepEdgeInPlace (RelativePosition.opposite rPos) b
               ]
             , []
             )
