@@ -7,13 +7,13 @@ import Util exposing (Edges, filterFirst, maybeOr, between)
 
 
 {-|
-Interactor droppedMagnet other isTheOtherASource =
+Interactor isTheOtherASource droppedMagnet other =
     Just (magnets to add, sources to add)
    or
     Nothing -- the interaction failed
 -}
 type alias Interactor data =
-    Magnet data -> Magnet data -> Bool -> Maybe ( List (Magnet data), List (Category data) )
+    Bool -> Magnet data -> Magnet data -> Maybe ( List (Magnet data), List (Category data) )
 
 
 {-|
@@ -22,22 +22,22 @@ each time while the dragged magnet is still dragging, I can just check whether
 there's an interactor function at all
 -}
 type alias Interaction data =
-    Magnet data -> Magnet data -> Bool -> Maybe (Interactor data)
+    Bool -> Magnet data -> Magnet data -> Maybe (Interactor data)
 
 
 apply : Interaction data -> Interactor data
-apply interaction a b isSource =
-    case interaction a b isSource of
+apply interaction isSource a b =
+    case interaction isSource a b of
         Nothing ->
             Nothing
 
         Just interactor ->
-            interactor a b isSource
+            interactor isSource a b
 
 
-willInteract : Interaction data -> Magnet data -> Magnet data -> Bool -> Bool
-willInteract interaction a b isSource =
-    interaction a b isSource /= Nothing
+willInteract : Interaction data -> Bool -> Magnet data -> Magnet data -> Bool
+willInteract interaction isSource a b =
+    interaction isSource a b /= Nothing
 
 
 interactOrAdd :
@@ -67,7 +67,7 @@ interactWithMagnets interaction droppedMagnet ( magnets, sources ) =
                 Nothing
 
             ( others, Just closeMagnet ) ->
-                apply interaction droppedMagnet closeMagnet False
+                apply interaction False droppedMagnet closeMagnet
                     |> Maybe.map
                         (\( newMagnets, newSources ) ->
                             ( newMagnets ++ others, Category.merge newSources sources )
@@ -90,7 +90,7 @@ interactWithSources interaction droppedMagnet ( magnets, sources ) =
                     Nothing
 
                 ( others, Just closeSource ) ->
-                    apply interaction droppedMagnet closeSource True
+                    apply interaction True droppedMagnet closeSource
                         |> Maybe.map
                             (\( newMagnets, newSources ) ->
                                 ( newMagnets ++ magnets, Category.merge newSources others )
@@ -157,12 +157,12 @@ near a b =
 
 
 simple : Interaction data
-simple a b isSource =
+simple isSource a b =
     Just simpleInteractor
 
 
 simpleInteractor : Interactor data
-simpleInteractor a b isSource =
+simpleInteractor isSource a b =
     let
         aEdges =
             edges a
