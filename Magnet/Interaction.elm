@@ -1,4 +1,12 @@
-module Magnet.Interaction exposing (..)
+module Magnet.Interaction
+    exposing
+        ( Interaction
+        , horizontal
+        , willInteract
+        , interactOrAdd
+        , RelativePosition(..)
+        , relativePosition
+        )
 
 import Magnet.Base exposing (Magnet)
 import Magnet.Category as Category exposing (Category)
@@ -123,24 +131,27 @@ relativePosition a b =
             , aY |> between bEdges.minY bEdges.maxY
             )
     in
-        case ( insideX, insideY ) of
-            ( True, True ) ->
-                Just On
+        if near aEdges bEdges then
+            case ( insideX, insideY ) of
+                ( True, True ) ->
+                    Just On
 
-            ( True, False ) ->
-                if aY > bY then
-                    Just Up
-                else
-                    Just Down
+                ( True, False ) ->
+                    if aY > bY then
+                        Just Up
+                    else
+                        Just Down
 
-            ( False, True ) ->
-                if aX > bX then
-                    Just Right
-                else
-                    Just Left
+                ( False, True ) ->
+                    if aX > bX then
+                        Just Right
+                    else
+                        Just Left
 
-            ( False, False ) ->
-                Nothing
+                ( False, False ) ->
+                    Nothing
+        else
+            Nothing
 
 
 near : Edges -> Edges -> Bool
@@ -156,9 +167,17 @@ near a b =
             && (betweenY a.minY || betweenY a.maxY)
 
 
-simple : Interaction data
-simple isSource a b =
-    Just simpleInteractor
+horizontal : Interaction data
+horizontal isSource a b =
+    case relativePosition a b of
+        Just Left ->
+            Just simpleInteractor
+
+        Just Right ->
+            Just simpleInteractor
+
+        _ ->
+            Nothing
 
 
 simpleInteractor : Interactor data

@@ -59,7 +59,7 @@ keepDragging oldPointers newPointers magnets =
                 oldPointers
                 newPointers
                 magnets.dragging
-                |> Pointer.Mapping.map (\id m -> highlightNear Interaction.simple magnets.stationary m)
+                |> Pointer.Mapping.map (\id m -> highlightNear Interaction.horizontal magnets.stationary m)
     }
 
 
@@ -72,7 +72,7 @@ stopDragging pointers magnets =
         ( newStationary, newSources ) =
             stoppedDragging
                 |> List.map (setHighlight Nothing)
-                |> List.foldl (Interaction.interactOrAdd Interaction.simple) ( magnets.stationary, magnets.sources )
+                |> List.foldl (Interaction.interactOrAdd Interaction.horizontal) ( magnets.stationary, magnets.sources )
     in
         { stationary = newStationary
         , sources = newSources
