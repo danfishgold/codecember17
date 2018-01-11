@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Magnet exposing (Magnets)
+import Magnet.Category exposing (category)
 import Html exposing (Html, program)
 import Collage exposing (group, rectangle, circle, shift, filled, uniform)
 import Collage.Render exposing (svgBox)
@@ -43,9 +44,9 @@ initialMagnets =
             []
         , dragging = Pointer.Mapping.empty
         , sources =
-            [ Magnet.category "Letters" letters
-            , Magnet.category "Nouns" [ "burrito", "pizza" ]
-            , Magnet.category "Verbs" [ "eat", "drink", "go" ]
+            [ category "Letters" letters
+            , category "Nouns" [ "burrito", "pizza" ]
+            , category "Verbs" [ "eat", "drink", "go" ]
             ]
         }
 

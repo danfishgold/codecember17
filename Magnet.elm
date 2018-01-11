@@ -1,7 +1,6 @@
 module Magnet
     exposing
         ( Magnets
-        , category
         , repositionSources
         , magnetsView
         , startDragging
@@ -31,13 +30,6 @@ type alias Magnets data =
     , dragging : Mapping (Magnet data)
     , sources : List (Category data)
     }
-
-
-category : String -> List String -> Category {}
-category name strings =
-    strings
-        |> List.map (flip Base.magnet (Base.data Color.black Color.white))
-        |> \sources -> { name = name, sources = sources }
 
 
 magnetsView : Magnets data -> Collage msg

@@ -1,6 +1,7 @@
 module Magnet.Category exposing (..)
 
-import Magnet.Base exposing (Magnet)
+import Magnet.Base as Base exposing (Magnet)
+import Color
 import Util
 
 
@@ -8,6 +9,13 @@ type alias Category data =
     { name : String
     , sources : List (Magnet data)
     }
+
+
+category : String -> List String -> Category {}
+category name strings =
+    strings
+        |> List.map (flip Base.magnet (Base.data Color.black Color.white))
+        |> \sources -> { name = name, sources = sources }
 
 
 insert : Category data -> List (Category data) -> List (Category data)
