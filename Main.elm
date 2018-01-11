@@ -189,21 +189,10 @@ view model =
             rectangle model.size.width model.size.height
                 |> filled (uniform Color.lightGray)
 
-        pointers =
-            model.pointers
-                |> Pointer.Mapping.toList
-                |> List.map
-                    (\{ position } ->
-                        circle 5
-                            |> filled (uniform Color.red)
-                            |> shift position
-                    )
-                |> group
-
         buttons =
             History.Buttons.view model.buttons
     in
-        group [ pointers, magnets, buttons, bg ]
+        group [ magnets, buttons, bg ]
             |> svgBox ( model.size.width, model.size.height )
 
 
