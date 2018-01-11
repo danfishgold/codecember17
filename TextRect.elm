@@ -157,19 +157,22 @@ centerPositionsForRows offsetY area padding rects =
 
 organizeInRows : Float -> Size -> Size -> List (TextRect a) -> ( List (TextRect a), Float )
 organizeInRows offsetY area padding rects =
-    let
-        ( positions, nextY ) =
-            centerPositionsForRows
-                offsetY
-                area
-                padding
+    if List.isEmpty rects then
+        ( [], offsetY )
+    else
+        let
+            ( positions, nextY ) =
+                centerPositionsForRows
+                    offsetY
+                    area
+                    padding
+                    rects
+        in
+            ( List.map2 (\rect position -> { rect | position = position })
                 rects
-    in
-        ( List.map2 (\rect position -> { rect | position = position })
-            rects
-            positions
-        , nextY
-        )
+                positions
+            , nextY
+            )
 
 
 listCenter : List (TextRect a) -> Point
