@@ -3,7 +3,7 @@ module Magnet.Interaction exposing (..)
 import Magnet.Base exposing (Magnet, near)
 import Magnet.Category as Category exposing (Category)
 import TextRect exposing (edges)
-import Util exposing (filterFirst, maybeOr)
+import Util exposing (filterFirst, maybeOr, between)
 
 
 {-|
@@ -105,3 +105,47 @@ interactWithSources interaction droppedMagnet ( magnets, sources ) =
                             )
     else
         Nothing
+
+
+type RelativePosition
+    = Left
+    | Right
+    | Up
+    | Down
+    | On
+
+
+{-| The position of `a` relative to `b`
+-}
+relativePosition : Magnet a -> Magnet a -> Maybe RelativePosition
+relativePosition a b =
+    let
+        ( aEdges, bEdges ) =
+            ( edges a, edges b )
+
+        ( ( aX, aY ), ( bX, bY ) ) =
+            ( a.position, b.position )
+
+        ( insideX, insideY ) =
+            ( aX |> between bEdges.minX bEdges.maxX
+            , aY |> between bEdges.minY bEdges.maxY
+            )
+    in
+        case ( insideX, insideY ) of
+            ( True, True ) ->
+                Just On
+
+            ( True, False ) ->
+                if aY > bY then
+                    Just Up
+                else
+                    Just Down
+
+            ( False, True ) ->
+                if aX > bX then
+                    Just Right
+                else
+                    Just Left
+
+            ( False, False ) ->
+                Nothing

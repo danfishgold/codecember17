@@ -19,13 +19,11 @@ import TextRect exposing (edges, contains, moveBy)
 import Magnet.Base as Base
     exposing
         ( Magnet
-        , RelativePosition(..)
         , near
-        , relativePosition
         , setHighlight
         )
 import Magnet.Category as Category exposing (Category)
-import Magnet.Interaction as Interaction exposing (Interaction)
+import Magnet.Interaction as Interaction exposing (Interaction, RelativePosition(..))
 
 
 type alias Magnets data =
@@ -136,7 +134,7 @@ highlightNear stationary dragging =
         stationary
             |> filterFirst (edges >> near draggingEdges)
             |> Tuple.second
-            |> Maybe.map (relativePosition dragging >> highlightColor)
+            |> Maybe.map (Interaction.relativePosition dragging >> highlightColor)
             |> flip setHighlight dragging
 
 

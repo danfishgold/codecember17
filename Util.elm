@@ -1,4 +1,4 @@
-module Util exposing (Size, Edges, Collage, filterFirst, maybeOr)
+module Util exposing (Size, Edges, Collage, filterFirst, maybeOr, between)
 
 
 type alias Size =
@@ -45,3 +45,8 @@ maybeOr lazyOther current =
         lazyOther ()
     else
         current
+
+
+between : Float -> Float -> Float -> Bool
+between a b x =
+    a <= x && x <= b

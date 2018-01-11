@@ -3,7 +3,7 @@ module Magnet.Base exposing (..)
 import Collage exposing (Collage, group)
 import Color exposing (Color)
 import Point
-import Util exposing (Size, Edges, filterFirst)
+import Util exposing (Size, Edges, filterFirst, between)
 import TextRect exposing (edges, contains, moveBy)
 
 
@@ -82,50 +82,6 @@ element isDragging magnet =
             TextRect.view bg magnet.data.textColor magnet
 
 
-type RelativePosition
-    = Left
-    | Right
-    | Up
-    | Down
-    | On
-
-
-{-| The position of `a` relative to `b`
--}
-relativePosition : Magnet a -> Magnet a -> Maybe RelativePosition
-relativePosition a b =
-    let
-        ( aEdges, bEdges ) =
-            ( edges a, edges b )
-
-        ( ( aX, aY ), ( bX, bY ) ) =
-            ( a.position, b.position )
-
-        ( insideX, insideY ) =
-            ( aX |> between bEdges.minX bEdges.maxX
-            , aY |> between bEdges.minY bEdges.maxY
-            )
-    in
-        case ( insideX, insideY ) of
-            ( True, True ) ->
-                Just On
-
-            ( True, False ) ->
-                if aY > bY then
-                    Just Up
-                else
-                    Just Down
-
-            ( False, True ) ->
-                if aX > bX then
-                    Just Right
-                else
-                    Just Left
-
-            ( False, False ) ->
-                Nothing
-
-
 near : Edges -> Edges -> Bool
 near a b =
     let
@@ -137,8 +93,3 @@ near a b =
     in
         (betweenX a.minX || betweenX a.maxX)
             && (betweenY a.minY || betweenY a.maxY)
-
-
-between : Float -> Float -> Float -> Bool
-between a b x =
-    a <= x && x <= b
