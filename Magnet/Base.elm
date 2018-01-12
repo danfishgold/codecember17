@@ -1,10 +1,21 @@
-module Magnet.Base exposing (..)
+module Magnet.Base
+    exposing
+        ( Data
+        , Magnet
+        , magnet
+        , data
+        , addPadding
+        , setAlpha
+        , setHighlight
+        , setBackground
+        , element
+        )
 
-import Collage exposing (Collage, group)
+import Collage exposing (Collage)
 import Color exposing (Color)
 import Point
-import Util exposing (Size, Edges, filterFirst, between)
-import TextRect exposing (edges, contains, moveBy)
+import Util exposing (Size)
+import TextRect
 
 
 type alias Point =

@@ -10,7 +10,7 @@ module Magnet.Interaction
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category as Category exposing (Category)
 import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
-import Util exposing (Edges, filterFirst, filterMapFirst, maybeOr, between)
+import Util exposing (filterMapFirst, maybeOr)
 import Color exposing (Color)
 
 
@@ -130,7 +130,7 @@ horizontal isSource a b =
 
 
 simpleInteractor : RelativePosition -> Interactor data
-simpleInteractor rPos isSource a b =
+simpleInteractor rPos _ a b =
     let
         padding =
             { width = max a.padding.width b.padding.width

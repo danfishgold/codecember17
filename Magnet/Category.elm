@@ -1,4 +1,13 @@
-module Magnet.Category exposing (..)
+module Magnet.Category
+    exposing
+        ( Category
+        , category
+        , insert
+        , merge
+        , allSources
+        , filterFirst
+        , filterMapFirst
+        )
 
 import Magnet.Base as Base exposing (Magnet)
 import Color
@@ -42,7 +51,7 @@ allSources categories =
 
 
 filterFirst : (Magnet data -> Bool) -> List (Category data) -> ( List (Category data), Maybe (Magnet data) )
-filterFirst fn cats =
+filterFirst fn categories =
     let
         recurse cats falses =
             case cats of
@@ -63,11 +72,11 @@ filterFirst fn cats =
                             , Just successfulSource
                             )
     in
-        recurse cats []
+        recurse categories []
 
 
 filterMapFirst : (Magnet data -> Maybe b) -> List (Category data) -> ( List (Category data), Maybe ( Magnet data, b ) )
-filterMapFirst fn cats =
+filterMapFirst fn categories =
     let
         recurse cats falses =
             case cats of
@@ -88,4 +97,4 @@ filterMapFirst fn cats =
                             , Just success
                             )
     in
-        recurse cats []
+        recurse categories []

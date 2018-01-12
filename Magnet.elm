@@ -12,11 +12,11 @@ import Collage exposing (Collage, group)
 import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
-import Util exposing (Size, Edges, filterFirst, maybeOr)
-import TextRect exposing (edges, contains, moveBy)
+import Util exposing (Size, filterFirst)
+import TextRect exposing (contains, moveBy)
 import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
-import Magnet.Interaction as Interaction exposing (Interaction)
+import Magnet.Interaction as Interaction
 
 
 type alias Magnets data =

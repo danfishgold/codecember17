@@ -1,4 +1,10 @@
-module RelativePosition exposing (..)
+module RelativePosition
+    exposing
+        ( RelativePosition(..)
+        , relativePosition
+        , opposite
+        , keepEdgeInPlace
+        )
 
 import Util exposing (Edges, between)
 import TextRect exposing (TextRect, edges, size)

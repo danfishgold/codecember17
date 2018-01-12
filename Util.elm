@@ -65,6 +65,8 @@ filterMapFirst fn xs =
                             recurse rest (head :: falses)
     in
         recurse xs []
+
+
 maybeOr : (() -> Maybe a) -> Maybe a -> Maybe a
 maybeOr lazyOther current =
     if current == Nothing then
