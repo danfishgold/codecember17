@@ -1,4 +1,13 @@
-module Util exposing (Size, Edges, Collage, filterFirst, maybeOr, between)
+module Util
+    exposing
+        ( Size
+        , Edges
+        , Collage
+        , filterFirst
+        , filterMapFirst
+        , maybeOr
+        , between
+        )
 
 
 type alias Size =
@@ -39,6 +48,23 @@ filterFirst fn xs =
         recurse xs []
 
 
+filterMapFirst : (a -> Maybe b) -> List a -> ( List a, Maybe ( a, b ) )
+filterMapFirst fn xs =
+    let
+        recurse lst falses =
+            case lst of
+                [] ->
+                    ( List.reverse falses, Nothing )
+
+                head :: rest ->
+                    case fn head of
+                        Just res ->
+                            ( List.reverse falses ++ rest, Just ( head, res ) )
+
+                        Nothing ->
+                            recurse rest (head :: falses)
+    in
+        recurse xs []
 maybeOr : (() -> Maybe a) -> Maybe a -> Maybe a
 maybeOr lazyOther current =
     if current == Nothing then

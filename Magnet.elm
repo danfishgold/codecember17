@@ -75,7 +75,8 @@ stopDragging pointers magnets =
         ( newStationary, newSources ) =
             stoppedDragging
                 |> List.map (setHighlight Nothing)
-                |> List.foldl (Interaction.interactOrAdd Interaction.horizontal) ( magnets.stationary, magnets.sources )
+                |> List.foldl (Interaction.interactOrAdd Interaction.horizontal)
+                    ( magnets.stationary, magnets.sources )
     in
         { stationary = newStationary
         , sources = newSources
