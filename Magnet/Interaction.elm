@@ -3,13 +3,15 @@ module Magnet.Interaction
         ( Interaction
         , horizontal
         , willInteract
+        , hover
         , interactOrAdd
         )
 
-import Magnet.Base exposing (Magnet)
+import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category as Category exposing (Category)
 import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
 import Util exposing (Edges, filterFirst, filterMapFirst, maybeOr, between)
+import Color exposing (Color)
 
 
 {-|
@@ -28,12 +30,39 @@ each time while the dragged magnet is still dragging, I can just check whether
 there's an interactor function at all
 -}
 type alias Interaction data =
-    Bool -> Magnet data -> Magnet data -> Maybe (Interactor data)
+    Bool -> Magnet data -> Magnet data -> Maybe ( Interactor data, Color )
 
 
 willInteract : Interaction data -> Bool -> Magnet data -> Magnet data -> Bool
 willInteract interaction isSource a b =
     interaction isSource a b /= Nothing
+
+
+hover :
+    Interaction data
+    -> ( List (Magnet data), List (Category data) )
+    -> Magnet data
+    -> Magnet data
+hover interaction ( magnets, sources ) draggingMagnet =
+    Nothing
+        |> maybeOr (\_ -> hoverNearMagnets interaction False magnets draggingMagnet)
+        |> maybeOr (\_ -> hoverNearMagnets interaction True (Category.allSources sources) draggingMagnet)
+        |> Maybe.withDefault (setBackground Color.black draggingMagnet)
+
+
+hoverNearMagnets :
+    Interaction data
+    -> Bool
+    -> List (Magnet data)
+    -> Magnet data
+    -> Maybe (Magnet data)
+hoverNearMagnets interaction areSources magnets draggingMagnet =
+    case filterMapFirst (interaction areSources draggingMagnet) magnets of
+        ( _, Nothing ) ->
+            Nothing
+
+        ( _, Just ( _, ( _, color ) ) ) ->
+            Just <| setBackground color draggingMagnet
 
 
 interactOrAdd :
@@ -58,7 +87,7 @@ interactWithMagnets interaction droppedMagnet ( magnets, sources ) =
         ( _, Nothing ) ->
             Nothing
 
-        ( others, Just ( closeMagnet, interactor ) ) ->
+        ( others, Just ( closeMagnet, ( interactor, _ ) ) ) ->
             interactor False droppedMagnet closeMagnet
                 |> Maybe.map
                     (\( newMagnets, newSources ) ->
@@ -76,7 +105,7 @@ interactWithSources interaction droppedMagnet ( magnets, sources ) =
         ( _, Nothing ) ->
             Nothing
 
-        ( others, Just ( closeSource, interactor ) ) ->
+        ( others, Just ( closeSource, ( interactor, _ ) ) ) ->
             interactor True droppedMagnet closeSource
                 |> Maybe.map
                     (\( newMagnets, newSources ) ->
@@ -91,10 +120,10 @@ horizontal isSource a b =
     else
         case relativePosition a b of
             Just Left ->
-                Just (simpleInteractor Left)
+                Just ( simpleInteractor Left, Color.darkGreen )
 
             Just Right ->
-                Just (simpleInteractor Right)
+                Just ( simpleInteractor Right, Color.darkGreen )
 
             _ ->
                 Nothing
@@ -128,6 +157,7 @@ simpleInteractor rPos isSource a b =
                 , highlighted = Nothing
                 }
                     |> keepEdgeInPlace (RelativePosition.opposite rPos) b
+                    |> setBackground Color.black
               ]
             , []
             )

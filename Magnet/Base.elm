@@ -68,6 +68,15 @@ setHighlight highlighted magnet =
     { magnet | highlighted = highlighted }
 
 
+setBackground : Color -> Magnet data -> Magnet data
+setBackground bg magnet =
+    let
+        data =
+            magnet.data
+    in
+        { magnet | data = { data | background = bg } }
+
+
 element : Bool -> Magnet data -> Collage msg
 element isDragging magnet =
     let

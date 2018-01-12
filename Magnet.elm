@@ -9,7 +9,6 @@ module Magnet
         )
 
 import Collage exposing (Collage, group)
-import Color exposing (Color)
 import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
@@ -18,7 +17,6 @@ import TextRect exposing (edges, contains, moveBy)
 import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
 import Magnet.Interaction as Interaction exposing (Interaction)
-import RelativePosition exposing (RelativePosition(..), relativePosition)
 
 
 type alias Magnets data =
@@ -57,10 +55,9 @@ keepDragging oldPointers newPointers magnets =
                 newPointers
                 magnets.dragging
                 |> Pointer.Mapping.map
-                    (\id m ->
-                        highlightNear Interaction.horizontal
-                            magnets.stationary
-                            magnets.sources
+                    (\_ m ->
+                        Interaction.hover Interaction.horizontal
+                            ( magnets.stationary, magnets.sources )
                             m
                     )
     }
@@ -120,27 +117,6 @@ maybePickUp identifier pointer magnets =
                     }
 
 
-highlightNear : Interaction data -> List (Magnet data) -> List (Category data) -> Magnet data -> Magnet data
-highlightNear interaction stationary sources dragging =
-    let
-        stationaryInteraction () =
-            stationary
-                |> filterFirst (Interaction.willInteract interaction False dragging)
-                |> Tuple.second
-
-        sourceInteraction () =
-            sources
-                |> Category.allSources
-                |> filterFirst (Interaction.willInteract interaction True dragging)
-                |> Tuple.second
-    in
-        Nothing
-            |> maybeOr stationaryInteraction
-            |> maybeOr sourceInteraction
-            |> Maybe.map (relativePosition dragging >> highlightColor)
-            |> flip setHighlight dragging
-
-
 repositionSources : Size -> Size -> Magnets data -> Magnets data
 repositionSources area padding magnets =
     let
@@ -157,13 +133,3 @@ repositionSources area padding magnets =
                     |> Tuple.first
                     |> List.reverse
         }
-
-
-highlightColor : Maybe RelativePosition -> Color
-highlightColor pos =
-    case pos of
-        Nothing ->
-            Color.black
-
-        Just _ ->
-            Color.darkGreen
