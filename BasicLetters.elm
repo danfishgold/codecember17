@@ -216,21 +216,24 @@ isTransformation kind =
 interaction : Interaction Data
 interaction =
     Magnet.Interaction.fromInteractors
-        [ ( always delete, Color.lightRed )
+        [ ( delete, Color.lightRed )
         , ( always split, Color.darkGreen )
         , ( always transform, Color.darkGreen )
         , ( join, Color.darkGreen )
         ]
 
 
-delete : Interactor Data
-delete isSource a b =
-    case permutation a b (is Delete) (always True) of
-        Just ( delete, _ ) ->
-            Just ( [], [ { name = "Special", sources = [ delete ] } ] )
+delete : RelativePosition -> Interactor Data
+delete pos isSource a b =
+    if pos == On then
+        case permutation a b (is Delete) (always True) of
+            Just ( delete, _ ) ->
+                Just ( [], [ { name = "Special", sources = [ delete ] } ] )
 
-        Nothing ->
-            Nothing
+            Nothing ->
+                Nothing
+    else
+        Nothing
 
 
 split : Interactor Data
