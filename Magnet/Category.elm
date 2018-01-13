@@ -35,7 +35,16 @@ insert cat cats =
 
         first :: rest ->
             if first.name == cat.name then
-                { first | sources = cat.sources ++ first.sources } :: rest
+                let
+                    datas =
+                        List.map .data first.sources
+
+                    newSources =
+                        cat.sources
+                            |> List.filter (not << flip List.member datas << .data)
+                            |> \newSources -> first.sources ++ newSources
+                in
+                    { first | sources = newSources } :: rest
             else
                 first :: insert cat rest
 
