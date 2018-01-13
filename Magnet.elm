@@ -16,7 +16,8 @@ import Util exposing (Size, filterFirst)
 import TextRect exposing (contains, moveBy)
 import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
-import Magnet.Interaction as Interaction
+import Magnet.Interaction as Interaction exposing (Interaction)
+import Color exposing (Color)
 
 
 type alias Magnets data =
@@ -43,8 +44,8 @@ startDragging pointers magnets =
     Pointer.Mapping.foldl maybePickUp magnets pointers
 
 
-keepDragging : Mapping Pointer -> Mapping Pointer -> Magnets data -> Magnets data
-keepDragging oldPointers newPointers magnets =
+keepDragging : Interaction data -> (Magnet data -> Color) -> Mapping Pointer -> Mapping Pointer -> Magnets data -> Magnets data
+keepDragging interaction defaultBackground oldPointers newPointers magnets =
     { magnets
         | dragging =
             Pointer.Mapping.mutualMap3
@@ -56,15 +57,16 @@ keepDragging oldPointers newPointers magnets =
                 magnets.dragging
                 |> Pointer.Mapping.map
                     (\_ m ->
-                        Interaction.hover Interaction.horizontal
+                        Interaction.hover interaction
+                            defaultBackground
                             ( magnets.stationary, magnets.sources )
                             m
                     )
     }
 
 
-stopDragging : Mapping Pointer -> Magnets data -> Magnets data
-stopDragging pointers magnets =
+stopDragging : Interaction data -> Mapping Pointer -> Magnets data -> Magnets data
+stopDragging interaction pointers magnets =
     let
         ( stillDragging, stoppedDragging ) =
             Pointer.Mapping.extract (Pointer.Mapping.ids pointers) magnets.dragging
@@ -72,7 +74,7 @@ stopDragging pointers magnets =
         ( newStationary, newSources ) =
             stoppedDragging
                 |> List.map (setHighlight Nothing)
-                |> List.foldl (Interaction.interactOrAdd Interaction.horizontal)
+                |> List.foldl (Interaction.interactOrAdd interaction)
                     ( magnets.stationary, magnets.sources )
     in
         { stationary = newStationary

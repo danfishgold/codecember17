@@ -14,6 +14,7 @@ import History.Buttons exposing (HistoryButtons)
 import TextRect
 import Button
 import ElementSize
+import Magnet.Interaction
 
 
 type alias Model =
@@ -115,13 +116,13 @@ update msg model =
                             Magnet.startDragging remainingPointers
 
                         Pointer.Move ->
-                            Magnet.keepDragging model.pointers remainingPointers
+                            Magnet.keepDragging Magnet.Interaction.horizontal (always Color.black) model.pointers remainingPointers
 
                         Pointer.End ->
-                            Magnet.stopDragging event.pointers
+                            Magnet.stopDragging Magnet.Interaction.horizontal event.pointers
 
                         Pointer.Cancel ->
-                            Magnet.stopDragging event.pointers
+                            Magnet.stopDragging Magnet.Interaction.horizontal event.pointers
 
                 newMagnets =
                     if event.state == Pointer.Start then
