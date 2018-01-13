@@ -1,7 +1,6 @@
 module Main exposing (main)
 
 import Magnet exposing (Magnets)
-import Magnet.Category exposing (category)
 import Html exposing (Html, program)
 import Collage exposing (group, rectangle, filled, uniform)
 import Collage.Render exposing (svgBox)
@@ -14,11 +13,11 @@ import History.Buttons exposing (HistoryButtons)
 import TextRect
 import Button
 import ElementSize
-import Magnet.Interaction
+import BasicLetters
 
 
 type alias Model =
-    { magnets : History (Magnets {})
+    { magnets : History (Magnets BasicLetters.Data)
     , buttons : HistoryButtons Msg
     , size : Size
     , pointers : Mapping Pointer
@@ -33,20 +32,13 @@ type Msg
     | UpdateHistory History.Msg
 
 
-letters : List String
-letters =
-    "a b c d e f g h i j k l m n o p q r s t u v w x y z [space]" |> String.split " "
-
-
-initialMagnets : History (Magnets {})
+initialMagnets : History (Magnets BasicLetters.Data)
 initialMagnets =
     History.initial
         { stationary =
             []
         , dragging = Pointer.Mapping.empty
-        , sources =
-            [ category "Letters" letters
-            ]
+        , sources = BasicLetters.sources
         }
 
 
@@ -116,13 +108,20 @@ update msg model =
                             Magnet.startDragging remainingPointers
 
                         Pointer.Move ->
-                            Magnet.keepDragging Magnet.Interaction.horizontal (always Color.black) model.pointers remainingPointers
+                            Magnet.keepDragging BasicLetters.interaction
+                                (.data >> .kind >> BasicLetters.defaultBackground)
+                                model.pointers
+                                remainingPointers
 
                         Pointer.End ->
-                            Magnet.stopDragging Magnet.Interaction.horizontal (always Color.black) event.pointers
+                            Magnet.stopDragging BasicLetters.interaction
+                                (.data >> .kind >> BasicLetters.defaultBackground)
+                                event.pointers
 
                         Pointer.Cancel ->
-                            Magnet.stopDragging Magnet.Interaction.horizontal (always Color.black) event.pointers
+                            Magnet.stopDragging BasicLetters.interaction
+                                (.data >> .kind >> BasicLetters.defaultBackground)
+                                event.pointers
 
                 newMagnets =
                     if event.state == Pointer.Start then

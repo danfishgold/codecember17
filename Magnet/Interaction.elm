@@ -2,7 +2,6 @@ module Magnet.Interaction
     exposing
         ( Interaction
         , Interactor
-        , horizontal
         , willInteract
         , hover
         , interactOrAdd
