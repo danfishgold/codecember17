@@ -18,6 +18,8 @@ type alias Data =
 type Kind
     = Letter String
     | Letters (List String)
+    | UpperCase
+    | LowerCase
     | Split
     | Delete
 
@@ -36,6 +38,8 @@ sources =
       , sources =
             [ sourceFromKind Delete
             , sourceFromKind Split
+            , sourceFromKind UpperCase
+            , sourceFromKind LowerCase
             ]
       }
     ]
@@ -69,6 +73,12 @@ defaultBackground magnet =
         Letters _ ->
             Color.black
 
+        UpperCase ->
+            Color.darkBlue
+
+        LowerCase ->
+            Color.darkBlue
+
 
 text : Kind -> String
 text magnet =
@@ -78,6 +88,12 @@ text magnet =
 
         Delete ->
             "[delete]"
+
+        UpperCase ->
+            "[UPPER]"
+
+        LowerCase ->
+            "[lower]"
 
         Letter " " ->
             "[space]"
@@ -100,6 +116,32 @@ joinStrings left right =
 
         ( Letters ls1, Letter l2 ) ->
             Just <| Letters <| ls1 ++ [ l2 ]
+
+        _ ->
+            Nothing
+
+
+transformString : Kind -> Kind -> Maybe Kind
+transformString transformation string =
+    case ( transformTransform transformation, string ) of
+        ( Just fn, Letter l ) ->
+            Just <| Letter <| fn l
+
+        ( Just fn, Letters ls ) ->
+            Just <| Letters <| List.map fn ls
+
+        _ ->
+            Nothing
+
+
+transformTransform : Kind -> Maybe (String -> String)
+transformTransform kind =
+    case kind of
+        UpperCase ->
+            Just String.toUpper
+
+        LowerCase ->
+            Just String.toLower
 
         _ ->
             Nothing
@@ -158,11 +200,25 @@ isCompound kind =
             False
 
 
+isTransformation : Kind -> Bool
+isTransformation kind =
+    case kind of
+        UpperCase ->
+            True
+
+        LowerCase ->
+            True
+
+        _ ->
+            False
+
+
 interaction : Interaction Data
 interaction =
     Magnet.Interaction.fromInteractors
         [ ( always delete, Color.lightRed )
         , ( always split, Color.darkGreen )
+        , ( always transform, Color.darkGreen )
         , ( join, Color.darkGreen )
         ]
 
@@ -227,6 +283,22 @@ join rPos isSource a b =
                               ]
                             , []
                             )
+
+            Nothing ->
+                Nothing
+    else
+        Nothing
+
+
+transform : Interactor Data
+transform isSource a b =
+    if not isSource then
+        case permutation a b (mapKind isTransformation) (mapKind isString) of
+            Just ( transformation, string ) ->
+                transformString transformation.data.kind string.data.kind
+                    |> Maybe.map magnetFromKind
+                    |> Maybe.map (keepEdgeInPlace RelativePosition.On string)
+                    |> Maybe.map (\m -> ( [ m ], [ { name = "Special", sources = [ transformation ] } ] ))
 
             Nothing ->
                 Nothing
