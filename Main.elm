@@ -119,10 +119,10 @@ update msg model =
                             Magnet.keepDragging Magnet.Interaction.horizontal (always Color.black) model.pointers remainingPointers
 
                         Pointer.End ->
-                            Magnet.stopDragging Magnet.Interaction.horizontal event.pointers
+                            Magnet.stopDragging Magnet.Interaction.horizontal (always Color.black) event.pointers
 
                         Pointer.Cancel ->
-                            Magnet.stopDragging Magnet.Interaction.horizontal event.pointers
+                            Magnet.stopDragging Magnet.Interaction.horizontal (always Color.black) event.pointers
 
                 newMagnets =
                     if event.state == Pointer.Start then

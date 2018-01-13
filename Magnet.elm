@@ -65,11 +65,12 @@ keepDragging interaction defaultBackground oldPointers newPointers magnets =
     }
 
 
-stopDragging : Interaction data -> Mapping Pointer -> Magnets data -> Magnets data
-stopDragging interaction pointers magnets =
+stopDragging : Interaction data -> (Magnet data -> Color) -> Mapping Pointer -> Magnets data -> Magnets data
+stopDragging interaction defaultBackground pointers magnets =
     let
         ( stillDragging, stoppedDragging ) =
             Pointer.Mapping.extract (Pointer.Mapping.ids pointers) magnets.dragging
+                |> Tuple.mapSecond (List.map (\m -> Base.setBackground (defaultBackground m) m))
 
         ( newStationary, newSources ) =
             stoppedDragging
