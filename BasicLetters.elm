@@ -188,7 +188,7 @@ interaction isSource a b =
 
 delete : Interactor Data
 delete isSource a b =
-    case permutation a b (is Delete) (mapKind isString) of
+    case permutation a b (is Delete) (always True) of
         Just ( delete, _ ) ->
             Just ( [], [ { name = "Special", sources = [ delete ] } ] )
 
