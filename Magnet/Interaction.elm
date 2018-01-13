@@ -2,6 +2,7 @@ module Magnet.Interaction
     exposing
         ( Interaction
         , Interactor
+        , fromInteractors
         , willInteract
         , hover
         , interactOrAdd
@@ -162,3 +163,22 @@ simpleInteractor rPos _ a b =
               ]
             , []
             )
+
+
+fromInteractors : List ( RelativePosition -> Interactor data, Color ) -> Interaction data
+fromInteractors pairs isSource a b =
+    case relativePosition a b of
+        Nothing ->
+            Nothing
+
+        Just rPos ->
+            let
+                lazyInteraction ( interactor, color ) () =
+                    if interactor rPos isSource a b /= Nothing then
+                        Just ( interactor rPos, color )
+                    else
+                        Nothing
+            in
+                pairs
+                    |> List.map lazyInteraction
+                    |> List.foldl Util.maybeOr Nothing

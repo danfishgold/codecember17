@@ -159,31 +159,12 @@ isCompound kind =
 
 
 interaction : Interaction Data
-interaction isSource a b =
-    case relativePosition a b of
-        Nothing ->
-            Nothing
-
-        Just pos ->
-            if both a b (mapKind isString) then
-                if not isSource then
-                    case pos of
-                        Left ->
-                            Just ( join Left, Color.darkGreen )
-
-                        Right ->
-                            Just ( join Right, Color.darkGreen )
-
-                        _ ->
-                            Nothing
-                else
-                    Nothing
-            else if either a b (is Delete) then
-                Just ( delete, Color.lightRed )
-            else if permutation a b (is Split) (mapKind isCompound) /= Nothing then
-                Just ( split, Color.darkGreen )
-            else
-                Nothing
+interaction =
+    Magnet.Interaction.fromInteractors
+        [ ( always delete, Color.lightRed )
+        , ( always split, Color.darkGreen )
+        , ( join, Color.darkGreen )
+        ]
 
 
 delete : Interactor Data
@@ -216,27 +197,41 @@ split isSource a b =
             Nothing
 
 
+leftRight : RelativePosition -> Magnet Data -> Magnet Data -> Maybe ( Magnet Data, Magnet Data )
+leftRight pos a b =
+    case pos of
+        Left ->
+            Just ( a, b )
+
+        Right ->
+            Just ( b, a )
+
+        _ ->
+            Nothing
+
+
 join : RelativePosition -> Bool -> Magnet Data -> Magnet Data -> Maybe ( List (Magnet Data), List (Category Data) )
 join rPos isSource a b =
-    let
-        ( left, right ) =
-            if rPos == Left then
-                ( a, b )
-            else
-                ( b, a )
-    in
-        case joinStrings left.data.kind right.data.kind of
+    if not isSource then
+        case leftRight rPos a b of
+            Just ( left, right ) ->
+                case joinStrings left.data.kind right.data.kind of
+                    Nothing ->
+                        Nothing
+
+                    Just kind ->
+                        Just
+                            ( [ magnetFromKind kind
+                                    |> keepEdgeInPlace (RelativePosition.opposite rPos) b
+                                    |> setBackground Color.black
+                              ]
+                            , []
+                            )
+
             Nothing ->
                 Nothing
-
-            Just kind ->
-                Just
-                    ( [ magnetFromKind kind
-                            |> keepEdgeInPlace (RelativePosition.opposite rPos) b
-                            |> setBackground Color.black
-                      ]
-                    , []
-                    )
+    else
+        Nothing
 
 
 magnetFromKind : Kind -> Magnet Data
