@@ -325,7 +325,7 @@ join rPos isSource a b =
                         Just
                             ( [ magnetFromKind kind
                                     |> keepEdgeInPlace (RelativePosition.opposite rPos) b
-                                    |> setBackground Color.black
+                                    |> setBackground (defaultBackground kind)
                               ]
                             , []
                             )
