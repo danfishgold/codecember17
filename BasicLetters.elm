@@ -17,7 +17,8 @@ type alias Data =
 
 type Kind
     = Letter String
-    | Letters (List String)
+    | Word (List String)
+    | Sentence (List (List String))
     | UpperCase
     | LowerCase
     | Split
@@ -32,7 +33,7 @@ letters =
 sources : List (Category Data)
 sources =
     [ { name = "Letters"
-      , sources = (letters ++ [ " " ]) |> List.map (Letter >> sourceFromKind)
+      , sources = (letters) |> List.map (Letter >> sourceFromKind)
       }
     , { name = "Special"
       , sources =
@@ -70,8 +71,11 @@ defaultBackground magnet =
         Letter _ ->
             Color.black
 
-        Letters _ ->
+        Word _ ->
             Color.black
+
+        Sentence _ ->
+            Color.darkGray
 
         UpperCase ->
             Color.darkBlue
@@ -95,27 +99,55 @@ text magnet =
         LowerCase ->
             "[lower]"
 
-        Letter " " ->
-            "[space]"
-
         Letter letter ->
             letter
 
-        Letters letters ->
+        Word letters ->
             letters |> String.join ""
+
+        Sentence words ->
+            words |> List.map (String.join "") |> String.join " "
 
 
 joinStrings : Kind -> Kind -> Maybe Kind
 joinStrings left right =
     case ( left, right ) of
         ( Letter l1, Letter l2 ) ->
-            Just <| Letters [ l1, l2 ]
+            Just <| Word [ l1, l2 ]
 
-        ( Letter l1, Letters ls2 ) ->
-            Just <| Letters <| l1 :: ls2
+        ( Word w1, Word w2 ) ->
+            Just <| Sentence [ w1, w2 ]
 
-        ( Letters ls1, Letter l2 ) ->
-            Just <| Letters <| ls1 ++ [ l2 ]
+        ( Sentence s1, Sentence s2 ) ->
+            Just <| Sentence <| s1 ++ s2
+
+        ( Letter l, Word w ) ->
+            Just <| Word <| l :: w
+
+        ( Word w, Letter l ) ->
+            Just <| Word <| w ++ [ l ]
+
+        ( Letter l, Sentence s ) ->
+            case s of
+                [] ->
+                    Nothing
+
+                firstWord :: rest ->
+                    Just <| Sentence <| (l :: firstWord) :: rest
+
+        ( Sentence s, Letter l ) ->
+            case List.head <| List.drop (List.length s - 1) s of
+                Nothing ->
+                    Nothing
+
+                Just last ->
+                    Just <| Sentence <| List.take (List.length s - 1) s ++ [ last ++ [ l ] ]
+
+        ( Word w, Sentence s ) ->
+            Just <| Sentence <| w :: s
+
+        ( Sentence s, Word w ) ->
+            Just <| Sentence <| s ++ [ w ]
 
         _ ->
             Nothing
@@ -127,8 +159,8 @@ transformString transformation string =
         ( Just fn, Letter l ) ->
             Just <| Letter <| fn l
 
-        ( Just fn, Letters ls ) ->
-            Just <| Letters <| List.map fn ls
+        ( Just fn, Word ls ) ->
+            Just <| Word <| List.map fn ls
 
         _ ->
             Nothing
@@ -178,7 +210,7 @@ isString kind =
         Letter _ ->
             True
 
-        Letters _ ->
+        Word _ ->
             True
 
         _ ->
@@ -193,7 +225,10 @@ is kind magnet =
 isCompound : Kind -> Bool
 isCompound kind =
     case kind of
-        Letters _ ->
+        Word _ ->
+            True
+
+        Sentence _ ->
             True
 
         _ ->
@@ -241,10 +276,18 @@ split isSource a b =
     case permutation a b (is Split) (mapKind isCompound) of
         Just ( split, compound ) ->
             case compound.data.kind of
-                Letters letters ->
+                Word letters ->
                     Just
                         ( letters
                             |> List.map (Letter >> magnetFromKind)
+                            |> TextRect.organizeInRowAround compound.position 5
+                        , [ { name = "Special", sources = [ split ] } ]
+                        )
+
+                Sentence words ->
+                    Just
+                        ( words
+                            |> List.map (Word >> magnetFromKind)
                             |> TextRect.organizeInRowAround compound.position 5
                         , [ { name = "Special", sources = [ split ] } ]
                         )
