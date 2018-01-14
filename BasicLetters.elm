@@ -159,8 +159,11 @@ transformString transformation string =
         ( Just fn, Letter l ) ->
             Just <| Letter <| fn l
 
-        ( Just fn, Word ls ) ->
-            Just <| Word <| List.map fn ls
+        ( Just fn, Word w ) ->
+            Just <| Word <| List.map fn w
+
+        ( Just fn, Sentence s ) ->
+            Just <| Sentence <| List.map (List.map fn) s
 
         _ ->
             Nothing
@@ -211,6 +214,9 @@ isString kind =
             True
 
         Word _ ->
+            True
+
+        Sentence _ ->
             True
 
         _ ->
