@@ -17,17 +17,16 @@ type alias Data =
 
 type Kind
     = Letter String
-    | Word (List String)
-    | Sentence (List (List String))
-    | UpperCase
-    | LowerCase
+    | Root (List String)
     | Split
     | Delete
 
 
 letters : List String
 letters =
-    "a b c d e f g h i j k l m n o p q r s t u v w x y z" |> String.split " "
+    "א ב ג ד ה ו ז ח ט י כ ל מ נ ס ע פ צ ק ר ש ת"
+        |> String.split " "
+        |> List.reverse
 
 
 sources : List (Category Data)
@@ -39,8 +38,6 @@ sources =
       , sources =
             [ sourceFromKind Delete
             , sourceFromKind Split
-            , sourceFromKind UpperCase
-            , sourceFromKind LowerCase
             ]
       }
     ]
@@ -71,112 +68,40 @@ defaultBackground magnet =
         Letter _ ->
             Color.black
 
-        Word _ ->
+        Root _ ->
             Color.black
-
-        Sentence _ ->
-            Color.darkGray
-
-        UpperCase ->
-            Color.darkBlue
-
-        LowerCase ->
-            Color.darkBlue
 
 
 text : Kind -> String
 text magnet =
     case magnet of
         Split ->
-            "[split]"
+            "[פיצול]"
 
         Delete ->
-            "[delete]"
-
-        UpperCase ->
-            "[UPPER]"
-
-        LowerCase ->
-            "[lower]"
+            "[מחיקה]"
 
         Letter letter ->
             letter
 
-        Word letters ->
-            letters |> String.join ""
-
-        Sentence words ->
-            words |> List.map (String.join "") |> String.join " "
+        Root letters ->
+            letters |> String.join "."
 
 
 joinStrings : Kind -> Kind -> Maybe Kind
 joinStrings left right =
-    case ( left, right ) of
+    case ( right, left ) of
         ( Letter l1, Letter l2 ) ->
-            Just <| Word [ l1, l2 ]
+            Just <| Root [ l1, l2 ]
 
-        ( Word w1, Word w2 ) ->
-            Just <| Sentence [ w1, w2 ]
+        ( Root w1, Root w2 ) ->
+            Just <| Root <| w1 ++ w2
 
-        ( Sentence s1, Sentence s2 ) ->
-            Just <| Sentence <| s1 ++ s2
+        ( Letter l, Root r ) ->
+            Just <| Root <| l :: r
 
-        ( Letter l, Word w ) ->
-            Just <| Word <| l :: w
-
-        ( Word w, Letter l ) ->
-            Just <| Word <| w ++ [ l ]
-
-        ( Letter l, Sentence s ) ->
-            case s of
-                [] ->
-                    Nothing
-
-                firstWord :: rest ->
-                    Just <| Sentence <| (l :: firstWord) :: rest
-
-        ( Sentence s, Letter l ) ->
-            case List.head <| List.drop (List.length s - 1) s of
-                Nothing ->
-                    Nothing
-
-                Just last ->
-                    Just <| Sentence <| List.take (List.length s - 1) s ++ [ last ++ [ l ] ]
-
-        ( Word w, Sentence s ) ->
-            Just <| Sentence <| w :: s
-
-        ( Sentence s, Word w ) ->
-            Just <| Sentence <| s ++ [ w ]
-
-        _ ->
-            Nothing
-
-
-transformString : Kind -> Kind -> Maybe Kind
-transformString transformation string =
-    case ( transformTransform transformation, string ) of
-        ( Just fn, Letter l ) ->
-            Just <| Letter <| fn l
-
-        ( Just fn, Word w ) ->
-            Just <| Word <| List.map fn w
-
-        ( Just fn, Sentence s ) ->
-            Just <| Sentence <| List.map (List.map fn) s
-
-        _ ->
-            Nothing
-
-
-transformTransform : Kind -> Maybe (String -> String)
-transformTransform kind =
-    case kind of
-        UpperCase ->
-            Just String.toUpper
-
-        LowerCase ->
-            Just String.toLower
+        ( Root r, Letter l ) ->
+            Just <| Root <| r ++ [ l ]
 
         _ ->
             Nothing
@@ -213,10 +138,7 @@ isString kind =
         Letter _ ->
             True
 
-        Word _ ->
-            True
-
-        Sentence _ ->
+        Root _ ->
             True
 
         _ ->
@@ -231,23 +153,7 @@ is kind magnet =
 isCompound : Kind -> Bool
 isCompound kind =
     case kind of
-        Word _ ->
-            True
-
-        Sentence _ ->
-            True
-
-        _ ->
-            False
-
-
-isTransformation : Kind -> Bool
-isTransformation kind =
-    case kind of
-        UpperCase ->
-            True
-
-        LowerCase ->
+        Root _ ->
             True
 
         _ ->
@@ -259,7 +165,6 @@ interaction =
     Magnet.Interaction.fromInteractors
         [ ( delete, Color.lightRed )
         , ( always split, Color.darkGreen )
-        , ( always transform, Color.darkGreen )
         , ( join, Color.darkGreen )
         ]
 
@@ -282,18 +187,11 @@ split isSource a b =
     case permutation a b (is Split) (mapKind isCompound) of
         Just ( split, compound ) ->
             case compound.data.kind of
-                Word letters ->
+                Root letters ->
                     Just
                         ( letters
                             |> List.map (Letter >> magnetFromKind)
-                            |> TextRect.organizeInRowAround compound.position 5
-                        , [ { name = "Special", sources = [ split ] } ]
-                        )
-
-                Sentence words ->
-                    Just
-                        ( words
-                            |> List.map (Word >> magnetFromKind)
+                            |> List.reverse
                             |> TextRect.organizeInRowAround compound.position 5
                         , [ { name = "Special", sources = [ split ] } ]
                         )
@@ -335,22 +233,6 @@ join rPos isSource a b =
                               ]
                             , []
                             )
-
-            Nothing ->
-                Nothing
-    else
-        Nothing
-
-
-transform : Interactor Data
-transform isSource a b =
-    if not isSource then
-        case permutation a b (mapKind isTransformation) (mapKind isString) of
-            Just ( transformation, string ) ->
-                transformString transformation.data.kind string.data.kind
-                    |> Maybe.map magnetFromKind
-                    |> Maybe.map (keepEdgeInPlace RelativePosition.On string)
-                    |> Maybe.map (\m -> ( [ m ], [ { name = "Special", sources = [ transformation ] } ] ))
 
             Nothing ->
                 Nothing

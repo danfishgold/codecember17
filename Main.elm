@@ -13,11 +13,11 @@ import History.Buttons exposing (HistoryButtons)
 import TextRect
 import Button
 import ElementSize
-import BasicLetters
+import Hebrew
 
 
 type alias Model =
-    { magnets : History (Magnets BasicLetters.Data)
+    { magnets : History (Magnets Hebrew.Data)
     , buttons : HistoryButtons Msg
     , size : Size
     , pointers : Mapping Pointer
@@ -32,13 +32,13 @@ type Msg
     | UpdateHistory History.Msg
 
 
-initialMagnets : History (Magnets BasicLetters.Data)
+initialMagnets : History (Magnets Hebrew.Data)
 initialMagnets =
     History.initial
         { stationary =
             []
         , dragging = Pointer.Mapping.empty
-        , sources = BasicLetters.sources
+        , sources = Hebrew.sources
         }
 
 
@@ -108,19 +108,19 @@ update msg model =
                             Magnet.startDragging remainingPointers
 
                         Pointer.Move ->
-                            Magnet.keepDragging BasicLetters.interaction
-                                (.data >> .kind >> BasicLetters.defaultBackground)
+                            Magnet.keepDragging Hebrew.interaction
+                                (.data >> .kind >> Hebrew.defaultBackground)
                                 model.pointers
                                 remainingPointers
 
                         Pointer.End ->
-                            Magnet.stopDragging BasicLetters.interaction
-                                (.data >> .kind >> BasicLetters.defaultBackground)
+                            Magnet.stopDragging Hebrew.interaction
+                                (.data >> .kind >> Hebrew.defaultBackground)
                                 event.pointers
 
                         Pointer.Cancel ->
-                            Magnet.stopDragging BasicLetters.interaction
-                                (.data >> .kind >> BasicLetters.defaultBackground)
+                            Magnet.stopDragging Hebrew.interaction
+                                (.data >> .kind >> Hebrew.defaultBackground)
                                 event.pointers
 
                 newMagnets =
