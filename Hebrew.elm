@@ -6,6 +6,15 @@ import Color exposing (Color)
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
 import TextRect
+import Hebrew.Verb as Verb
+    exposing
+        ( Effect(..)
+        , Conjugation(..)
+        , Tense(..)
+        , Person(..)
+        , Sex(..)
+        , Quantity(..)
+        )
 
 
 type alias Data =
@@ -18,6 +27,8 @@ type alias Data =
 type Kind
     = Letter String
     | Root (List String)
+    | Verb Verb.Verb
+    | Effect Verb.Effect
     | Split
     | Delete
 
@@ -38,6 +49,23 @@ sources =
       , sources =
             [ sourceFromKind Delete
             , sourceFromKind Split
+            ]
+      }
+    , { name = "Effects"
+      , sources =
+            [ sourceFromKind <| Effect <| AConj Paal
+            , sourceFromKind <| Effect <| AConj Nifal
+            , sourceFromKind <| Effect <| ATense Past
+            , sourceFromKind <| Effect <| ATense Present
+            , sourceFromKind <| Effect <| ATense Future
+            , sourceFromKind <| Effect <| ATense Imperative
+            , sourceFromKind <| Effect <| APerson First
+            , sourceFromKind <| Effect <| APerson Second
+            , sourceFromKind <| Effect <| APerson Third
+            , sourceFromKind <| Effect <| ASex Male
+            , sourceFromKind <| Effect <| ASex Female
+            , sourceFromKind <| Effect <| AQuantity Singular
+            , sourceFromKind <| Effect <| AQuantity Plural
             ]
       }
     ]
@@ -71,6 +99,12 @@ defaultBackground magnet =
         Root _ ->
             Color.black
 
+        Effect _ ->
+            Color.darkPurple
+
+        Verb _ ->
+            Color.darkGray
+
 
 text : Kind -> String
 text magnet =
@@ -86,6 +120,12 @@ text magnet =
 
         Root letters ->
             letters |> String.join "."
+
+        Effect effect ->
+            Verb.effectTitle effect
+
+        Verb verb ->
+            Verb.toString verb
 
 
 joinStrings : Kind -> Kind -> Maybe Kind
@@ -166,6 +206,7 @@ interaction =
         [ ( delete, Color.lightRed )
         , ( always split, Color.darkGreen )
         , ( join, Color.darkGreen )
+        , ( always verbEffect, Color.darkGreen )
         ]
 
 
@@ -233,6 +274,60 @@ join rPos isSource a b =
                               ]
                             , []
                             )
+
+            Nothing ->
+                Nothing
+    else
+        Nothing
+
+
+isEffect : Kind -> Bool
+isEffect kind =
+    case kind of
+        Effect _ ->
+            True
+
+        _ ->
+            False
+
+
+isRootOrVerb : Kind -> Bool
+isRootOrVerb kind =
+    case kind of
+        Root _ ->
+            True
+
+        Verb _ ->
+            True
+
+        _ ->
+            False
+
+
+verbEffect : Interactor Data
+verbEffect isSource a b =
+    if not isSource then
+        case permutation a b (mapKind isEffect) (mapKind isRootOrVerb) of
+            Just ( effect, verbThing ) ->
+                let
+                    newVerbKind =
+                        case ( verbThing.data.kind, effect.data.kind ) of
+                            ( Verb verb, Effect effect ) ->
+                                Just <| Verb <| Verb.apply effect verb
+
+                            ( Root root, Effect effect ) ->
+                                Just <| Verb <| Verb.apply effect <| Verb.verb root
+
+                            _ ->
+                                Nothing
+
+                    data =
+                        verbThing.data
+                in
+                    newVerbKind
+                        |> Maybe.map magnetFromKind
+                        |> Maybe.map (keepEdgeInPlace RelativePosition.On verbThing)
+                        |> Maybe.map (\m -> ( [ m ], [ { name = "Effects", sources = [ effect ] } ] ))
 
             Nothing ->
                 Nothing

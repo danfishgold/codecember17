@@ -39,6 +39,76 @@ type Quantity
     | Plural
 
 
+type Effect
+    = AConj Conjugation
+    | ATense Tense
+    | APerson Person
+    | ASex Sex
+    | AQuantity Quantity
+
+
+effectTitle : Effect -> String
+effectTitle effect =
+    case effect of
+        AConj Paal ->
+            "פעל"
+
+        AConj Nifal ->
+            "נפעל"
+
+        ATense Past ->
+            "עבר"
+
+        ATense Present ->
+            "הווה"
+
+        ATense Future ->
+            "עתיד"
+
+        ATense Imperative ->
+            "ציווי"
+
+        APerson First ->
+            "גוף ראשון"
+
+        APerson Second ->
+            "גוף שני"
+
+        APerson Third ->
+            "גוף שלישי"
+
+        ASex Male ->
+            "זכר"
+
+        ASex Female ->
+            "נקבה"
+
+        AQuantity Singular ->
+            "יחיד"
+
+        AQuantity Plural ->
+            "רבים"
+
+
+apply : Effect -> Verb -> Verb
+apply effect verb =
+    case effect of
+        AConj conj ->
+            { verb | conjugation = conj }
+
+        ATense tense ->
+            { verb | tense = tense }
+
+        APerson person ->
+            { verb | person = person }
+
+        ASex sex ->
+            { verb | sex = sex }
+
+        AQuantity quantity ->
+            { verb | quantity = quantity }
+
+
 verb : List String -> Verb
 verb root =
     { root = root
@@ -59,7 +129,7 @@ toString verb =
                     paalToString p e l verb.tense verb.person verb.sex verb.quantity
 
                 Nifal ->
-                    ""
+                    nifalToString p e l verb.tense verb.person verb.sex verb.quantity
 
         _ ->
             "NOT SUPPORTED"
