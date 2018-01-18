@@ -127,9 +127,11 @@ toString verb =
             case verb.conjugation of
                 Paal ->
                     paalToString p e l verb.tense verb.person verb.sex verb.quantity
+                        |> withFinalLetters
 
                 Nifal ->
                     nifalToString p e l verb.tense verb.person verb.sex verb.quantity
+                        |> withFinalLetters
 
         _ ->
             "NOT SUPPORTED"
@@ -313,3 +315,32 @@ nifalToString p e l tense person sex quantity =
 
                 ( Female, Plural ) ->
                     p ++ e ++ l ++ "נה"
+
+
+withFinalLetters : String -> String
+withFinalLetters word =
+    let
+        len =
+            String.length word
+
+        ( start, end ) =
+            ( String.slice 0 -1 word, String.slice -1 len word )
+    in
+        case end of
+            "כ" ->
+                start ++ "ך"
+
+            "מ" ->
+                start ++ "ם"
+
+            "נ" ->
+                start ++ "ן"
+
+            "פ" ->
+                start ++ "ף"
+
+            "צ" ->
+                start ++ "ץ"
+
+            _ ->
+                word
