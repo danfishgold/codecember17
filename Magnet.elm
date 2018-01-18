@@ -12,7 +12,7 @@ import Collage exposing (Collage, group)
 import Point
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
-import Util exposing (Size, filterFirst)
+import Util exposing (Size, Direction(..), filterFirst)
 import TextRect exposing (contains, moveBy)
 import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
@@ -120,13 +120,13 @@ maybePickUp identifier pointer magnets =
                     }
 
 
-repositionSources : Size -> Size -> Magnets data -> Magnets data
-repositionSources area padding magnets =
+repositionSources : Direction -> Size -> Size -> Magnets data -> Magnets data
+repositionSources dir area padding magnets =
     let
         folder category ( previous, currentY ) =
             let
                 ( organized, nextY ) =
-                    TextRect.organizeInRows currentY area padding category.sources
+                    TextRect.organizeInRows dir currentY area padding category.sources
             in
                 ( { category | sources = organized } :: previous, nextY )
     in

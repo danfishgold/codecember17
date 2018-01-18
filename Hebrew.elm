@@ -6,6 +6,7 @@ import Color exposing (Color)
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
 import TextRect
+import Util exposing (Direction(..))
 import Hebrew.Verb as Verb
     exposing
         ( Effect(..)
@@ -37,7 +38,6 @@ letters : List String
 letters =
     "א ב ג ד ה ו ז ח ט י כ ל מ נ ס ע פ צ ק ר ש ת"
         |> String.split " "
-        |> List.reverse
 
 
 sources : List (Category Data)
@@ -232,8 +232,7 @@ split isSource a b =
                     Just
                         ( letters
                             |> List.map (Letter >> magnetFromKind)
-                            |> List.reverse
-                            |> TextRect.organizeInRowAround compound.position 5
+                            |> TextRect.organizeInRowAround Rtl compound.position 5
                         , [ { name = "Special", sources = [ split ] } ]
                         )
 

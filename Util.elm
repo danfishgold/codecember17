@@ -3,6 +3,7 @@ module Util
         ( Size
         , Edges
         , Collage
+        , Direction(..)
         , filterFirst
         , filterMapFirst
         , maybeOr
@@ -29,6 +30,11 @@ type alias Collage a =
         | width : Float
         , height : Float
     }
+
+
+type Direction
+    = Rtl
+    | Ltr
 
 
 filterFirst : (a -> Bool) -> List a -> ( List a, Maybe a )

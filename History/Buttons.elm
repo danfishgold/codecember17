@@ -11,7 +11,7 @@ module History.Buttons
 
 import History exposing (History)
 import Button exposing (Button)
-import Util exposing (Size)
+import Util exposing (Size, Direction(..))
 import TextRect
 import Collage exposing (Collage, group)
 
@@ -63,8 +63,8 @@ updateEnabled history { undo, redo, clear } =
     }
 
 
-reposition : Size -> Size -> HistoryButtons msg -> HistoryButtons msg
-reposition area padding buttons =
+reposition : Direction -> Size -> Size -> HistoryButtons msg -> HistoryButtons msg
+reposition dir area padding buttons =
     let
         y0 =
             buttons
@@ -74,7 +74,8 @@ reposition area padding buttons =
                 |> Maybe.withDefault 0
                 |> (+) (2 * padding.height)
     in
-        TextRect.organizeInRows (area.height - y0)
+        TextRect.organizeInRows dir
+            (area.height - y0)
             area
             padding
             (toList buttons)

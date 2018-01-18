@@ -7,7 +7,7 @@ import Collage.Render exposing (svgBox)
 import Color
 import Pointer exposing (Pointer)
 import Pointer.Mapping exposing (Mapping)
-import Util exposing (Size)
+import Util exposing (Size, Direction(..))
 import History exposing (History)
 import History.Buttons exposing (HistoryButtons)
 import TextRect
@@ -152,13 +152,13 @@ refreshElements model =
     let
         newMagnets =
             History.modifyInPlace
-                (Magnet.repositionSources model.size TextRect.defaultPadding)
+                (Magnet.repositionSources Rtl model.size TextRect.defaultPadding)
                 model.magnets
     in
         { model
             | magnets = newMagnets
             , buttons =
-                History.Buttons.reposition model.size TextRect.defaultPadding model.buttons
+                History.Buttons.reposition Ltr model.size TextRect.defaultPadding model.buttons
                     |> History.Buttons.updateEnabled newMagnets
         }
 

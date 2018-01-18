@@ -17,7 +17,7 @@ module TextRect
 import Collage exposing (Collage, group, rendered, rectangle, filled, uniform, shift)
 import Collage.Text as Text
 import Collage.Layout as Layout
-import Util exposing (Size, Edges)
+import Util exposing (Size, Edges, Direction(..))
 import Color exposing (Color)
 import Point exposing (Point)
 
@@ -109,8 +109,8 @@ moveBy delta rect =
     { rect | position = Point.add rect.position delta }
 
 
-centerPositionsForRows : Float -> Size -> Size -> List (TextRect a) -> ( List Point, Float )
-centerPositionsForRows offsetY area padding rects =
+centerPositionsForRows : Direction -> Float -> Size -> Size -> List (TextRect a) -> ( List Point, Float )
+centerPositionsForRows dir offsetY area padding rects =
     let
         sizes =
             List.map size rects
@@ -123,9 +123,16 @@ centerPositionsForRows offsetY area padding rects =
                 |> (+) padding.height
 
         insideCollage ( x0, y0 ) size =
-            ( x0 + size.width / 2 - area.width / 2
-            , area.height / 2 - (offsetY + y0 + size.height / 2)
-            )
+            case dir of
+                Ltr ->
+                    ( x0 + size.width / 2 - area.width / 2
+                    , area.height / 2 - (offsetY + y0 + size.height / 2)
+                    )
+
+                Rtl ->
+                    ( area.width / 2 - (x0 + size.width / 2)
+                    , area.height / 2 - (offsetY + y0 + size.height / 2)
+                    )
 
         shouldPlaceHere currentX size =
             -- can fit in current row
@@ -156,14 +163,14 @@ centerPositionsForRows offsetY area padding rects =
         recurse ( 0, padding.height ) [] sizes |> Tuple.mapFirst List.reverse
 
 
-organizeInRows : Float -> Size -> Size -> List (TextRect a) -> ( List (TextRect a), Float )
-organizeInRows offsetY area padding rects =
+organizeInRows : Direction -> Float -> Size -> Size -> List (TextRect a) -> ( List (TextRect a), Float )
+organizeInRows dir offsetY area padding rects =
     if List.isEmpty rects then
         ( [], offsetY )
     else
         let
             ( positions, nextY ) =
-                centerPositionsForRows
+                centerPositionsForRows dir
                     offsetY
                     area
                     padding
@@ -201,22 +208,27 @@ listCenter rects =
             |> Maybe.withDefault ( 0, 0 )
 
 
-organizeInRowAround : Point -> Float -> List (TextRect a) -> List (TextRect a)
-organizeInRowAround ( x0, y0 ) padding rects =
-    let
-        widths =
-            List.map (size >> .width) rects
+organizeInRowAround : Direction -> Point -> Float -> List (TextRect a) -> List (TextRect a)
+organizeInRowAround dir ( x0, y0 ) padding rects =
+    case dir of
+        Rtl ->
+            organizeInRowAround Ltr ( x0, y0 ) padding (List.reverse rects)
 
-        totalWidth =
-            List.sum widths + padding * toFloat (List.length rects - 1)
+        Ltr ->
+            let
+                widths =
+                    List.map (size >> .width) rects
 
-        offset =
-            x0 - totalWidth / 2
+                totalWidth =
+                    List.sum widths + padding * toFloat (List.length rects - 1)
 
-        rights =
-            List.scanl (\width prevX -> prevX + padding + width) offset widths
+                offset =
+                    x0 - totalWidth / 2
 
-        centerXs =
-            List.map2 (\right width -> right + width / 2) rights widths
-    in
-        List.map2 (\x rect -> { rect | position = ( x, y0 ) }) centerXs rects
+                rights =
+                    List.scanl (\width prevX -> prevX + padding + width) offset widths
+
+                centerXs =
+                    List.map2 (\right width -> right + width / 2) rights widths
+            in
+                List.map2 (\x rect -> { rect | position = ( x, y0 ) }) centerXs rects
