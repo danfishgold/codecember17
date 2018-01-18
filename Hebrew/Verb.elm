@@ -114,7 +114,7 @@ verb root =
     { root = root
     , conjugation = Paal
     , tense = Past
-    , person = First
+    , person = Third
     , sex = Male
     , quantity = Singular
     }
