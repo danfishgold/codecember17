@@ -8,6 +8,8 @@ module Util
         , filterMapFirst
         , maybeOr
         , between
+        , (?>)
+        , mapLast
         )
 
 
@@ -84,3 +86,22 @@ maybeOr lazyOther current =
 between : Float -> Float -> Float -> Bool
 between a b x =
     a <= x && x <= b
+
+
+(?>) : Maybe a -> (a -> b) -> Maybe b
+(?>) =
+    flip Maybe.map
+
+
+mapLast : (a -> List a) -> List a -> List a
+mapLast fn xs =
+    let
+        len =
+            List.length xs
+
+        ( start, end ) =
+            ( List.take (len - 1) xs
+            , List.head <| List.drop (len - 1) xs
+            )
+    in
+        end ?> fn |> Maybe.withDefault [] |> \newEnd -> start ++ newEnd
