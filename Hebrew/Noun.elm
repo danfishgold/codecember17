@@ -1,6 +1,7 @@
 module Hebrew.Noun exposing (..)
 
 import Util exposing (between, (?>), mapLast)
+import Hebrew.Base as Base exposing (Quantity(..))
 
 
 type ConstructState
@@ -21,6 +22,7 @@ type alias Noun =
     , constructState : ConstructState
     , isDefinite : Bool
     , form : Form
+    , quantity : Quantity
     }
 
 
@@ -63,24 +65,45 @@ toString noun =
             "NOT SUPPORTED"
 
         Just ktl_ ->
-            case ( noun.form, noun.constructState ) of
-                ( Katal, _ ) ->
+            case ( noun.form, noun.constructState, noun.quantity ) of
+                ( Katal, _, Singular ) ->
                     ktl_
 
-                ( Miktal, _ ) ->
+                ( Katal, Possessor, Plural ) ->
+                    ktl_ ++ "ים"
+
+                ( Katal, Possessed, Plural ) ->
+                    ktl_ ++ "י"
+
+                ( Miktal, _, Singular ) ->
                     "מ" ++ ktl_
 
-                ( Katelet, _ ) ->
+                ( Miktal, Possessor, Plural ) ->
+                    "מ" ++ ktl_ ++ "ים"
+
+                ( Miktal, Possessed, Plural ) ->
+                    "מ" ++ ktl_ ++ "י"
+
+                ( Katelet, _, Singular ) ->
                     ktl_ ++ "ת"
 
-                ( Miktala, Possessor ) ->
+                ( Katelet, _, Plural ) ->
+                    ktl_ ++ "ות"
+
+                ( Miktala, Possessor, Singular ) ->
                     "מ" ++ ktl_ ++ "ה"
 
-                ( Miktala, Possessed ) ->
+                ( Miktala, Possessed, Singular ) ->
                     "מ" ++ ktl_ ++ "ת"
 
-                ( Katlia, Possessor ) ->
+                ( Miktala, _, Plural ) ->
+                    "מ" ++ ktl_ ++ "ות"
+
+                ( Katlia, Possessor, Singular ) ->
                     ktl_ ++ "יה"
 
-                ( Katlia, Possessed ) ->
+                ( Katlia, Possessed, Singular ) ->
                     ktl_ ++ "יית"
+
+                ( Katlia, _, Plural ) ->
+                    ktl_ ++ "יות"
