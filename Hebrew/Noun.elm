@@ -32,6 +32,40 @@ type alias Construct =
     }
 
 
+noun : List String -> Noun
+noun root =
+    { root = root
+    , constructState = Possessor
+    , isDefinite = False
+    , form = Katal
+    , quantity = Singular
+    }
+
+
+setForm : Form -> Noun -> Noun
+setForm form noun =
+    { noun | form = form }
+
+
+formTitle : Form -> String
+formTitle form =
+    case form of
+        Katal ->
+            "קטל"
+
+        Miktal ->
+            "מקטל"
+
+        Katelet ->
+            "קטלת"
+
+        Miktala ->
+            "מקטלה"
+
+        Katlia ->
+            "קטליה"
+
+
 construct : List Noun -> Construct
 construct nouns =
     { nouns = nouns
