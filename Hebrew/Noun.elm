@@ -3,13 +3,17 @@ module Hebrew.Noun exposing (..)
 import Util exposing (between, (?>), mapLast)
 
 
-type alias Form =
-    ConstructState -> List String -> Maybe String
-
-
 type ConstructState
     = Possessed
     | Possessor
+
+
+type Form
+    = Katal
+    | Miktal
+    | Katelet
+    | Miktala
+    | Katlia
 
 
 type alias Noun =
@@ -52,36 +56,31 @@ ktl root =
             Nothing
 
 
-katal : Form
-katal state root =
-    ktl root
+toString : Noun -> String
+toString noun =
+    case ktl noun.root of
+        Nothing ->
+            "NOT SUPPORTED"
 
+        Just ktl_ ->
+            case ( noun.form, noun.constructState ) of
+                ( Katal, _ ) ->
+                    ktl_
 
-miktal : Form
-miktal state root =
-    ktl root ?> \ktl -> "מ" ++ ktl
+                ( Miktal, _ ) ->
+                    "מ" ++ ktl_
 
+                ( Katelet, _ ) ->
+                    ktl_ ++ "ת"
 
-katelet : Form
-katelet state root =
-    ktl root ?> \ktl -> ktl ++ "ת"
+                ( Miktala, Possessor ) ->
+                    "מ" ++ ktl_ ++ "ה"
 
+                ( Miktala, Possessed ) ->
+                    "מ" ++ ktl_ ++ "ת"
 
-miktala : Form
-miktala state root =
-    case state of
-        Possessor ->
-            ktl root ?> \ktl -> "מ" ++ ktl ++ "ה"
+                ( Katlia, Possessor ) ->
+                    ktl_ ++ "יה"
 
-        Possessed ->
-            ktl root ?> \ktl -> "מ" ++ ktl ++ "ת"
-
-
-katlia : Form
-katlia state root =
-    case state of
-        Possessor ->
-            ktl root ?> \ktl -> ktl ++ "יה"
-
-        Possessed ->
-            ktl root ?> \ktl -> ktl ++ "יית"
+                ( Katlia, Possessed ) ->
+                    ktl_ ++ "יית"
