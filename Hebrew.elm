@@ -7,15 +7,16 @@ import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
 import TextRect
 import Util exposing (Direction(..))
-import Hebrew.Verb as Verb
+import Hebrew.Base as Base
     exposing
-        ( Effect(..)
-        , Conjugation(..)
-        , Tense(..)
+        ( Tense(..)
         , Person(..)
         , Sex(..)
         , Quantity(..)
         )
+import Hebrew.Verb as Verb exposing (Conjugation(..), Effect(..))
+
+
 
 
 type alias Data =
@@ -29,6 +30,7 @@ type Kind
     = Letter String
     | Root (List String)
     | Verb Verb.Verb
+      -- | Noun Noun.Noun
     | Effect Verb.Effect
     | Split
     | Delete
@@ -53,19 +55,19 @@ sources =
       }
     , { name = "Effects"
       , sources =
-            [ sourceFromKind <| Effect <| AConj Paal
-            , sourceFromKind <| Effect <| AConj Nifal
-            , sourceFromKind <| Effect <| ATense Past
-            , sourceFromKind <| Effect <| ATense Present
-            , sourceFromKind <| Effect <| ATense Future
-            , sourceFromKind <| Effect <| ATense Imperative
-            , sourceFromKind <| Effect <| APerson First
-            , sourceFromKind <| Effect <| APerson Second
-            , sourceFromKind <| Effect <| APerson Third
-            , sourceFromKind <| Effect <| ASex Male
-            , sourceFromKind <| Effect <| ASex Female
-            , sourceFromKind <| Effect <| AQuantity Singular
-            , sourceFromKind <| Effect <| AQuantity Plural
+            [ sourceFromKind <| Effect <| Conj Paal
+            , sourceFromKind <| Effect <| Conj Nifal
+            , sourceFromKind <| Effect <| Tense Past
+            , sourceFromKind <| Effect <| Tense Present
+            , sourceFromKind <| Effect <| Tense Future
+            , sourceFromKind <| Effect <| Tense Imperative
+            , sourceFromKind <| Effect <| Person First
+            , sourceFromKind <| Effect <| Person Second
+            , sourceFromKind <| Effect <| Person Third
+            , sourceFromKind <| Effect <| Sex Male
+            , sourceFromKind <| Effect <| Sex Female
+            , sourceFromKind <| Effect <| Quantity Singular
+            , sourceFromKind <| Effect <| Quantity Plural
             ]
       }
     ]

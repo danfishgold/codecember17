@@ -1,5 +1,18 @@
 module Hebrew.Verb exposing (..)
 
+import Hebrew.Base as Base
+    exposing
+        ( Tense(..)
+        , Person(..)
+        , Sex(..)
+        , Quantity(..)
+        )
+
+
+type Conjugation
+    = Paal
+    | Nifal
+
 
 type alias Verb =
     { root : List String
@@ -11,101 +24,73 @@ type alias Verb =
     }
 
 
-type Conjugation
-    = Paal
-    | Nifal
-
-
-type Tense
-    = Past
-    | Present
-    | Future
-    | Imperative
-
-
-type Person
-    = First
-    | Second
-    | Third
-
-
-type Sex
-    = Male
-    | Female
-
-
-type Quantity
-    = Singular
-    | Plural
-
-
 type Effect
-    = AConj Conjugation
-    | ATense Tense
-    | APerson Person
-    | ASex Sex
-    | AQuantity Quantity
+    = Conj Conjugation
+    | Tense Base.Tense
+    | Person Base.Person
+    | Sex Base.Sex
+    | Quantity Base.Quantity
 
 
 effectTitle : Effect -> String
 effectTitle effect =
     case effect of
-        AConj Paal ->
+        Conj Paal ->
             "פעל"
 
-        AConj Nifal ->
+        Conj Nifal ->
             "נפעל"
 
-        ATense Past ->
+        Tense Past ->
             "עבר"
 
-        ATense Present ->
+        Tense Present ->
             "הווה"
 
-        ATense Future ->
+        Tense Future ->
             "עתיד"
 
-        ATense Imperative ->
+        Tense Imperative ->
             "ציווי"
 
-        APerson First ->
+        Person First ->
             "גוף ראשון"
 
-        APerson Second ->
+        Person Second ->
             "גוף שני"
 
-        APerson Third ->
+        Person Third ->
             "גוף שלישי"
 
-        ASex Male ->
+        Sex Male ->
             "זכר"
 
-        ASex Female ->
+        Sex Female ->
             "נקבה"
 
-        AQuantity Singular ->
+        Quantity Singular ->
             "יחיד"
 
-        AQuantity Plural ->
+        Quantity Plural ->
             "רבים"
 
 
 apply : Effect -> Verb -> Verb
 apply effect verb =
     case effect of
-        AConj conj ->
+        Conj conj ->
             { verb | conjugation = conj }
 
-        ATense tense ->
+        Tense tense ->
             { verb | tense = tense }
 
-        APerson person ->
+        Person person ->
             { verb | person = person }
 
-        ASex sex ->
+        Sex sex ->
             { verb | sex = sex }
 
-        AQuantity quantity ->
+        Quantity quantity ->
             { verb | quantity = quantity }
 
 
