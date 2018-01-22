@@ -47,6 +47,16 @@ setForm form noun =
     { noun | form = form }
 
 
+setQuantity : Quantity -> Noun -> Noun
+setQuantity quantity noun =
+    { noun | quantity = quantity }
+
+
+setConstructState : ConstructState -> Noun -> Noun
+setConstructState state noun =
+    { noun | constructState = state }
+
+
 formTitle : Form -> String
 formTitle form =
     case form of
@@ -64,6 +74,16 @@ formTitle form =
 
         Katlia ->
             "קטליה"
+
+
+constructStateTitle : ConstructState -> String
+constructStateTitle state =
+    case state of
+        Possessor ->
+            "סומך"
+
+        Possessed ->
+            "נסמך"
 
 
 construct : List Noun -> Construct

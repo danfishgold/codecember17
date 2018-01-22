@@ -9,7 +9,7 @@ import TextRect
 import Util exposing (Direction(..))
 import Hebrew.Base as Base exposing (Tense(..), Person(..), Sex(..), Quantity(..))
 import Hebrew.Verb as Verb exposing (Conjugation(..))
-import Hebrew.Noun as Noun exposing (Form(..))
+import Hebrew.Noun as Noun exposing (Form(..), ConstructState(..))
 
 
 type alias Data =
@@ -30,6 +30,7 @@ type Kind
     | Person Base.Person
     | Sex Base.Sex
     | Quantity Base.Quantity
+    | ConstructState Noun.ConstructState
     | Split
     | Delete
 
@@ -55,6 +56,9 @@ sources =
       , sources =
             [ sourceFromKind <| Conj Paal
             , sourceFromKind <| Conj Nifal
+            , sourceFromKind <| Form Katal
+            , sourceFromKind <| Form Miktal
+            , sourceFromKind <| Form Miktala
             , sourceFromKind <| Tense Past
             , sourceFromKind <| Tense Present
             , sourceFromKind <| Tense Future
@@ -66,9 +70,8 @@ sources =
             , sourceFromKind <| Sex Female
             , sourceFromKind <| Quantity Singular
             , sourceFromKind <| Quantity Plural
-            , sourceFromKind <| Form Katal
-            , sourceFromKind <| Form Miktal
-            , sourceFromKind <| Form Miktala
+            , sourceFromKind <| ConstructState Possessor
+            , sourceFromKind <| ConstructState Possessed
             ]
       }
     ]
@@ -106,7 +109,7 @@ defaultBackground magnet =
             Color.darkBrown
 
         Form _ ->
-            Color.darkBrown
+            Color.darkYellow
 
         Tense _ ->
             Color.darkPurple
@@ -118,6 +121,9 @@ defaultBackground magnet =
             Color.darkPurple
 
         Quantity _ ->
+            Color.darkPurple
+
+        ConstructState _ ->
             Color.darkPurple
 
         Verb _ ->
@@ -159,6 +165,9 @@ text magnet =
 
         Quantity quantity ->
             Base.quantityTitle quantity
+
+        ConstructState state ->
+            Noun.constructStateTitle state
 
         Verb verb ->
             Verb.toString verb |> Base.withFinalLetters
@@ -279,6 +288,8 @@ verbInteractors =
 nounInteractors : List (Interactor Data)
 nounInteractors =
     [ effectInteractor formFromKind nounFromKind Noun Noun.setForm
+    , effectInteractor quantityFromKind nounFromKind Noun Noun.setQuantity
+    , effectInteractor constructStateFromKind nounFromKind Noun Noun.setConstructState
     ]
 
 
@@ -405,6 +416,16 @@ quantityFromKind kind =
     case kind of
         Quantity quantity ->
             Just quantity
+
+        _ ->
+            Nothing
+
+
+constructStateFromKind : Kind -> Maybe Noun.ConstructState
+constructStateFromKind kind =
+    case kind of
+        ConstructState state ->
+            Just state
 
         _ ->
             Nothing
