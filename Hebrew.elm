@@ -8,7 +8,7 @@ import Magnet.Category exposing (Category)
 import TextRect
 import Util exposing (Direction(..))
 import Hebrew.Base as Base exposing (Tense(..), Person(..), Sex(..), Quantity(..))
-import Hebrew.Verb as Verb exposing (Conjugation(..), Effect)
+import Hebrew.Verb as Verb exposing (Conjugation(..))
 import Hebrew.Noun as Noun exposing (Form(..))
 
 
@@ -24,8 +24,12 @@ type Kind
     | Root (List String)
     | Verb Verb.Verb
     | Noun Noun.Noun
-    | Effect Verb.Effect
+    | Conj Verb.Conjugation
     | Form Noun.Form
+    | Tense Base.Tense
+    | Person Base.Person
+    | Sex Base.Sex
+    | Quantity Base.Quantity
     | Split
     | Delete
 
@@ -47,26 +51,22 @@ sources =
             , sourceFromKind Split
             ]
       }
-    , { name = "Verb Effects"
+    , { name = "Effects"
       , sources =
-            [ sourceFromKind <| Effect <| Verb.Conj Paal
-            , sourceFromKind <| Effect <| Verb.Conj Nifal
-            , sourceFromKind <| Effect <| Verb.Tense Past
-            , sourceFromKind <| Effect <| Verb.Tense Present
-            , sourceFromKind <| Effect <| Verb.Tense Future
-            , sourceFromKind <| Effect <| Verb.Tense Imperative
-            , sourceFromKind <| Effect <| Verb.Person First
-            , sourceFromKind <| Effect <| Verb.Person Second
-            , sourceFromKind <| Effect <| Verb.Person Third
-            , sourceFromKind <| Effect <| Verb.Sex Male
-            , sourceFromKind <| Effect <| Verb.Sex Female
-            , sourceFromKind <| Effect <| Verb.Quantity Singular
-            , sourceFromKind <| Effect <| Verb.Quantity Plural
-            ]
-      }
-    , { name = "Noun Effects"
-      , sources =
-            [ sourceFromKind <| Form Katal
+            [ sourceFromKind <| Conj Paal
+            , sourceFromKind <| Conj Nifal
+            , sourceFromKind <| Tense Past
+            , sourceFromKind <| Tense Present
+            , sourceFromKind <| Tense Future
+            , sourceFromKind <| Tense Imperative
+            , sourceFromKind <| Person First
+            , sourceFromKind <| Person Second
+            , sourceFromKind <| Person Third
+            , sourceFromKind <| Sex Male
+            , sourceFromKind <| Sex Female
+            , sourceFromKind <| Quantity Singular
+            , sourceFromKind <| Quantity Plural
+            , sourceFromKind <| Form Katal
             , sourceFromKind <| Form Miktal
             , sourceFromKind <| Form Miktala
             ]
@@ -102,11 +102,23 @@ defaultBackground magnet =
         Root _ ->
             Color.black
 
-        Effect _ ->
-            Color.darkPurple
+        Conj _ ->
+            Color.darkBrown
 
         Form _ ->
             Color.darkBrown
+
+        Tense _ ->
+            Color.darkPurple
+
+        Person _ ->
+            Color.darkPurple
+
+        Sex _ ->
+            Color.darkPurple
+
+        Quantity _ ->
+            Color.darkPurple
 
         Verb _ ->
             Color.darkGray
@@ -130,17 +142,29 @@ text magnet =
         Root letters ->
             letters |> String.join "."
 
-        Effect effect ->
-            Verb.effectTitle effect
+        Conj conj ->
+            Verb.conjugationTitle conj
 
         Form form ->
             Noun.formTitle form
 
+        Tense tense ->
+            Base.tenseTitle tense
+
+        Person person ->
+            Base.personTitle person
+
+        Sex sex ->
+            Base.sexTitle sex
+
+        Quantity quantity ->
+            Base.quantityTitle quantity
+
         Verb verb ->
-            Verb.toString verb
+            Verb.toString verb |> Base.withFinalLetters
 
         Noun noun ->
-            Noun.toString noun
+            Noun.toString noun |> Base.withFinalLetters
 
 
 joinStrings : Kind -> Kind -> Maybe Kind
@@ -182,6 +206,21 @@ permutation a b fn1 fn2 =
         Nothing
 
 
+extractFromPermutation : a -> a -> (a -> Maybe b) -> (a -> Maybe c) -> Maybe ( ( a, b ), ( a, c ) )
+extractFromPermutation a b fn1 fn2 =
+    case ( fn1 a, fn2 b ) of
+        ( Just fa, Just fb ) ->
+            Just ( ( a, fa ), ( b, fb ) )
+
+        _ ->
+            case ( fn1 b, fn2 a ) of
+                ( Just fb, Just fa ) ->
+                    Just ( ( b, fb ), ( a, fa ) )
+
+                _ ->
+                    Nothing
+
+
 mapKind : (Kind -> a) -> Magnet Data -> a
 mapKind fn magnet =
     fn magnet.data.kind
@@ -217,13 +256,30 @@ isCompound kind =
 
 interaction : Interaction Data
 interaction =
-    Magnet.Interaction.fromInteractors
-        [ ( delete, Color.lightRed )
-        , ( always split, Color.darkGreen )
-        , ( join, Color.darkGreen )
-        , ( always verbEffect, Color.darkGreen )
-        , ( always nounEffect, Color.darkGreen )
-        ]
+    Magnet.Interaction.fromInteractors <|
+        List.concat
+            [ [ ( delete, Color.lightRed )
+              , ( always split, Color.darkGreen )
+              , ( join, Color.darkGreen )
+              ]
+            , verbInteractors ++ nounInteractors |> List.map (\interactor -> ( always interactor, Color.darkGreen ))
+            ]
+
+
+verbInteractors : List (Interactor Data)
+verbInteractors =
+    [ effectInteractor conjugationFromKind verbFromKind Verb Verb.setConjugation
+    , effectInteractor tenseFromKind verbFromKind Verb Verb.setTense
+    , effectInteractor personFromKind verbFromKind Verb Verb.setPerson
+    , effectInteractor sexFromKind verbFromKind Verb Verb.setSex
+    , effectInteractor quantityFromKind verbFromKind Verb Verb.setQuantity
+    ]
+
+
+nounInteractors : List (Interactor Data)
+nounInteractors =
+    [ effectInteractor formFromKind nounFromKind Noun Noun.setForm
+    ]
 
 
 delete : RelativePosition -> Interactor Data
@@ -296,24 +352,108 @@ join rPos isSource a b =
         Nothing
 
 
-isEffect : Kind -> Bool
-isEffect kind =
+effectInteractor : (Kind -> Maybe effect) -> (Kind -> Maybe word) -> (word -> Kind) -> (effect -> word -> word) -> Interactor Data
+effectInteractor effectFromKind wordFromKind wordKind setEffect isSource a b =
+    if not isSource then
+        case extractFromPermutation a b (mapKind effectFromKind) (mapKind wordFromKind) of
+            Just ( ( effectMagnet, effect ), ( verbMagnet, verb ) ) ->
+                setEffect effect verb
+                    |> wordKind
+                    |> magnetFromKind
+                    |> (keepEdgeInPlace RelativePosition.On verbMagnet)
+                    |> (\m -> ( [ m ], [ { name = "Effects", sources = [ effectMagnet ] } ] ))
+                    |> Just
+
+            Nothing ->
+                Nothing
+    else
+        Nothing
+
+
+tenseFromKind : Kind -> Maybe Base.Tense
+tenseFromKind kind =
     case kind of
-        Effect _ ->
-            True
+        Tense tense ->
+            Just tense
 
         _ ->
-            False
+            Nothing
 
 
-isForm : Kind -> Bool
-isForm kind =
+personFromKind : Kind -> Maybe Base.Person
+personFromKind kind =
     case kind of
-        Form _ ->
-            True
+        Person person ->
+            Just person
 
         _ ->
-            False
+            Nothing
+
+
+sexFromKind : Kind -> Maybe Base.Sex
+sexFromKind kind =
+    case kind of
+        Sex sex ->
+            Just sex
+
+        _ ->
+            Nothing
+
+
+quantityFromKind : Kind -> Maybe Base.Quantity
+quantityFromKind kind =
+    case kind of
+        Quantity quantity ->
+            Just quantity
+
+        _ ->
+            Nothing
+
+
+formFromKind : Kind -> Maybe Noun.Form
+formFromKind kind =
+    case kind of
+        Form form ->
+            Just form
+
+        _ ->
+            Nothing
+
+
+conjugationFromKind : Kind -> Maybe Verb.Conjugation
+conjugationFromKind kind =
+    case kind of
+        Conj conj ->
+            Just conj
+
+        _ ->
+            Nothing
+
+
+verbFromKind : Kind -> Maybe Verb.Verb
+verbFromKind kind =
+    case kind of
+        Verb verb ->
+            Just verb
+
+        Root root ->
+            Just <| Verb.verb root
+
+        _ ->
+            Nothing
+
+
+nounFromKind : Kind -> Maybe Noun.Noun
+nounFromKind kind =
+    case kind of
+        Noun noun ->
+            Just noun
+
+        Root root ->
+            Just <| Noun.noun root
+
+        _ ->
+            Nothing
 
 
 isRootOrVerb : Kind -> Bool
@@ -342,66 +482,20 @@ isRootOrNoun kind =
             False
 
 
-verbEffect : Interactor Data
-verbEffect isSource a b =
-    if not isSource then
-        case permutation a b (mapKind isEffect) (mapKind isRootOrVerb) of
-            Just ( effect, verbThing ) ->
-                let
-                    newVerbKind =
-                        case ( verbThing.data.kind, effect.data.kind ) of
-                            ( Verb verb, Effect effect ) ->
-                                Just <| Verb <| Verb.apply effect verb
+isRootOrNounOrVerb : Kind -> Bool
+isRootOrNounOrVerb kind =
+    case kind of
+        Root _ ->
+            True
 
-                            ( Root root, Effect effect ) ->
-                                Just <| Verb <| Verb.apply effect <| Verb.verb root
+        Noun _ ->
+            True
 
-                            _ ->
-                                Nothing
+        Verb _ ->
+            True
 
-                    data =
-                        verbThing.data
-                in
-                    newVerbKind
-                        |> Maybe.map magnetFromKind
-                        |> Maybe.map (keepEdgeInPlace RelativePosition.On verbThing)
-                        |> Maybe.map (\m -> ( [ m ], [ { name = "Verb Effects", sources = [ effect ] } ] ))
-
-            Nothing ->
-                Nothing
-    else
-        Nothing
-
-
-nounEffect : Interactor Data
-nounEffect isSource a b =
-    if not isSource then
-        case permutation a b (mapKind isForm) (mapKind isRootOrNoun) of
-            Just ( effect, nounThing ) ->
-                let
-                    newNounKind =
-                        case ( nounThing.data.kind, effect.data.kind ) of
-                            ( Noun noun, Form form ) ->
-                                Just <| Noun <| Noun.setForm form noun
-
-                            ( Root root, Form form ) ->
-                                Just <| Noun <| Noun.setForm form <| Noun.noun root
-
-                            _ ->
-                                Nothing
-
-                    data =
-                        nounThing.data
-                in
-                    newNounKind
-                        |> Maybe.map magnetFromKind
-                        |> Maybe.map (keepEdgeInPlace RelativePosition.On nounThing)
-                        |> Maybe.map (\m -> ( [ m ], [ { name = "Noun Effects", sources = [ effect ] } ] ))
-
-            Nothing ->
-                Nothing
-    else
-        Nothing
+        _ ->
+            False
 
 
 magnetFromKind : Kind -> Magnet Data

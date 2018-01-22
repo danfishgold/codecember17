@@ -24,74 +24,39 @@ type alias Verb =
     }
 
 
-type Effect
-    = Conj Conjugation
-    | Tense Base.Tense
-    | Person Base.Person
-    | Sex Base.Sex
-    | Quantity Base.Quantity
-
-
-effectTitle : Effect -> String
-effectTitle effect =
-    case effect of
-        Conj Paal ->
+conjugationTitle : Conjugation -> String
+conjugationTitle conj =
+    case conj of
+        Paal ->
             "פעל"
 
-        Conj Nifal ->
+        Nifal ->
             "נפעל"
 
-        Tense Past ->
-            "עבר"
 
-        Tense Present ->
-            "הווה"
-
-        Tense Future ->
-            "עתיד"
-
-        Tense Imperative ->
-            "ציווי"
-
-        Person First ->
-            "גוף ראשון"
-
-        Person Second ->
-            "גוף שני"
-
-        Person Third ->
-            "גוף שלישי"
-
-        Sex Male ->
-            "זכר"
-
-        Sex Female ->
-            "נקבה"
-
-        Quantity Singular ->
-            "יחיד"
-
-        Quantity Plural ->
-            "רבים"
+setConjugation : Conjugation -> Verb -> Verb
+setConjugation conj verb =
+    { verb | conjugation = conj }
 
 
-apply : Effect -> Verb -> Verb
-apply effect verb =
-    case effect of
-        Conj conj ->
-            { verb | conjugation = conj }
+setTense : Tense -> Verb -> Verb
+setTense tense verb =
+    { verb | tense = tense }
 
-        Tense tense ->
-            { verb | tense = tense }
 
-        Person person ->
-            { verb | person = person }
+setPerson : Person -> Verb -> Verb
+setPerson person verb =
+    { verb | person = person }
 
-        Sex sex ->
-            { verb | sex = sex }
 
-        Quantity quantity ->
-            { verb | quantity = quantity }
+setSex : Sex -> Verb -> Verb
+setSex sex verb =
+    { verb | sex = sex }
+
+
+setQuantity : Quantity -> Verb -> Verb
+setQuantity quantity verb =
+    { verb | quantity = quantity }
 
 
 verb : List String -> Verb
@@ -112,11 +77,9 @@ toString verb =
             case verb.conjugation of
                 Paal ->
                     paalToString p e l verb.tense verb.person verb.sex verb.quantity
-                        |> withFinalLetters
 
                 Nifal ->
                     nifalToString p e l verb.tense verb.person verb.sex verb.quantity
-                        |> withFinalLetters
 
         _ ->
             "NOT SUPPORTED"
@@ -300,32 +263,3 @@ nifalToString p e l tense person sex quantity =
 
                 ( Female, Plural ) ->
                     p ++ e ++ l ++ "נה"
-
-
-withFinalLetters : String -> String
-withFinalLetters word =
-    let
-        len =
-            String.length word
-
-        ( start, end ) =
-            ( String.slice 0 -1 word, String.slice -1 len word )
-    in
-        case end of
-            "כ" ->
-                start ++ "ך"
-
-            "מ" ->
-                start ++ "ם"
-
-            "נ" ->
-                start ++ "ן"
-
-            "פ" ->
-                start ++ "ף"
-
-            "צ" ->
-                start ++ "ץ"
-
-            _ ->
-                word
