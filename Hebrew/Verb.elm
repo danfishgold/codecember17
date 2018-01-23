@@ -39,26 +39,6 @@ setConjugation conj verb =
     { verb | conjugation = conj }
 
 
-setTense : Tense -> Verb -> Verb
-setTense tense verb =
-    { verb | tense = tense }
-
-
-setPerson : Person -> Verb -> Verb
-setPerson person verb =
-    { verb | person = person }
-
-
-setSex : Sex -> Verb -> Verb
-setSex sex verb =
-    { verb | sex = sex }
-
-
-setQuantity : Quantity -> Verb -> Verb
-setQuantity quantity verb =
-    { verb | quantity = quantity }
-
-
 verb : List String -> Verb
 verb root =
     { root = root

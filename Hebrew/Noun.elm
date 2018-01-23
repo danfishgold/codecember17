@@ -47,11 +47,6 @@ setForm form noun =
     { noun | form = form }
 
 
-setQuantity : Quantity -> Noun -> Noun
-setQuantity quantity noun =
-    { noun | quantity = quantity }
-
-
 setConstructState : ConstructState -> Noun -> Noun
 setConstructState state noun =
     { noun | constructState = state }

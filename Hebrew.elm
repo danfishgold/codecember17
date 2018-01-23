@@ -278,17 +278,17 @@ interaction =
 verbInteractors : List (Interactor Data)
 verbInteractors =
     [ effectInteractor conjugationFromKind verbFromKind Verb Verb.setConjugation
-    , effectInteractor tenseFromKind verbFromKind Verb Verb.setTense
-    , effectInteractor personFromKind verbFromKind Verb Verb.setPerson
-    , effectInteractor sexFromKind verbFromKind Verb Verb.setSex
-    , effectInteractor quantityFromKind verbFromKind Verb Verb.setQuantity
+    , effectInteractor tenseFromKind verbFromKind Verb Base.setTense
+    , effectInteractor personFromKind verbFromKind Verb Base.setPerson
+    , effectInteractor sexFromKind verbFromKind Verb Base.setSex
+    , effectInteractor quantityFromKind verbFromKind Verb Base.setQuantity
     ]
 
 
 nounInteractors : List (Interactor Data)
 nounInteractors =
     [ effectInteractor formFromKind nounFromKind Noun Noun.setForm
-    , effectInteractor quantityFromKind nounFromKind Noun Noun.setQuantity
+    , effectInteractor quantityFromKind nounFromKind Noun Base.setQuantity
     , effectInteractor constructStateFromKind nounFromKind Noun Noun.setConstructState
     ]
 

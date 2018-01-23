@@ -100,3 +100,23 @@ withFinalLetters word =
 
             _ ->
                 word
+
+
+setQuantity : Quantity -> { word | quantity : Quantity } -> { word | quantity : Quantity }
+setQuantity quantity noun =
+    { noun | quantity = quantity }
+
+
+setTense : Tense -> { word | tense : Tense } -> { word | tense : Tense }
+setTense tense verb =
+    { verb | tense = tense }
+
+
+setPerson : Person -> { word | person : Person } -> { word | person : Person }
+setPerson person verb =
+    { verb | person = person }
+
+
+setSex : Sex -> { word | sex : Sex } -> { word | sex : Sex }
+setSex sex verb =
+    { verb | sex = sex }
