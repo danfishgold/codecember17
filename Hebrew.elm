@@ -59,7 +59,9 @@ sources =
             , sourceFromKind <| Conj Nifal
             , sourceFromKind <| Form Katal
             , sourceFromKind <| Form Miktal
+            , sourceFromKind <| Form Katelet
             , sourceFromKind <| Form Miktala
+            , sourceFromKind <| Form Katlia
             , sourceFromKind <| Tense Past
             , sourceFromKind <| Tense Present
             , sourceFromKind <| Tense Future
@@ -73,6 +75,12 @@ sources =
             , sourceFromKind <| Quantity Plural
             , sourceFromKind <| ConstructState Possessor
             , sourceFromKind <| ConstructState Possessed
+            ]
+      }
+    , { name = "Roots"
+      , sources =
+            [ sourceFromKind <| Root [ "ס", "פ", "ר" ]
+            , sourceFromKind <| Root [ "מ", "ש", "ל" ]
             ]
       }
     ]
