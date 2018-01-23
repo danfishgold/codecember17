@@ -278,6 +278,9 @@ isCompound kind =
         Root _ ->
             True
 
+        Construct _ ->
+            True
+
         _ ->
             False
 
@@ -334,6 +337,14 @@ split isSource a b =
                     Just
                         ( letters
                             |> List.map (Letter >> magnetFromKind)
+                            |> TextRect.organizeInRowAround Rtl compound.position 5
+                        , [ { name = "Special", sources = [ split ] } ]
+                        )
+
+                Construct construct ->
+                    Just
+                        ( Noun.split construct
+                            |> List.map (Noun >> magnetFromKind)
                             |> TextRect.organizeInRowAround Rtl compound.position 5
                         , [ { name = "Special", sources = [ split ] } ]
                         )
