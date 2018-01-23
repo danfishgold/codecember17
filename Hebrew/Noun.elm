@@ -57,6 +57,11 @@ setConstructState state noun =
     { noun | constructState = state }
 
 
+setDefinite : Bool -> Noun -> Noun
+setDefinite isDefinite noun =
+    { noun | isDefinite = isDefinite }
+
+
 formTitle : Form -> String
 formTitle form =
     case form of
@@ -96,8 +101,7 @@ construct nouns =
 split : Construct -> List Noun
 split construct =
     construct.nouns
-        |> List.map (\n -> { n | isDefinite = False })
-        |> mapLast (\n -> [ { n | isDefinite = construct.isDefinite } ])
+        |> mapLast (setDefinite construct.isDefinite >> List.singleton)
 
 
 ktl : List String -> Maybe String
