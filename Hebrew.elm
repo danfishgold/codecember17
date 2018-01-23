@@ -24,6 +24,7 @@ type Kind
     | Root (List String)
     | Verb Verb.Verb
     | Noun Noun.Noun
+    | Construct Noun.Construct
     | Conj Verb.Conjugation
     | Form Noun.Form
     | Tense Base.Tense
@@ -132,6 +133,9 @@ defaultBackground magnet =
         Noun _ ->
             Color.darkGray
 
+        Construct _ ->
+            Color.darkGray
+
 
 text : Kind -> String
 text magnet =
@@ -175,6 +179,9 @@ text magnet =
         Noun noun ->
             Noun.toString noun |> Base.withFinalLetters
 
+        Construct construct ->
+            Noun.constructToString construct |> Base.withFinalLetters
+
 
 joinStrings : Kind -> Kind -> Maybe Kind
 joinStrings left right =
@@ -190,6 +197,18 @@ joinStrings left right =
 
         ( Root r, Letter l ) ->
             Just <| Root <| r ++ [ l ]
+
+        ( Noun n1, Noun n2 ) ->
+            Just <| Construct <| Noun.construct [ n1, n2 ]
+
+        ( Noun n, Construct c ) ->
+            Just <| Construct <| Noun.construct (n :: c.nouns)
+
+        ( Construct c, Noun n ) ->
+            Just <| Construct <| Noun.construct <| c.nouns ++ [ n ]
+
+        ( Construct c1, Construct c2 ) ->
+            Just <| Construct <| Noun.construct <| c1.nouns ++ c2.nouns
 
         _ ->
             Nothing
