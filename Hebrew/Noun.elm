@@ -52,9 +52,9 @@ setConstructState state noun =
     { noun | constructState = state }
 
 
-setDefinite : Bool -> Noun -> Noun
-setDefinite isDefinite noun =
-    { noun | isDefinite = isDefinite }
+setDefinite : Bool -> { np | isDefinite : Bool } -> { np | isDefinite : Bool }
+setDefinite isDefinite np =
+    { np | isDefinite = isDefinite }
 
 
 formTitle : Form -> String
@@ -99,6 +99,15 @@ split construct =
         |> mapLast (setDefinite construct.isDefinite >> List.singleton)
 
 
+constructToString : Construct -> String
+constructToString construct =
+    construct.nouns
+        |> List.map (setConstructState Possessed >> setDefinite False)
+        |> mapLast (setConstructState Possessor >> setDefinite construct.isDefinite >> List.singleton)
+        |> List.map toString
+        |> String.join " "
+
+
 ktl : List String -> Maybe String
 ktl root =
     let
@@ -111,6 +120,52 @@ ktl root =
             Nothing
 
 
+makeString : Form -> ConstructState -> Quantity -> String -> String
+makeString form constructState quantity ktl =
+    case ( form, constructState, quantity ) of
+        ( Katal, _, Singular ) ->
+            ktl
+
+        ( Katal, Possessor, Plural ) ->
+            ktl ++ "ים"
+
+        ( Katal, Possessed, Plural ) ->
+            ktl ++ "י"
+
+        ( Miktal, _, Singular ) ->
+            "מ" ++ ktl
+
+        ( Miktal, Possessor, Plural ) ->
+            "מ" ++ ktl ++ "ים"
+
+        ( Miktal, Possessed, Plural ) ->
+            "מ" ++ ktl ++ "י"
+
+        ( Katelet, _, Singular ) ->
+            ktl ++ "ת"
+
+        ( Katelet, _, Plural ) ->
+            ktl ++ "ות"
+
+        ( Miktala, Possessor, Singular ) ->
+            "מ" ++ ktl ++ "ה"
+
+        ( Miktala, Possessed, Singular ) ->
+            "מ" ++ ktl ++ "ת"
+
+        ( Miktala, _, Plural ) ->
+            "מ" ++ ktl ++ "ות"
+
+        ( Katlia, Possessor, Singular ) ->
+            ktl ++ "יה"
+
+        ( Katlia, Possessed, Singular ) ->
+            ktl ++ "יית"
+
+        ( Katlia, _, Plural ) ->
+            ktl ++ "יות"
+
+
 toString : Noun -> String
 toString noun =
     case ktl noun.root of
@@ -118,45 +173,11 @@ toString noun =
             "NOT SUPPORTED"
 
         Just ktl_ ->
-            case ( noun.form, noun.constructState, noun.quantity ) of
-                ( Katal, _, Singular ) ->
-                    ktl_
-
-                ( Katal, Possessor, Plural ) ->
-                    ktl_ ++ "ים"
-
-                ( Katal, Possessed, Plural ) ->
-                    ktl_ ++ "י"
-
-                ( Miktal, _, Singular ) ->
-                    "מ" ++ ktl_
-
-                ( Miktal, Possessor, Plural ) ->
-                    "מ" ++ ktl_ ++ "ים"
-
-                ( Miktal, Possessed, Plural ) ->
-                    "מ" ++ ktl_ ++ "י"
-
-                ( Katelet, _, Singular ) ->
-                    ktl_ ++ "ת"
-
-                ( Katelet, _, Plural ) ->
-                    ktl_ ++ "ות"
-
-                ( Miktala, Possessor, Singular ) ->
-                    "מ" ++ ktl_ ++ "ה"
-
-                ( Miktala, Possessed, Singular ) ->
-                    "מ" ++ ktl_ ++ "ת"
-
-                ( Miktala, _, Plural ) ->
-                    "מ" ++ ktl_ ++ "ות"
-
-                ( Katlia, Possessor, Singular ) ->
-                    ktl_ ++ "יה"
-
-                ( Katlia, Possessed, Singular ) ->
-                    ktl_ ++ "יית"
-
-                ( Katlia, _, Plural ) ->
-                    ktl_ ++ "יות"
+            let
+                string =
+                    makeString noun.form noun.constructState noun.quantity ktl_
+            in
+                if noun.constructState == Possessor && noun.isDefinite then
+                    "ה" ++ string
+                else
+                    string
