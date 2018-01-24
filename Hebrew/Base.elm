@@ -31,7 +31,7 @@ tenseTitle tense =
             "עבר"
 
         Present ->
-            "הווה"
+            "בינוני"
 
         Future ->
             "עתיד"
