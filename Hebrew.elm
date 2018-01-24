@@ -125,19 +125,19 @@ defaultBackground magnet =
             Color.darkYellow
 
         Tense _ ->
-            Color.darkPurple
+            Color.rgb 64 48 117
 
         Person _ ->
-            Color.darkPurple
+            Color.rgb 75 45 115
 
         Sex _ ->
-            Color.darkPurple
+            Color.rgb 88 42 114
 
         Quantity _ ->
-            Color.darkPurple
+            Color.rgb 111 37 111
 
         ConstructState _ ->
-            Color.darkPurple
+            Color.rgb 152 51 82
 
         Verb _ ->
             Color.darkGray
