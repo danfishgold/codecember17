@@ -49,40 +49,43 @@ sources =
       }
     , { name = "Special"
       , sources =
-            [ sourceFromKind Delete
-            , sourceFromKind Split
+            [ Delete
+            , Split
             ]
+                |> List.map sourceFromKind
       }
     , { name = "Effects"
       , sources =
-            [ sourceFromKind <| Conj Paal
-            , sourceFromKind <| Conj Nifal
-            , sourceFromKind <| Conj Hitpael
-            , sourceFromKind <| Form Katal
-            , sourceFromKind <| Form Miktal
-            , sourceFromKind <| Form Katelet
-            , sourceFromKind <| Form Miktala
-            , sourceFromKind <| Form Katlia
-            , sourceFromKind <| Tense Past
-            , sourceFromKind <| Tense Present
-            , sourceFromKind <| Tense Future
-            , sourceFromKind <| Tense Imperative
-            , sourceFromKind <| Person First
-            , sourceFromKind <| Person Second
-            , sourceFromKind <| Person Third
-            , sourceFromKind <| Sex Male
-            , sourceFromKind <| Sex Female
-            , sourceFromKind <| Quantity Singular
-            , sourceFromKind <| Quantity Plural
-            , sourceFromKind <| ConstructState Possessor
-            , sourceFromKind <| ConstructState Possessed
+            [ Conj Paal
+            , Conj Nifal
+            , Conj Hitpael
+            , Form Katal
+            , Form Miktal
+            , Form Katelet
+            , Form Miktala
+            , Form Katlia
+            , Tense Past
+            , Tense Present
+            , Tense Future
+            , Tense Imperative
+            , Person First
+            , Person Second
+            , Person Third
+            , Sex Male
+            , Sex Female
+            , Quantity Singular
+            , Quantity Plural
+            , ConstructState Possessor
+            , ConstructState Possessed
             ]
+                |> List.map sourceFromKind
       }
     , { name = "Roots"
       , sources =
-            [ sourceFromKind <| Root [ "ס", "פ", "ר" ]
-            , sourceFromKind <| Root [ "מ", "ש", "ל" ]
+            [ [ "ס", "פ", "ר" ]
+            , [ "מ", "ש", "ל" ]
             ]
+                |> List.map (Root >> sourceFromKind)
       }
     ]
 
