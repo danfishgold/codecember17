@@ -305,25 +305,35 @@ interaction =
               , ( always split, Color.darkGreen )
               , ( join, Color.darkGreen )
               ]
-            , verbInteractors ++ nounInteractors |> List.map (\interactor -> ( always interactor, Color.darkGreen ))
+            , List.concat
+                [ verbInteractors
+                , nounInteractors
+                , wordInteractors
+                ]
+                |> List.map (\interactor -> ( always interactor, Color.darkGreen ))
             ]
 
 
 verbInteractors : List (Interactor Data)
 verbInteractors =
-    [ effectInteractor conjugationFromKind verbFromKind Verb Verb.setConjugation
-    , effectInteractor tenseFromKind verbFromKind Verb Base.setTense
-    , effectInteractor personFromKind verbFromKind Verb Base.setPerson
-    , effectInteractor sexFromKind verbFromKind Verb Base.setSex
-    , effectInteractor quantityFromKind verbFromKind Verb Base.setQuantity
+    [ effectInteractor tenseFromKind verbFromVerbLike Verb Base.setTense
+    , effectInteractor personFromKind verbFromVerbLike Verb Base.setPerson
+    , effectInteractor sexFromKind verbFromVerbLike Verb Base.setSex
+    , effectInteractor quantityFromKind verbFromVerbLike Verb Base.setQuantity
     ]
 
 
 nounInteractors : List (Interactor Data)
 nounInteractors =
-    [ effectInteractor formFromKind nounFromKind Noun Noun.setForm
-    , effectInteractor quantityFromKind nounFromKind Noun Base.setQuantity
-    , effectInteractor constructStateFromKind nounFromKind Noun Noun.setConstructState
+    [ effectInteractor quantityFromKind nounFromNounLike Noun Base.setQuantity
+    , effectInteractor constructStateFromKind nounFromNounLike Noun Noun.setConstructState
+    ]
+
+
+wordInteractors : List (Interactor Data)
+wordInteractors =
+    [ effectInteractor formFromKind nounFromWordLike Noun Noun.setForm
+    , effectInteractor conjugationFromKind verbFromWordLike Verb Verb.setConjugation
     ]
 
 
@@ -493,8 +503,8 @@ conjugationFromKind kind =
             Nothing
 
 
-verbFromKind : Kind -> Maybe Verb.Verb
-verbFromKind kind =
+verbFromVerbLike : Kind -> Maybe Verb.Verb
+verbFromVerbLike kind =
     case kind of
         Verb verb ->
             Just verb
@@ -506,14 +516,46 @@ verbFromKind kind =
             Nothing
 
 
-nounFromKind : Kind -> Maybe Noun.Noun
-nounFromKind kind =
+verbFromWordLike : Kind -> Maybe Verb.Verb
+verbFromWordLike kind =
+    case kind of
+        Verb verb ->
+            Just verb
+
+        Root root ->
+            Just <| Verb.verb root
+
+        Noun noun ->
+            Just <| Base.setQuantity noun.quantity <| Verb.verb noun.root
+
+        _ ->
+            Nothing
+
+
+nounFromNounLike : Kind -> Maybe Noun.Noun
+nounFromNounLike kind =
     case kind of
         Noun noun ->
             Just noun
 
         Root root ->
             Just <| Noun.noun root
+
+        _ ->
+            Nothing
+
+
+nounFromWordLike : Kind -> Maybe Noun.Noun
+nounFromWordLike kind =
+    case kind of
+        Noun noun ->
+            Just noun
+
+        Root root ->
+            Just <| Noun.noun root
+
+        Verb verb ->
+            Just <| Base.setQuantity verb.quantity <| Noun.noun verb.root
 
         _ ->
             Nothing
