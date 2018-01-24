@@ -12,6 +12,7 @@ import Hebrew.Base as Base
 type Conjugation
     = Paal
     | Nifal
+    | Hitpael
 
 
 type alias Verb =
@@ -32,6 +33,9 @@ conjugationTitle conj =
 
         Nifal ->
             "נפעל"
+
+        Hitpael ->
+            "התפעל"
 
 
 setConjugation : Conjugation -> Verb -> Verb
@@ -60,6 +64,9 @@ toString verb =
 
                 Nifal ->
                     nifalToString p e l verb.tense verb.person verb.sex verb.quantity
+
+                Hitpael ->
+                    hitpaelToString p e l verb.tense verb.person verb.sex verb.quantity
 
         _ ->
             "NOT SUPPORTED"
@@ -243,3 +250,113 @@ nifalToString p e l tense person sex quantity =
 
                 ( Female, Plural ) ->
                     p ++ e ++ l ++ "נה"
+
+
+hitpaelToString : String -> String -> String -> Tense -> Person -> Sex -> Quantity -> String
+hitpaelToString p e l tense person sex quantity =
+    let
+        ( t, p_ ) =
+            hitpaelHelper p
+    in
+        case tense of
+            Past ->
+                case ( person, sex, quantity ) of
+                    ( First, _, Singular ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "תי"
+
+                    ( First, _, Plural ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "נו"
+
+                    ( Second, _, Singular ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "ת"
+
+                    ( Second, Male, Plural ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "תם"
+
+                    ( Second, Female, Plural ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "תן"
+
+                    ( Third, Male, Singular ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l
+
+                    ( Third, Female, Singular ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "ה"
+
+                    ( Third, _, Plural ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "ו"
+
+            Present ->
+                case ( sex, quantity ) of
+                    ( Male, Singular ) ->
+                        "מ" ++ t ++ p_ ++ e ++ l
+
+                    ( Female, Singular ) ->
+                        "מ" ++ t ++ p_ ++ e ++ l ++ "ת"
+
+                    ( Male, Plural ) ->
+                        "מ" ++ t ++ p_ ++ e ++ l ++ "ים"
+
+                    ( Female, Plural ) ->
+                        "מ" ++ t ++ p_ ++ e ++ l ++ "ות"
+
+            Future ->
+                case ( person, sex, quantity ) of
+                    ( First, _, Singular ) ->
+                        "א" ++ t ++ p_ ++ e ++ l
+
+                    ( First, _, Plural ) ->
+                        "נ" ++ t ++ p_ ++ e ++ l
+
+                    ( Second, Male, Singular ) ->
+                        "ת" ++ t ++ p_ ++ e ++ l
+
+                    ( Second, Female, Singular ) ->
+                        "ת" ++ t ++ p_ ++ e ++ l ++ "י"
+
+                    ( Second, Male, Plural ) ->
+                        "ת" ++ t ++ p_ ++ e ++ l ++ "ו"
+
+                    ( Second, Female, Plural ) ->
+                        "ת" ++ t ++ p_ ++ e ++ l ++ "נה"
+
+                    ( Third, Male, Singular ) ->
+                        "י" ++ t ++ p_ ++ e ++ l
+
+                    ( Third, Female, Singular ) ->
+                        "ת" ++ t ++ p_ ++ e ++ l
+
+                    ( Third, Male, Plural ) ->
+                        "י" ++ t ++ p_ ++ e ++ l ++ "ו"
+
+                    ( Third, Female, Plural ) ->
+                        "ת" ++ t ++ p_ ++ e ++ l ++ "נה"
+
+            Imperative ->
+                case ( sex, quantity ) of
+                    ( Male, Singular ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l
+
+                    ( Female, Singular ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "י"
+
+                    ( Male, Plural ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "ו"
+
+                    ( Female, Plural ) ->
+                        "ה" ++ t ++ p_ ++ e ++ l ++ "נה"
+
+
+hitpaelHelper : String -> ( String, String )
+hitpaelHelper p =
+    if p == "ס" || p == "ש" then
+        ( p, "ת" )
+    else if p == "ז" then
+        ( p, "ד" )
+    else if p == "צ" then
+        ( p, "ט" )
+    else if p == "ת" then
+        ( "", p )
+    else if p == "ד" || p == "ט" then
+        ( "", p )
+    else
+        ( "ת", p )

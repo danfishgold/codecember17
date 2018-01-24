@@ -57,6 +57,7 @@ sources =
       , sources =
             [ sourceFromKind <| Conj Paal
             , sourceFromKind <| Conj Nifal
+            , sourceFromKind <| Conj Hitpael
             , sourceFromKind <| Form Katal
             , sourceFromKind <| Form Miktal
             , sourceFromKind <| Form Katelet
