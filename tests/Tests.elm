@@ -4,6 +4,7 @@ import Expect exposing (Expectation)
 import Test exposing (..)
 import Hebrew.Verb as Verb exposing (Verb, Conjugation(..))
 import Hebrew.Base as Base exposing (Tense(..), Person(..), Sex(..), Quantity(..))
+import Test.Runner.Html
 
 
 describeVerb : Verb -> String
@@ -227,3 +228,8 @@ suite =
             , testVerb "פעל" Hitpael Future Female Plural Third "תתפעלנה"
             ]
         ]
+
+
+main : Test.Runner.Html.TestProgram
+main =
+    Test.Runner.Html.run suite
