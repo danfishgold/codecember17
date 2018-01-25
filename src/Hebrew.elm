@@ -58,6 +58,8 @@ sources =
       , sources =
             [ Conj Paal
             , Conj Nifal
+            , Conj Hifil
+            , Conj Hufal
             , Conj Hitpael
             , Form Katal
             , Form Miktal
