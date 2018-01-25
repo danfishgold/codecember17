@@ -65,6 +65,18 @@ sentence verb =
         [ prefix, word, postfix ] |> String.join " "
 
 
+debugSentence : Verb -> String
+debugSentence verb =
+    [ toString verb.conjugation
+    , toString verb.tense
+    , toString verb.sex
+    , toString verb.quantity
+    , toString verb.person
+    , Verb.toString verb
+    ]
+        |> String.join " "
+
+
 allOptions : List String -> Verb.Conjugation -> List Verb
 allOptions root conj =
     let
@@ -91,4 +103,4 @@ allOptions root conj =
 
 test : List String -> Verb.Conjugation -> String
 test root conj =
-    allOptions root conj |> List.map sentence |> String.join "\n"
+    allOptions root conj |> List.map debugSentence |> String.join "\n"
