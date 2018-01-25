@@ -25,6 +25,15 @@ type alias Verb =
     }
 
 
+type alias Splits =
+    { pal : String
+    , p : String
+    , pa : String
+    , al : String
+    , l : String
+    }
+
+
 conjugationTitle : Conjugation -> String
 conjugationTitle conj =
     case conj of
@@ -56,41 +65,56 @@ verb root =
 
 toString : Verb -> String
 toString verb =
-    case pAndAl verb.root of
-        Just ( p, al ) ->
+    maybeWord verb |> Maybe.withDefault "NOT SUPPORTED"
+
+
+maybeWord : Verb -> Maybe String
+maybeWord verb =
+    case splits verb.root of
+        Just spl ->
             case verb.conjugation of
                 Paal ->
-                    paalToString p al verb.tense verb.person verb.sex verb.quantity
+                    Just <| paalToString spl verb.tense verb.person verb.sex verb.quantity
 
                 Nifal ->
-                    nifalToString p al verb.tense verb.person verb.sex verb.quantity
+                    Just <| nifalToString spl verb.tense verb.person verb.sex verb.quantity
+
 
                 Hitpael ->
-                    hitpaelToString p al verb.tense verb.person verb.sex verb.quantity
+                    Just <| hitpaelToString spl verb.tense verb.person verb.sex verb.quantity
 
         Nothing ->
-            "NOT SUPPORTED"
+            Nothing
 
 
-pAndAl : List String -> Maybe ( String, String )
-pAndAl root =
+splits : List String -> Maybe Splits
+splits root =
     case root of
         [ p, e, l ] ->
-            Just ( p, e ++ l )
+            Just <|
+                { pal = p ++ e ++ l
+                , p = p
+                , pa = p ++ e
+                , al = e ++ l
+                , l = l
+                }
 
         [ p, a, e, l ] ->
-            Just ( p, a ++ e ++ l )
+            Just <|
+                { pal = p ++ a ++ e ++ l
+                , p = p
+                , pa = p ++ a ++ e
+                , al = a ++ e ++ l
+                , l = l
+                }
 
         _ ->
             Nothing
 
 
-paalToString : String -> String -> Tense -> Person -> Sex -> Quantity -> String
-paalToString p al tense person sex quantity =
+paalToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
+paalToString { pal, p, al } tense person sex quantity =
     let
-        pal =
-            p ++ al
-
         poel =
             p ++ "ו" ++ al
     in
@@ -182,102 +206,98 @@ paalToString p al tense person sex quantity =
                         pal ++ "נה"
 
 
-nifalToString : String -> String -> Tense -> Person -> Sex -> Quantity -> String
-nifalToString p al tense person sex quantity =
-    let
-        pal =
-            p ++ al
-    in
-        case tense of
-            Past ->
-                case ( person, sex, quantity ) of
-                    ( First, _, Singular ) ->
-                        "נ" ++ pal ++ "תי"
+nifalToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
+nifalToString { pal } tense person sex quantity =
+    case tense of
+        Past ->
+            case ( person, sex, quantity ) of
+                ( First, _, Singular ) ->
+                    "נ" ++ pal ++ "תי"
 
-                    ( First, _, Plural ) ->
-                        "נ" ++ pal ++ "נו"
+                ( First, _, Plural ) ->
+                    "נ" ++ pal ++ "נו"
 
-                    ( Second, _, Singular ) ->
-                        "נ" ++ pal ++ "ת"
+                ( Second, _, Singular ) ->
+                    "נ" ++ pal ++ "ת"
 
-                    ( Second, Male, Plural ) ->
-                        "נ" ++ pal ++ "תם"
+                ( Second, Male, Plural ) ->
+                    "נ" ++ pal ++ "תם"
 
-                    ( Second, Female, Plural ) ->
-                        "נ" ++ pal ++ "תן"
+                ( Second, Female, Plural ) ->
+                    "נ" ++ pal ++ "תן"
 
-                    ( Third, Male, Singular ) ->
-                        "נ" ++ pal
+                ( Third, Male, Singular ) ->
+                    "נ" ++ pal
 
-                    ( Third, Female, Singular ) ->
-                        "נ" ++ pal ++ "ה"
+                ( Third, Female, Singular ) ->
+                    "נ" ++ pal ++ "ה"
 
-                    ( Third, _, Plural ) ->
-                        "נ" ++ pal ++ "ו"
+                ( Third, _, Plural ) ->
+                    "נ" ++ pal ++ "ו"
 
-            Present ->
-                case ( sex, quantity ) of
-                    ( Male, Singular ) ->
-                        "נ" ++ pal
+        Present ->
+            case ( sex, quantity ) of
+                ( Male, Singular ) ->
+                    "נ" ++ pal
 
-                    ( Female, Singular ) ->
-                        "נ" ++ pal ++ "ת"
+                ( Female, Singular ) ->
+                    "נ" ++ pal ++ "ת"
 
-                    ( Male, Plural ) ->
-                        "נ" ++ pal ++ "ים"
+                ( Male, Plural ) ->
+                    "נ" ++ pal ++ "ים"
 
-                    ( Female, Plural ) ->
-                        "נ" ++ pal ++ "ות"
+                ( Female, Plural ) ->
+                    "נ" ++ pal ++ "ות"
 
-            Future ->
-                case ( person, sex, quantity ) of
-                    ( First, _, Singular ) ->
-                        "א" ++ pal
+        Future ->
+            case ( person, sex, quantity ) of
+                ( First, _, Singular ) ->
+                    "א" ++ pal
 
-                    ( First, _, Plural ) ->
-                        "נ" ++ pal
+                ( First, _, Plural ) ->
+                    "נ" ++ pal
 
-                    ( Second, Male, Singular ) ->
-                        "ת" ++ pal
+                ( Second, Male, Singular ) ->
+                    "ת" ++ pal
 
-                    ( Second, Female, Singular ) ->
-                        "ת" ++ pal ++ "י"
+                ( Second, Female, Singular ) ->
+                    "ת" ++ pal ++ "י"
 
-                    ( Second, Male, Plural ) ->
-                        "ת" ++ pal ++ "ו"
+                ( Second, Male, Plural ) ->
+                    "ת" ++ pal ++ "ו"
 
-                    ( Second, Female, Plural ) ->
-                        "ת" ++ pal ++ "נה"
+                ( Second, Female, Plural ) ->
+                    "ת" ++ pal ++ "נה"
 
-                    ( Third, Male, Singular ) ->
-                        "י" ++ pal
+                ( Third, Male, Singular ) ->
+                    "י" ++ pal
 
-                    ( Third, Female, Singular ) ->
-                        "ת" ++ pal
+                ( Third, Female, Singular ) ->
+                    "ת" ++ pal
 
-                    ( Third, Male, Plural ) ->
-                        "י" ++ pal ++ "ו"
+                ( Third, Male, Plural ) ->
+                    "י" ++ pal ++ "ו"
 
-                    ( Third, Female, Plural ) ->
-                        "ת" ++ pal ++ "נה"
+                ( Third, Female, Plural ) ->
+                    "ת" ++ pal ++ "נה"
 
-            Imperative ->
-                case ( sex, quantity ) of
-                    ( Male, Singular ) ->
-                        pal
+        Imperative ->
+            case ( sex, quantity ) of
+                ( Male, Singular ) ->
+                    pal
 
-                    ( Female, Singular ) ->
-                        pal ++ "י"
+                ( Female, Singular ) ->
+                    pal ++ "י"
 
-                    ( Male, Plural ) ->
-                        pal ++ "ו"
+                ( Male, Plural ) ->
+                    pal ++ "ו"
 
-                    ( Female, Plural ) ->
-                        pal ++ "נה"
+                ( Female, Plural ) ->
+                    pal ++ "נה"
 
 
-hitpaelToString : String -> String -> Tense -> Person -> Sex -> Quantity -> String
-hitpaelToString p al tense person sex quantity =
+hitpaelToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
+hitpaelToString { p, al } tense person sex quantity =
     let
         ( t, p_ ) =
             hitpaelHelper p
