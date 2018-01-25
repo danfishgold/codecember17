@@ -301,13 +301,13 @@ hifilToString { pal, pa, l } tense person sex quantity =
                     "ה" ++ pal ++ end
 
             Present ->
-                "מ" ++ pil ++ end
+                if ( sex, quantity ) == ( Female, Singular ) then
+                    "מ" ++ pil ++ "ה"
+                else
+                    "מ" ++ pil ++ end
 
             Future ->
-                if (person == Second || person == Third) && sex == Female && quantity == Plural then
-                    beginning ++ pil ++ end
-                else
-                    beginning ++ pal ++ end
+                beginning ++ pil ++ end
 
             Imperative ->
                 "ה" ++ pil ++ end
