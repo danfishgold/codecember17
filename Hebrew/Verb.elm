@@ -12,6 +12,8 @@ import Hebrew.Base as Base
 type Conjugation
     = Paal
     | Nifal
+    | Hifil
+    | Hufal
     | Hitpael
 
 
@@ -38,10 +40,16 @@ conjugationTitle : Conjugation -> String
 conjugationTitle conj =
     case conj of
         Paal ->
-            "פעל"
+            "קל"
 
         Nifal ->
             "נפעל"
+
+        Hifil ->
+            "הפעיל"
+
+        Hufal ->
+            "הופעל"
 
         Hitpael ->
             "התפעל"
@@ -79,6 +87,11 @@ maybeWord verb =
                 Nifal ->
                     Just <| nifalToString spl verb.tense verb.person verb.sex verb.quantity
 
+                Hifil ->
+                    Just <| hifilToString spl verb.tense verb.person verb.sex verb.quantity
+
+                Hufal ->
+                    Just <| hufalToString spl verb.tense verb.person verb.sex verb.quantity
 
                 Hitpael ->
                     Just <| hitpaelToString spl verb.tense verb.person verb.sex verb.quantity
@@ -407,3 +420,187 @@ hitpaelHelper p =
         ( "", p )
     else
         ( "ת", p )
+
+
+hifilToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
+hifilToString { pal, pa, l } tense person sex quantity =
+    let
+        pil =
+            pa ++ "י" ++ l
+    in
+        case tense of
+            Past ->
+                case ( person, sex, quantity ) of
+                    ( First, _, Singular ) ->
+                        "ה" ++ pal ++ "תי"
+
+                    ( First, _, Plural ) ->
+                        "ה" ++ pal ++ "נו"
+
+                    ( Second, _, Singular ) ->
+                        "ה" ++ pal ++ "ת"
+
+                    ( Second, Male, Plural ) ->
+                        "ה" ++ pal ++ "תם"
+
+                    ( Second, Female, Plural ) ->
+                        "ה" ++ pal ++ "תן"
+
+                    ( Third, Male, Singular ) ->
+                        "ה" ++ pil
+
+                    ( Third, Female, Singular ) ->
+                        "ה" ++ pil ++ "ה"
+
+                    ( Third, _, Plural ) ->
+                        "ה" ++ pil ++ "ו"
+
+            Present ->
+                case ( sex, quantity ) of
+                    ( Male, Singular ) ->
+                        "מ" ++ pil
+
+                    ( Female, Singular ) ->
+                        "מ" ++ pil ++ "ה"
+
+                    ( Male, Plural ) ->
+                        "מ" ++ pil ++ "ים"
+
+                    ( Female, Plural ) ->
+                        "מ" ++ pil ++ "ות"
+
+            Future ->
+                case ( person, sex, quantity ) of
+                    ( First, _, Singular ) ->
+                        "א" ++ pil
+
+                    ( First, _, Plural ) ->
+                        "נ" ++ pil
+
+                    ( Second, Male, Singular ) ->
+                        "ת" ++ pil
+
+                    ( Second, Female, Singular ) ->
+                        "ת" ++ pil ++ "י"
+
+                    ( Second, Male, Plural ) ->
+                        "ת" ++ pil ++ "ו"
+
+                    ( Second, Female, Plural ) ->
+                        "ת" ++ pal ++ "נה"
+
+                    ( Third, Male, Singular ) ->
+                        "י" ++ pil
+
+                    ( Third, Female, Singular ) ->
+                        "ת" ++ pil
+
+                    ( Third, Male, Plural ) ->
+                        "י" ++ pil ++ "ו"
+
+                    ( Third, Female, Plural ) ->
+                        "ת" ++ pal ++ "נה"
+
+            Imperative ->
+                case ( sex, quantity ) of
+                    ( Male, Singular ) ->
+                        "ה" ++ pal
+
+                    ( Female, Singular ) ->
+                        "ה" ++ pil ++ "י"
+
+                    ( Male, Plural ) ->
+                        "ה" ++ pil ++ "ו"
+
+                    ( Female, Plural ) ->
+                        "ה" ++ pil ++ "נה"
+
+
+hufalToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
+hufalToString { pal } tense person sex quantity =
+    case tense of
+        Past ->
+            case ( person, sex, quantity ) of
+                ( First, _, Singular ) ->
+                    "הו" ++ pal ++ "תי"
+
+                ( First, _, Plural ) ->
+                    "הו" ++ pal ++ "נו"
+
+                ( Second, _, Singular ) ->
+                    "הו" ++ pal ++ "ת"
+
+                ( Second, Male, Plural ) ->
+                    "הו" ++ pal ++ "תם"
+
+                ( Second, Female, Plural ) ->
+                    "הו" ++ pal ++ "תן"
+
+                ( Third, Male, Singular ) ->
+                    "הו" ++ pal
+
+                ( Third, Female, Singular ) ->
+                    "הו" ++ pal ++ "ה"
+
+                ( Third, _, Plural ) ->
+                    "הו" ++ pal ++ "ו"
+
+        Present ->
+            case ( sex, quantity ) of
+                ( Male, Singular ) ->
+                    "מו" ++ pal
+
+                ( Female, Singular ) ->
+                    "מו" ++ pal ++ "ה"
+
+                ( Male, Plural ) ->
+                    "מו" ++ pal ++ "ים"
+
+                ( Female, Plural ) ->
+                    "מו" ++ pal ++ "ות"
+
+        Future ->
+            case ( person, sex, quantity ) of
+                ( First, _, Singular ) ->
+                    "או" ++ pal
+
+                ( First, _, Plural ) ->
+                    "נו" ++ pal
+
+                ( Second, Male, Singular ) ->
+                    "תו" ++ pal
+
+                ( Second, Female, Singular ) ->
+                    "תו" ++ pal ++ "י"
+
+                ( Second, Male, Plural ) ->
+                    "תו" ++ pal ++ "ו"
+
+                ( Second, Female, Plural ) ->
+                    "תו" ++ pal ++ "נה"
+
+                ( Third, Male, Singular ) ->
+                    "יו" ++ pal
+
+                ( Third, Female, Singular ) ->
+                    "תו" ++ pal
+
+                ( Third, Male, Plural ) ->
+                    "יו" ++ pal ++ "ו"
+
+                ( Third, Female, Plural ) ->
+                    "תו" ++ pal ++ "נה"
+
+        Imperative ->
+            case ( sex, quantity ) of
+                ( Male, Singular ) ->
+                    "הו" ++ pal
+
+                ( Female, Singular ) ->
+                    "הו" ++ pal ++ "י"
+
+                ( Male, Plural ) ->
+                    "הו" ++ pal ++ "ו"
+
+                ( Female, Plural ) ->
+                    "הו" ++ pal ++ "נה"
