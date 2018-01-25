@@ -10,7 +10,6 @@ import Util exposing (Direction(..))
 import Hebrew.Base as Base exposing (Tense(..), Person(..), Sex(..), Quantity(..))
 import Hebrew.Verb as Verb exposing (Conjugation(..))
 import Hebrew.Noun as Noun exposing (Form(..), ConstructState(..))
-import Hebrew.VerbTest exposing (test)
 
 
 type alias Data =
@@ -340,22 +339,15 @@ wordInteractors =
 
 delete : RelativePosition -> Interactor Data
 delete pos isSource a b =
-    let
-        _ =
-            [ Paal, Nifal, Hifil, Hufal, Hitpael ]
-                |> List.map (test (String.split "" "פעל"))
-                |> String.join "\n\n"
-                |> Debug.log "hahaha"
-    in
-        if pos == On then
-            case permutation a b (is Delete) (always True) of
-                Just ( delete, _ ) ->
-                    Just ( [], [ { name = "Special", sources = [ delete ] } ] )
+    if pos == On then
+        case permutation a b (is Delete) (always True) of
+            Just ( delete, _ ) ->
+                Just ( [], [ { name = "Special", sources = [ delete ] } ] )
 
-                Nothing ->
-                    Nothing
-        else
-            Nothing
+            Nothing ->
+                Nothing
+    else
+        Nothing
 
 
 split : Interactor Data
