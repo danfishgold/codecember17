@@ -74,6 +74,10 @@ suite =
             , testVerb "פעל" Paal Past Female Plural Third "פעלו"
             , testVerb "פעל" Paal Present Female Plural Third "פועלות"
             , testVerb "פעל" Paal Future Female Plural Third "תפעלנה"
+            , testVerb "פעל" Paal Imperative Male Singular First "פעל"
+            , testVerb "פעל" Paal Imperative Female Singular First "פעלי"
+            , testVerb "פעל" Paal Imperative Male Plural First "פעלו"
+            , testVerb "פעל" Paal Imperative Female Plural First "פעלנה"
             ]
         , describe "נפעל"
             [ testVerb "פעל" Nifal Past Male Singular First "נפעלתי"
@@ -112,6 +116,10 @@ suite =
             , testVerb "פעל" Nifal Past Female Plural Third "נפעלו"
             , testVerb "פעל" Nifal Present Female Plural Third "נפעלות"
             , testVerb "פעל" Nifal Future Female Plural Third "תפעלנה"
+            , testVerb "פעל" Nifal Imperative Male Singular First "הפעל"
+            , testVerb "פעל" Nifal Imperative Female Singular First "הפעלי"
+            , testVerb "פעל" Nifal Imperative Male Plural First "הפעלו"
+            , testVerb "פעל" Nifal Imperative Female Plural First "הפעלנה"
             ]
         , describe "הפעיל"
             [ testVerb "פעל" Hifil Past Male Singular First "הפעלתי"
@@ -150,6 +158,10 @@ suite =
             , testVerb "פעל" Hifil Past Female Plural Third "הפעילו"
             , testVerb "פעל" Hifil Present Female Plural Third "מפעילות"
             , testVerb "פעל" Hifil Future Female Plural Third "תפעילנה"
+            , testVerb "פעל" Hifil Imperative Male Singular First "הפעל"
+            , testVerb "פעל" Hifil Imperative Female Singular First "הפעילי"
+            , testVerb "פעל" Hifil Imperative Male Plural First "הפעילו"
+            , testVerb "פעל" Hifil Imperative Female Plural First "הפעלנה"
             ]
         , describe "הופעל"
             [ testVerb "פעל" Hufal Past Male Singular First "הופעלתי"
@@ -226,6 +238,10 @@ suite =
             , testVerb "פעל" Piel Past Female Plural Third "פיעלו"
             , testVerb "פעל" Piel Present Female Plural Third "מפעלות"
             , testVerb "פעל" Piel Future Female Plural Third "תפעלנה"
+            , testVerb "פעל" Piel Imperative Male Singular First "פעל"
+            , testVerb "פעל" Piel Imperative Female Singular First "פעלי"
+            , testVerb "פעל" Piel Imperative Male Plural First "פעלו"
+            , testVerb "פעל" Piel Imperative Female Plural First "פעלנה"
             ]
         , describe "פועל"
             [ testVerb "פעל" Pual Past Male Singular First "פועלתי"
@@ -302,6 +318,10 @@ suite =
             , testVerb "פעל" Hitpael Past Female Plural Third "התפעלו"
             , testVerb "פעל" Hitpael Present Female Plural Third "מתפעלות"
             , testVerb "פעל" Hitpael Future Female Plural Third "תתפעלנה"
+            , testVerb "פעל" Hitpael Imperative Male Singular First "התפעל"
+            , testVerb "פעל" Hitpael Imperative Female Singular First "התפעלי"
+            , testVerb "פעל" Hitpael Imperative Male Plural First "התפעלו"
+            , testVerb "פעל" Hitpael Imperative Female Plural First "התפעלנה"
             ]
         ]
 
