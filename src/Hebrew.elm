@@ -129,13 +129,13 @@ defaultBackground magnet =
             Color.rgb 64 48 117
 
         Person _ ->
-            Color.rgb 75 45 115
+            Color.rgb 111 37 111
 
         ChangeSex ->
-            Color.rgb 88 42 114
+            Color.rgb 152 51 82
 
         ChangeQuantity ->
-            Color.rgb 111 37 111
+            Color.rgb 152 51 82
 
         ChangeConstructState ->
             Color.rgb 152 51 82
