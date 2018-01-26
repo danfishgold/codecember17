@@ -250,10 +250,18 @@ nifalToString { pal } tense person sex quantity =
         ( beginning, end ) =
             beginningAndEnd tense person sex quantity
     in
-        if tense == Past || tense == Present then
-            "נ" ++ pal ++ end
-        else
-            beginning ++ pal ++ end
+        case tense of
+            Past ->
+                "נ" ++ pal ++ end
+
+            Present ->
+                "נ" ++ pal ++ end
+
+            Future ->
+                beginning ++ pal ++ end
+
+            Imperative ->
+                "ה" ++ pal ++ end
 
 
 hifilToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
@@ -282,7 +290,18 @@ hifilToString { pal, pa, l } tense person sex quantity =
                 beginning ++ pail ++ end
 
             Imperative ->
-                "ה" ++ pail ++ end
+                case ( sex, quantity ) of
+                    ( Male, Singular ) ->
+                        "ה" ++ pal ++ end
+
+                    ( Female, Singular ) ->
+                        "ה" ++ pail ++ end
+
+                    ( Male, Plural ) ->
+                        "ה" ++ pail ++ end
+
+                    ( Female, Plural ) ->
+                        "ה" ++ pal ++ end
 
 
 hufalToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
@@ -302,7 +321,7 @@ hufalToString { pal } tense person sex quantity =
                 beginning ++ "ו" ++ pal ++ end
 
             Imperative ->
-                "הו" ++ pal ++ end
+                "אין ציווי לפועל סביל"
 
 
 pielToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
@@ -337,10 +356,18 @@ pualToString { p, al } tense person sex quantity =
         ( beginning, end ) =
             beginningAndEnd tense person sex quantity
     in
-        if tense == Present then
-            "מ" ++ pual ++ end
-        else
-            beginning ++ pual ++ end
+        case tense of
+            Past ->
+                beginning ++ pual ++ end
+
+            Present ->
+                "מ" ++ pual ++ end
+
+            Future ->
+                beginning ++ pual ++ end
+
+            Imperative ->
+                "אין ציווי לפועל סביל"
 
 
 hitpaelToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
