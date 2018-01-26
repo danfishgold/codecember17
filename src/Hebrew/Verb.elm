@@ -14,6 +14,8 @@ type Conjugation
     | Nifal
     | Hifil
     | Hufal
+    | Piel
+    | Pual
     | Hitpael
 
 
@@ -50,6 +52,12 @@ conjugationTitle conj =
 
         Hufal ->
             "הופעל"
+
+        Piel ->
+            "פיעל"
+
+        Pual ->
+            "פועל"
 
         Hitpael ->
             "התפעל"
@@ -92,6 +100,12 @@ maybeWord verb =
 
                 Hufal ->
                     Just <| hufalToString spl verb.tense verb.person verb.sex verb.quantity
+
+                Piel ->
+                    Just <| pielToString spl verb.tense verb.person verb.sex verb.quantity
+
+                Pual ->
+                    Just <| pualToString spl verb.tense verb.person verb.sex verb.quantity
 
                 Hitpael ->
                     Just <| hitpaelToString spl verb.tense verb.person verb.sex verb.quantity
@@ -242,6 +256,93 @@ nifalToString { pal } tense person sex quantity =
             beginning ++ pal ++ end
 
 
+hifilToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
+hifilToString { pal, pa, l } tense person sex quantity =
+    let
+        pail =
+            pa ++ "י" ++ l
+
+        ( beginning, end ) =
+            beginningAndEnd tense person sex quantity
+    in
+        case tense of
+            Past ->
+                if person == Third then
+                    "ה" ++ pail ++ end
+                else
+                    "ה" ++ pal ++ end
+
+            Present ->
+                if ( sex, quantity ) == ( Female, Singular ) then
+                    "מ" ++ pail ++ "ה"
+                else
+                    "מ" ++ pail ++ end
+
+            Future ->
+                beginning ++ pail ++ end
+
+            Imperative ->
+                "ה" ++ pail ++ end
+
+
+hufalToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
+hufalToString { pal } tense person sex quantity =
+    let
+        ( beginning, end ) =
+            beginningAndEnd tense person sex quantity
+    in
+        case tense of
+            Past ->
+                "הו" ++ pal ++ end
+
+            Present ->
+                "מו" ++ pal ++ end
+
+            Future ->
+                beginning ++ "ו" ++ pal ++ end
+
+            Imperative ->
+                "הו" ++ pal ++ end
+
+
+pielToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
+pielToString { p, al, pal } tense person sex quantity =
+    let
+        pial =
+            p ++ "י" ++ al
+
+        ( beginning, end ) =
+            beginningAndEnd tense person sex quantity
+    in
+        case tense of
+            Past ->
+                beginning ++ pial ++ end
+
+            Present ->
+                "מ" ++ pal ++ end
+
+            Future ->
+                beginning ++ pal ++ end
+
+            Imperative ->
+                beginning ++ pal ++ end
+
+
+pualToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
+pualToString { p, al } tense person sex quantity =
+    let
+        pual =
+            p ++ "ו" ++ al
+
+        ( beginning, end ) =
+            beginningAndEnd tense person sex quantity
+    in
+        if tense == Present then
+            "מ" ++ pual ++ end
+        else
+            beginning ++ pual ++ end
+
+
 hitpaelToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
 hitpaelToString { p, al } tense person sex quantity =
     let
@@ -282,52 +383,3 @@ hitpaelHelper p =
         ( "", p )
     else
         ( "ת", p )
-
-
-hifilToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
-hifilToString { pal, pa, l } tense person sex quantity =
-    let
-        pil =
-            pa ++ "י" ++ l
-
-        ( beginning, end ) =
-            beginningAndEnd tense person sex quantity
-    in
-        case tense of
-            Past ->
-                if person == Third then
-                    "ה" ++ pil ++ end
-                else
-                    "ה" ++ pal ++ end
-
-            Present ->
-                if ( sex, quantity ) == ( Female, Singular ) then
-                    "מ" ++ pil ++ "ה"
-                else
-                    "מ" ++ pil ++ end
-
-            Future ->
-                beginning ++ pil ++ end
-
-            Imperative ->
-                "ה" ++ pil ++ end
-
-
-hufalToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
-hufalToString { pal } tense person sex quantity =
-    let
-        ( beginning, end ) =
-            beginningAndEnd tense person sex quantity
-    in
-        case tense of
-            Past ->
-                "הו" ++ pal ++ end
-
-            Present ->
-                "מו" ++ pal ++ end
-
-            Future ->
-                beginning ++ "ו" ++ pal ++ end
-
-            Imperative ->
-                "הו" ++ pal ++ end
