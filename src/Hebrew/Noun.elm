@@ -52,6 +52,16 @@ setConstructState state noun =
     { noun | constructState = state }
 
 
+changeConstructState : Noun -> Noun
+changeConstructState noun =
+    case noun.constructState of
+        Possessor ->
+            setConstructState Possessed noun
+
+        Possessed ->
+            setConstructState Possessor noun
+
+
 setDefinite : Bool -> { np | isDefinite : Bool } -> { np | isDefinite : Bool }
 setDefinite isDefinite np =
     { np | isDefinite = isDefinite }

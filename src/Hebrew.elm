@@ -29,9 +29,9 @@ type Kind
     | Form Noun.Form
     | Tense Base.Tense
     | Person Base.Person
-    | Sex Base.Sex
-    | Quantity Base.Quantity
-    | ConstructState Noun.ConstructState
+    | ChangeSex
+    | ChangeQuantity
+    | ChangeConstructState
     | Split
     | Delete
 
@@ -60,6 +60,8 @@ sources =
             , Conj Nifal
             , Conj Hifil
             , Conj Hufal
+            , Conj Piel
+            , Conj Pual
             , Conj Hitpael
             , Form Katal
             , Form Miktal
@@ -73,12 +75,9 @@ sources =
             , Person First
             , Person Second
             , Person Third
-            , Sex Male
-            , Sex Female
-            , Quantity Singular
-            , Quantity Plural
-            , ConstructState Possessor
-            , ConstructState Possessed
+            , ChangeSex
+            , ChangeQuantity
+            , ChangeConstructState
             ]
                 |> List.map sourceFromKind
       }
@@ -132,13 +131,13 @@ defaultBackground magnet =
         Person _ ->
             Color.rgb 75 45 115
 
-        Sex _ ->
+        ChangeSex ->
             Color.rgb 88 42 114
 
-        Quantity _ ->
+        ChangeQuantity ->
             Color.rgb 111 37 111
 
-        ConstructState _ ->
+        ChangeConstructState ->
             Color.rgb 152 51 82
 
         Verb _ ->
@@ -178,14 +177,14 @@ text magnet =
         Person person ->
             Base.personTitle person
 
-        Sex sex ->
-            Base.sexTitle sex
+        ChangeSex ->
+            "זכר/נקבה"
 
-        Quantity quantity ->
-            Base.quantityTitle quantity
+        ChangeQuantity ->
+            "יחיד/רבים"
 
-        ConstructState state ->
-            Noun.constructStateTitle state
+        ChangeConstructState ->
+            "סומך/נסמך"
 
         Verb verb ->
             Verb.toString verb |> Base.withFinalLetters
@@ -320,15 +319,15 @@ verbInteractors : List (Interactor Data)
 verbInteractors =
     [ effectInteractor tenseFromKind verbFromVerbLike Verb Base.setTense
     , effectInteractor personFromKind verbFromVerbLike Verb Base.setPerson
-    , effectInteractor sexFromKind verbFromVerbLike Verb Base.setSex
-    , effectInteractor quantityFromKind verbFromVerbLike Verb Base.setQuantity
+    , effectInteractor sexFromKind verbFromVerbLike Verb (always Base.changeSex)
+    , effectInteractor quantityFromKind verbFromVerbLike Verb (always Base.changeQuantity)
     ]
 
 
 nounInteractors : List (Interactor Data)
 nounInteractors =
-    [ effectInteractor quantityFromKind nounFromNounLike Noun Base.setQuantity
-    , effectInteractor constructStateFromKind nounFromNounLike Noun Noun.setConstructState
+    [ effectInteractor quantityFromKind nounFromNounLike Noun (always Base.changeQuantity)
+    , effectInteractor constructStateFromKind nounFromNounLike Noun (always Noun.changeConstructState)
     ]
 
 
@@ -455,31 +454,31 @@ personFromKind kind =
             Nothing
 
 
-sexFromKind : Kind -> Maybe Base.Sex
+sexFromKind : Kind -> Maybe ()
 sexFromKind kind =
     case kind of
-        Sex sex ->
-            Just sex
+        ChangeSex ->
+            Just ()
 
         _ ->
             Nothing
 
 
-quantityFromKind : Kind -> Maybe Base.Quantity
+quantityFromKind : Kind -> Maybe ()
 quantityFromKind kind =
     case kind of
-        Quantity quantity ->
-            Just quantity
+        ChangeQuantity ->
+            Just ()
 
         _ ->
             Nothing
 
 
-constructStateFromKind : Kind -> Maybe Noun.ConstructState
+constructStateFromKind : Kind -> Maybe ()
 constructStateFromKind kind =
     case kind of
-        ConstructState state ->
-            Just state
+        ChangeConstructState ->
+            Just ()
 
         _ ->
             Nothing

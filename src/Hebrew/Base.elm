@@ -120,3 +120,23 @@ setPerson person verb =
 setSex : Sex -> { word | sex : Sex } -> { word | sex : Sex }
 setSex sex verb =
     { verb | sex = sex }
+
+
+changeSex : { word | sex : Sex } -> { word | sex : Sex }
+changeSex verb =
+    case verb.sex of
+        Male ->
+            setSex Female verb
+
+        Female ->
+            setSex Male verb
+
+
+changeQuantity : { word | quantity : Quantity } -> { word | quantity : Quantity }
+changeQuantity verb =
+    case verb.quantity of
+        Singular ->
+            setQuantity Plural verb
+
+        Plural ->
+            setQuantity Singular verb
