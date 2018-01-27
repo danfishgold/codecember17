@@ -67,6 +67,11 @@ setDefinite isDefinite np =
     { np | isDefinite = isDefinite }
 
 
+changeDefinite : { np | isDefinite : Bool } -> { np | isDefinite : Bool }
+changeDefinite np =
+    setDefinite (not np.isDefinite) np
+
+
 formTitle : Form -> String
 formTitle form =
     case form of

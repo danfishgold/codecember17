@@ -31,6 +31,7 @@ type Kind
     | Person Base.Person
     | ChangeSex
     | ChangeQuantity
+    | ChangeDefiniteness
     | ChangeConstructState
     | Split
     | Delete
@@ -77,6 +78,7 @@ sources =
             , Person Third
             , ChangeSex
             , ChangeQuantity
+            , ChangeDefiniteness
             , ChangeConstructState
             ]
                 |> List.map sourceFromKind
@@ -140,6 +142,9 @@ defaultBackground magnet =
         ChangeConstructState ->
             Color.rgb 152 51 82
 
+        ChangeDefiniteness ->
+            Color.rgb 152 51 82
+
         Verb _ ->
             Color.darkGray
 
@@ -182,6 +187,9 @@ text magnet =
 
         ChangeQuantity ->
             "יחיד/רבים"
+
+        ChangeDefiniteness ->
+            "עם/בלי יידוע"
 
         ChangeConstructState ->
             "סומך/נסמך"
@@ -328,6 +336,7 @@ nounInteractors : List (Interactor Data)
 nounInteractors =
     [ effectInteractor quantityFromKind nounFromNounLike Noun (always Base.changeQuantity)
     , effectInteractor constructStateFromKind nounFromNounLike Noun (always Noun.changeConstructState)
+    , effectInteractor definitenessFromKind nounFromNounLike Noun (always Noun.changeDefinite)
     ]
 
 
@@ -478,6 +487,16 @@ constructStateFromKind : Kind -> Maybe ()
 constructStateFromKind kind =
     case kind of
         ChangeConstructState ->
+            Just ()
+
+        _ ->
+            Nothing
+
+
+definitenessFromKind : Kind -> Maybe ()
+definitenessFromKind kind =
+    case kind of
+        ChangeDefiniteness ->
             Just ()
 
         _ ->
