@@ -318,6 +318,7 @@ interaction =
                 [ verbInteractors
                 , nounInteractors
                 , wordInteractors
+                , constructInteractors
                 ]
                 |> List.map (\interactor -> ( always interactor, Color.darkGreen ))
             ]
@@ -337,6 +338,12 @@ nounInteractors =
     [ effectInteractor quantityFromKind nounFromNounLike Noun (always Base.changeQuantity)
     , effectInteractor constructStateFromKind nounFromNounLike Noun (always Noun.changeConstructState)
     , effectInteractor definitenessFromKind nounFromNounLike Noun (always Noun.changeDefinite)
+    ]
+
+
+constructInteractors : List (Interactor Data)
+constructInteractors =
+    [ effectInteractor definitenessFromKind constructFromKind Construct (always Noun.changeDefinite)
     ]
 
 
@@ -576,6 +583,16 @@ nounFromWordLike kind =
 
         Verb verb ->
             Just <| Base.setQuantity verb.quantity <| Noun.noun verb.root
+
+        _ ->
+            Nothing
+
+
+constructFromKind : Kind -> Maybe Noun.Construct
+constructFromKind kind =
+    case kind of
+        Construct construct ->
+            Just construct
 
         _ ->
             Nothing
