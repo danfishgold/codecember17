@@ -47,13 +47,26 @@ dataFromKind : Kind -> Magnet.Base.Data Data
 dataFromKind kind =
     { kind = kind
     , background = defaultBackground kind
-    , textColor = Color.white
+    , textColor = textColor kind
     }
 
 
 sourceFromKind : Kind -> Magnet Data
 sourceFromKind kind =
     Magnet.Base.magnet (text kind) (dataFromKind kind)
+
+
+textColor : Kind -> Color
+textColor kind =
+    case kind of
+        Split ->
+            Color.white
+
+        Delete ->
+            Color.white
+
+        _ ->
+            Color.black
 
 
 defaultBackground : Kind -> Color
@@ -66,7 +79,7 @@ defaultBackground magnet =
             Color.darkRed
 
         Atom Zwj ->
-            Color.black
+            Color.gray
 
         Atom _ ->
             Color.white
