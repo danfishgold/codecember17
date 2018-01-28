@@ -152,7 +152,7 @@ refreshElements model =
     let
         newMagnets =
             History.modifyInPlace
-                (Magnet.repositionSources Rtl model.size TextRect.defaultPadding)
+                (Magnet.repositionSources Ltr model.size TextRect.defaultPadding)
                 model.magnets
     in
         { model

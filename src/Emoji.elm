@@ -41,6 +41,12 @@ sources =
             , Atom (Profession Student)
             , Atom (Profession Teacher)
             , Atom (Profession Judge)
+            , Atom (Profession Farmer)
+            , Atom (Profession Cook)
+            , Atom (Profession Mechanic)
+            , Atom (Profession FactoryWorker)
+            , Atom (Profession OfficeWorker)
+            , Atom (Profession Scientist)
             ]
                 |> List.map sourceFromKind
       }

@@ -13,6 +13,12 @@ type Profession
     | Student
     | Teacher
     | Judge
+    | Farmer
+    | Cook
+    | Mechanic
+    | FactoryWorker
+    | OfficeWorker
+    | Scientist
 
 
 type Gender
@@ -68,6 +74,24 @@ professionToString prof =
 
         Judge ->
             "⚖"
+
+        Farmer ->
+            "🌾"
+
+        Cook ->
+            "🍳"
+
+        Mechanic ->
+            "🔧"
+
+        FactoryWorker ->
+            "🏭"
+
+        OfficeWorker ->
+            "💼"
+
+        Scientist ->
+            "🔬"
 
 
 skinToneToString : SkinTone -> String
