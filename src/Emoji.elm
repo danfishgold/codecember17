@@ -31,8 +31,16 @@ sources =
       , sources =
             [ Atom (Gender Man)
             , Atom (Gender Woman)
+            , Atom (SkinTone NoTone)
             , Atom (SkinTone Light)
+            , Atom (SkinTone MediumLight)
+            , Atom (SkinTone Medium)
+            , Atom (SkinTone MediumDark)
+            , Atom (SkinTone Dark)
             , Atom (Profession Health)
+            , Atom (Profession Student)
+            , Atom (Profession Teacher)
+            , Atom (Profession Judge)
             ]
                 |> List.map sourceFromKind
       }
