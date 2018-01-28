@@ -13,11 +13,11 @@ import History.Buttons exposing (HistoryButtons)
 import TextRect
 import Button
 import ElementSize
-import Hebrew
+import Emoji
 
 
 type alias Model =
-    { magnets : History (Magnets Hebrew.Data)
+    { magnets : History (Magnets Emoji.Data)
     , buttons : HistoryButtons Msg
     , size : Size
     , pointers : Mapping Pointer
@@ -32,13 +32,13 @@ type Msg
     | UpdateHistory History.Msg
 
 
-initialMagnets : History (Magnets Hebrew.Data)
+initialMagnets : History (Magnets Emoji.Data)
 initialMagnets =
     History.initial
         { stationary =
             []
         , dragging = Pointer.Mapping.empty
-        , sources = Hebrew.sources
+        , sources = Emoji.sources
         }
 
 
@@ -108,19 +108,19 @@ update msg model =
                             Magnet.startDragging remainingPointers
 
                         Pointer.Move ->
-                            Magnet.keepDragging Hebrew.interaction
-                                (.data >> .kind >> Hebrew.defaultBackground)
+                            Magnet.keepDragging Emoji.interaction
+                                (.data >> .kind >> Emoji.defaultBackground)
                                 model.pointers
                                 remainingPointers
 
                         Pointer.End ->
-                            Magnet.stopDragging Hebrew.interaction
-                                (.data >> .kind >> Hebrew.defaultBackground)
+                            Magnet.stopDragging Emoji.interaction
+                                (.data >> .kind >> Emoji.defaultBackground)
                                 event.pointers
 
                         Pointer.Cancel ->
-                            Magnet.stopDragging Hebrew.interaction
-                                (.data >> .kind >> Hebrew.defaultBackground)
+                            Magnet.stopDragging Emoji.interaction
+                                (.data >> .kind >> Emoji.defaultBackground)
                                 event.pointers
 
                 newMagnets =
