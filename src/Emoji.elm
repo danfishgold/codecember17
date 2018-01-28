@@ -7,7 +7,7 @@ import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
 import TextRect
 import Util exposing (Direction(..))
-import Emoji.Base as Emoji exposing (Part(..))
+import Emoji.Base as Emoji exposing (Part(..), Gender(..), SkinTone(..), Profession(..))
 import Emoji.Professional as Professional exposing (Professional)
 
 
@@ -29,7 +29,10 @@ sources : List (Category Data)
 sources =
     [ { name = "Characters"
       , sources =
-            [ Atom Zwj
+            [ Atom (Gender Man)
+            , Atom (Gender Woman)
+            , Atom (SkinTone Light)
+            , Atom (Profession Health)
             ]
                 |> List.map sourceFromKind
       }
