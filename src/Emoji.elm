@@ -7,6 +7,8 @@ import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
 import TextRect
 import Util exposing (Direction(..))
+import Emoji.Base as Emoji exposing (Part(..))
+import Emoji.Professional as Professional exposing (Professional)
 
 
 type alias Data =
@@ -17,18 +19,10 @@ type alias Data =
 
 
 type Kind
-    = Atom EmojiPart
-    | Compound (List EmojiPart)
+    = Atom Emoji.Part
+    | Professional Professional
     | Split
     | Delete
-
-
-type EmojiPart
-    = Profession
-    | Sex
-    | SkinTone
-    | Age
-    | Zwj
 
 
 sources : List (Category Data)
@@ -77,7 +71,7 @@ defaultBackground magnet =
         Atom _ ->
             Color.white
 
-        Compound _ ->
+        Professional _ ->
             Color.white
 
 
@@ -91,17 +85,21 @@ text magnet =
             "[delete]"
 
         Atom part ->
-            "TODO"
+            Emoji.title part
 
-        Compound parts ->
-            "TODO"
+        Professional prof ->
+            Professional.toString prof
 
 
 joinStrings : Kind -> Kind -> Maybe Kind
 joinStrings left right =
     case ( left, right ) of
         ( Atom e1, Atom e2 ) ->
-            Just <| Compound [ e1, e2 ]
+            Professional.default
+                |> Professional.setPart e1
+                |> Professional.setPart e2
+                |> Professional
+                |> Just
 
         _ ->
             Nothing
@@ -153,7 +151,7 @@ isString kind =
         Atom _ ->
             True
 
-        Compound _ ->
+        Professional _ ->
             True
 
         _ ->
@@ -168,7 +166,7 @@ is kind magnet =
 isCompound : Kind -> Bool
 isCompound kind =
     case kind of
-        Compound _ ->
+        Professional _ ->
             True
 
         _ ->
@@ -202,9 +200,9 @@ split isSource a b =
     case permutation a b (is Split) (mapKind isCompound) of
         Just ( split, compound ) ->
             case compound.data.kind of
-                Compound emojiParts ->
+                Professional prof ->
                     Just
-                        ( emojiParts
+                        ( Professional.parts prof
                             |> List.map (Atom >> magnetFromKind)
                             |> TextRect.organizeInRowAround Ltr compound.position 5
                         , [ { name = "Special", sources = [ split ] } ]
