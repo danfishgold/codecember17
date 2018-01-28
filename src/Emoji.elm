@@ -117,6 +117,12 @@ joinStrings left right =
                 |> Professional
                 |> Just
 
+        ( Atom e, Professional p ) ->
+            Professional.setPart e p |> Professional |> Just
+
+        ( Professional p, Atom e ) ->
+            Professional.setPart e p |> Professional |> Just
+
         _ ->
             Nothing
 
