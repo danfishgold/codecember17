@@ -34,10 +34,10 @@ toString : Part -> String
 toString part =
     case part of
         Profession prof ->
-            professionToString prof ++ variationSelector16
+            professionToString prof
 
         Gender gender ->
-            genderToString gender ++ variationSelector16
+            genderToString gender
 
         SkinTone tone ->
             skinToneToString tone
@@ -51,14 +51,14 @@ title part =
     if part == Zwj then
         "[zwj]"
     else
-        toString part ++ variationSelector16
+        toString part
 
 
 professionToString : Profession -> String
 professionToString prof =
     case prof of
         Health ->
-            "⚕"
+            "⚕️"
 
         Student ->
             "🎓"
@@ -99,12 +99,10 @@ genderToString gender =
             ""
 
         Man ->
-            -- "👨"
-            "♂️"
+            "👨"
 
         Woman ->
-            -- "👩"
-            "♀️"
+            "👩"
 
 
 zwjToString : String
