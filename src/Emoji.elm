@@ -8,7 +8,7 @@ import Magnet.Category exposing (Category)
 import TextRect
 import Util exposing (Direction(..), maybeOr)
 import Emoji.Base as Emoji exposing (Part(..), Gender(..), SkinTone(..), Profession(..))
-import Emoji.Professional as Professional exposing (Professional)
+import Emoji.Person as Person exposing (Person)
 
 
 type alias Data =
@@ -20,7 +20,7 @@ type alias Data =
 
 type Kind
     = Atom Emoji.Part
-    | Professional Professional
+    | Person Person
     | Split
     | Delete
 
@@ -100,7 +100,7 @@ defaultBackground magnet =
         Atom _ ->
             Color.white
 
-        Professional _ ->
+        Person _ ->
             Color.white
 
 
@@ -116,8 +116,8 @@ text magnet =
         Atom part ->
             Emoji.title part
 
-        Professional prof ->
-            Professional.toString prof
+        Person person ->
+            Person.toString person
 
 
 joinParts : Part -> Part -> Maybe Kind
@@ -125,10 +125,10 @@ joinParts p1 p2 =
     if Emoji.samePartTypes p1 p2 then
         Nothing
     else
-        Professional.default
-            |> Professional.setPart p1
-            |> Professional.setPart p2
-            |> Professional
+        Person.default
+            |> Person.setPart p1
+            |> Person.setPart p2
+            |> Person
             |> Just
 
 
@@ -155,7 +155,7 @@ is kind magnet =
 isCompound : Kind -> Bool
 isCompound kind =
     case kind of
-        Professional _ ->
+        Person _ ->
             True
 
         _ ->
@@ -189,9 +189,9 @@ split isSource a b =
     case permutation a b (is Split) (mapKind isCompound) of
         Just ( split, compound ) ->
             case compound.data.kind of
-                Professional prof ->
+                Person person ->
                     Just
-                        ( Professional.parts prof
+                        ( Person.parts person
                             |> List.map (Atom >> magnetFromKind)
                             |> TextRect.organizeInRowAround Ltr compound.position 5
                         , [ { name = "Special", sources = [ split ] } ]
