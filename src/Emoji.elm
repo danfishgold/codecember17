@@ -9,6 +9,7 @@ import TextRect
 import Util exposing (Direction(..), maybeOr)
 import Emoji.Base as Emoji exposing (Part(..), Gender(..), SkinTone(..), Profession(..))
 import Emoji.Professional as Professional exposing (Professional)
+import Emoji.Person as Person exposing (Person)
 
 
 type alias Data =
@@ -21,6 +22,7 @@ type alias Data =
 type Kind
     = Atom Emoji.Part
     | Professional Professional
+    | Person Person
     | Split
     | Delete
 
@@ -104,6 +106,9 @@ defaultBackground magnet =
         Professional _ ->
             Color.white
 
+        Person _ ->
+            Color.white
+
 
 text : Kind -> String
 text magnet =
@@ -120,6 +125,8 @@ text magnet =
         Professional prof ->
             Professional.toString prof
 
+        Person prof ->
+            Person.toString prof
 
 
 joinParts : Part -> Part -> Maybe Kind
@@ -128,6 +135,13 @@ joinParts p1 p2 =
         Nothing
     else
         Nothing
+            |> maybeOr
+                (\_ ->
+                    Person.default
+                        |> Person.setPart p1
+                        |> Maybe.andThen (Person.setPart p2)
+                        |> Maybe.map Person
+                )
             |> maybeOr
                 (\_ ->
                     Professional.default
