@@ -22,14 +22,12 @@ type Profession
 
 
 type Gender
-    = Neutral
-    | Man
+    = Man
     | Woman
 
 
 type SkinTone
-    = NoTone
-    | Light
+    = Light
     | MediumLight
     | Medium
     | MediumDark
@@ -97,9 +95,6 @@ professionToString prof =
 skinToneToString : SkinTone -> String
 skinToneToString tone =
     case tone of
-        NoTone ->
-            ""
-
         Light ->
             "\x1F3FB"
 
@@ -119,9 +114,6 @@ skinToneToString tone =
 genderToString : Gender -> String
 genderToString gender =
     case gender of
-        Neutral ->
-            ""
-
         Man ->
             "👨"
 

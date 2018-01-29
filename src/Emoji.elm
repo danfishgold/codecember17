@@ -9,7 +9,6 @@ import TextRect
 import Util exposing (Direction(..), maybeOr)
 import Emoji.Base as Emoji exposing (Part(..), Gender(..), SkinTone(..), Profession(..))
 import Emoji.Professional as Professional exposing (Professional)
-import Emoji.Person as Person exposing (Person)
 
 
 type alias Data =
@@ -22,7 +21,6 @@ type alias Data =
 type Kind
     = Atom Emoji.Part
     | Professional Professional
-    | Person Person
     | Split
     | Delete
 
@@ -33,7 +31,6 @@ sources =
       , sources =
             [ Atom (Gender Man)
             , Atom (Gender Woman)
-            , Atom (SkinTone NoTone)
             , Atom (SkinTone Light)
             , Atom (SkinTone MediumLight)
             , Atom (SkinTone Medium)
@@ -106,9 +103,6 @@ defaultBackground magnet =
         Professional _ ->
             Color.white
 
-        Person _ ->
-            Color.white
-
 
 text : Kind -> String
 text magnet =
@@ -125,40 +119,17 @@ text magnet =
         Professional prof ->
             Professional.toString prof
 
-        Person prof ->
-            Person.toString prof
-
 
 joinParts : Part -> Part -> Maybe Kind
 joinParts p1 p2 =
     if Emoji.samePartTypes p1 p2 then
         Nothing
     else
-        Nothing
-            |> maybeOr
-                (\_ ->
-                    Person.default
-                        |> Person.setPart p1
-                        |> Maybe.andThen (Person.setPart p2)
-                        |> Maybe.map Person
-                )
-            |> maybeOr
-                (\_ ->
-                    Professional.default
-                        |> Professional.setPart p1
-                        |> Maybe.andThen (Professional.setPart p2)
-                        |> Maybe.map Professional
-                )
-
-
-either : a -> a -> (a -> Bool) -> Bool
-either a b fn =
-    fn a || fn b
-
-
-both : a -> a -> (a -> Bool) -> Bool
-both a b fn =
-    fn a && fn b
+        Professional.default
+            |> Professional.setPart p1
+            |> Professional.setPart p2
+            |> Professional
+            |> Just
 
 
 permutation : a -> a -> (a -> Bool) -> (a -> Bool) -> Maybe ( a, a )

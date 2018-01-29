@@ -4,23 +4,34 @@ import Emoji.Base as Emoji exposing (..)
 
 
 type alias Professional =
-    { profession : Profession
+    { profession : Maybe Profession
     , gender : Gender
-    , skinTone : SkinTone
+    , skinTone : Maybe SkinTone
     }
 
 
 default : Professional
 default =
-    { profession = Health
-    , gender = Neutral
-    , skinTone = NoTone
+    { profession = Nothing
+    , gender = Man
+    , skinTone = Nothing
     }
 
 
 parts : Professional -> List Emoji.Part
 parts prof =
-    [ Gender prof.gender, SkinTone prof.skinTone, Zwj, Profession prof.profession ]
+    case ( prof.skinTone, prof.profession ) of
+        ( Nothing, Nothing ) ->
+            [ Gender prof.gender ]
+
+        ( Just tone, Nothing ) ->
+            [ Gender prof.gender, SkinTone tone ]
+
+        ( Nothing, Just profession ) ->
+            [ Gender prof.gender, Zwj, Profession profession ]
+
+        ( Just tone, Just profession ) ->
+            [ Gender prof.gender, SkinTone tone, Zwj, Profession profession ]
 
 
 toString : Professional -> String
@@ -30,17 +41,17 @@ toString prof =
         |> String.join ""
 
 
-setPart : Part -> Professional -> Maybe Professional
+setPart : Part -> Professional -> Professional
 setPart part prof =
     case part of
         Profession profession ->
-            Just { prof | profession = profession }
+            { prof | profession = Just profession }
 
         Gender gender ->
-            Just { prof | gender = gender }
+            { prof | gender = gender }
 
         SkinTone skinTone ->
-            Just { prof | skinTone = skinTone }
+            { prof | skinTone = Just skinTone }
 
         Zwj ->
-            Nothing
+            prof
