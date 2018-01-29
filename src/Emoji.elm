@@ -120,18 +120,6 @@ text magnet =
             Person.toString person
 
 
-joinParts : Part -> Part -> Maybe Kind
-joinParts p1 p2 =
-    if Emoji.samePartTypes p1 p2 then
-        Nothing
-    else
-        Person.default
-            |> Person.setPart p1
-            |> Person.setPart p2
-            |> Person
-            |> Just
-
-
 permutation : a -> a -> (a -> Bool) -> (a -> Bool) -> Maybe ( a, a )
 permutation a b fn1 fn2 =
     if fn1 a && fn2 b then
@@ -207,25 +195,77 @@ split isSource a b =
 join : RelativePosition -> Bool -> Magnet Data -> Magnet Data -> Maybe ( List (Magnet Data), List (Category Data) )
 join rPos isSource a b =
     if not isSource then
-        case ( a.data.kind, b.data.kind ) of
-            ( Atom p1, Atom p2 ) ->
-                case joinParts p1 p2 of
-                    Nothing ->
-                        Nothing
-
-                    Just kind ->
-                        Just
-                            ( [ magnetFromKind kind
-                                    |> keepEdgeInPlace (RelativePosition.opposite rPos) b
-                                    |> setBackground (defaultBackground kind)
-                              ]
-                            , []
-                            )
+        case joiner a.data.kind b.data.kind of
+            Just kind ->
+                Just
+                    ( [ magnetFromKind kind
+                            |> keepEdgeInPlace (RelativePosition.opposite rPos) b
+                            |> setBackground (defaultBackground kind)
+                      ]
+                    , []
+                    )
 
             _ ->
                 Nothing
     else
         Nothing
+
+
+joiner : Kind -> Kind -> Maybe Kind
+joiner a b =
+    case extractFromPermutation a b partFromKind partFromKind of
+        Just ( ( _, part1 ), ( _, part2 ) ) ->
+            if Emoji.samePartTypes part1 part2 then
+                Nothing
+            else
+                Person.default
+                    |> Person.setPart part1
+                    |> Person.setPart part2
+                    |> Person
+                    |> Just
+
+        Nothing ->
+            case extractFromPermutation a b personFromKind partFromKind of
+                Just ( ( _, person ), ( _, part ) ) ->
+                    person |> Person.setPart part |> Person |> Just
+
+                Nothing ->
+                    Nothing
+
+
+extractFromPermutation : a -> a -> (a -> Maybe b) -> (a -> Maybe c) -> Maybe ( ( a, b ), ( a, c ) )
+extractFromPermutation a b fn1 fn2 =
+    case ( fn1 a, fn2 b ) of
+        ( Just fa, Just fb ) ->
+            Just ( ( a, fa ), ( b, fb ) )
+
+        _ ->
+            case ( fn1 b, fn2 a ) of
+                ( Just fb, Just fa ) ->
+                    Just ( ( b, fb ), ( a, fa ) )
+
+                _ ->
+                    Nothing
+
+
+partFromKind : Kind -> Maybe Part
+partFromKind kind =
+    case kind of
+        Atom part ->
+            Just part
+
+        _ ->
+            Nothing
+
+
+personFromKind : Kind -> Maybe Person
+personFromKind kind =
+    case kind of
+        Person person ->
+            Just person
+
+        _ ->
+            Nothing
 
 
 magnetFromKind : Kind -> Magnet Data
