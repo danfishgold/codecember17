@@ -137,3 +137,22 @@ zwjToString =
 variationSelector16 : String
 variationSelector16 =
     "️"
+
+
+samePartTypes : Part -> Part -> Bool
+samePartTypes p1 p2 =
+    case ( p1, p2 ) of
+        ( Profession _, Profession _ ) ->
+            True
+
+        ( Gender _, Gender _ ) ->
+            True
+
+        ( SkinTone _, SkinTone _ ) ->
+            True
+
+        ( Zwj, Zwj ) ->
+            True
+
+        _ ->
+            False

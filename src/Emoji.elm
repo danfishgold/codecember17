@@ -6,7 +6,7 @@ import Color exposing (Color)
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
 import TextRect
-import Util exposing (Direction(..))
+import Util exposing (Direction(..), maybeOr)
 import Emoji.Base as Emoji exposing (Part(..), Gender(..), SkinTone(..), Profession(..))
 import Emoji.Professional as Professional exposing (Professional)
 
@@ -121,24 +121,20 @@ text magnet =
             Professional.toString prof
 
 
-joinStrings : Kind -> Kind -> Maybe Kind
-joinStrings left right =
-    case ( left, right ) of
-        ( Atom e1, Atom e2 ) ->
-            Professional.default
-                |> Professional.setPart e1
-                |> Professional.setPart e2
-                |> Professional
-                |> Just
 
-        ( Atom e, Professional p ) ->
-            Professional.setPart e p |> Professional |> Just
-
-        ( Professional p, Atom e ) ->
-            Professional.setPart e p |> Professional |> Just
-
-        _ ->
-            Nothing
+joinParts : Part -> Part -> Maybe Kind
+joinParts p1 p2 =
+    if Emoji.samePartTypes p1 p2 then
+        Nothing
+    else
+        Nothing
+            |> maybeOr
+                (\_ ->
+                    Professional.default
+                        |> Professional.setPart p1
+                        |> Maybe.andThen (Professional.setPart p2)
+                        |> Maybe.map Professional
+                )
 
 
 either : a -> a -> (a -> Bool) -> Bool
@@ -161,37 +157,9 @@ permutation a b fn1 fn2 =
         Nothing
 
 
-extractFromPermutation : a -> a -> (a -> Maybe b) -> (a -> Maybe c) -> Maybe ( ( a, b ), ( a, c ) )
-extractFromPermutation a b fn1 fn2 =
-    case ( fn1 a, fn2 b ) of
-        ( Just fa, Just fb ) ->
-            Just ( ( a, fa ), ( b, fb ) )
-
-        _ ->
-            case ( fn1 b, fn2 a ) of
-                ( Just fb, Just fa ) ->
-                    Just ( ( b, fb ), ( a, fa ) )
-
-                _ ->
-                    Nothing
-
-
 mapKind : (Kind -> a) -> Magnet Data -> a
 mapKind fn magnet =
     fn magnet.data.kind
-
-
-isString : Kind -> Bool
-isString kind =
-    case kind of
-        Atom _ ->
-            True
-
-        Professional _ ->
-            True
-
-        _ ->
-            False
 
 
 is : Kind -> Magnet Data -> Bool
@@ -251,25 +219,12 @@ split isSource a b =
             Nothing
 
 
-leftRight : RelativePosition -> Magnet Data -> Magnet Data -> Maybe ( Magnet Data, Magnet Data )
-leftRight pos a b =
-    case pos of
-        Left ->
-            Just ( a, b )
-
-        Right ->
-            Just ( b, a )
-
-        _ ->
-            Nothing
-
-
 join : RelativePosition -> Bool -> Magnet Data -> Magnet Data -> Maybe ( List (Magnet Data), List (Category Data) )
 join rPos isSource a b =
     if not isSource then
-        case leftRight rPos a b of
-            Just ( left, right ) ->
-                case joinStrings left.data.kind right.data.kind of
+        case ( a.data.kind, b.data.kind ) of
+            ( Atom p1, Atom p2 ) ->
+                case joinParts p1 p2 of
                     Nothing ->
                         Nothing
 
@@ -282,7 +237,7 @@ join rPos isSource a b =
                             , []
                             )
 
-            Nothing ->
+            _ ->
                 Nothing
     else
         Nothing

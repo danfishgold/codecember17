@@ -30,17 +30,17 @@ toString prof =
         |> String.join ""
 
 
-setPart : Part -> Professional -> Professional
+setPart : Part -> Professional -> Maybe Professional
 setPart part prof =
     case part of
         Profession profession ->
-            { prof | profession = profession }
+            Just { prof | profession = profession }
 
         Gender gender ->
-            { prof | gender = gender }
+            Just { prof | gender = gender }
 
         SkinTone skinTone ->
-            { prof | skinTone = skinTone }
+            Just { prof | skinTone = skinTone }
 
         Zwj ->
-            prof
+            Nothing
