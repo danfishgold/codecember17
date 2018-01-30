@@ -27,14 +27,17 @@ buttons : (History.Msg -> msg) -> History a -> HistoryButtons msg
 buttons updateHistory history =
     { undo =
         Button.button "undo"
+            18
             (updateHistory History.Undo)
             (History.canUndo history)
     , redo =
         Button.button "redo"
+            18
             (updateHistory History.Redo)
             (History.canRedo history)
     , clear =
         Button.button "clear"
+            18
             (updateHistory History.Clear)
             (not <| History.isInitial history)
     }

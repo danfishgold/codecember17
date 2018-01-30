@@ -14,6 +14,7 @@ import Color
 
 type alias Button msg =
     { text : String
+    , textSize : Int
     , position : Point
     , padding : Size
     , onClick : msg
@@ -22,9 +23,10 @@ type alias Button msg =
     }
 
 
-button : String -> msg -> Bool -> Button msg
-button text onClick enabled =
+button : String -> Int -> msg -> Bool -> Button msg
+button text textSize onClick enabled =
     { text = text
+    , textSize = textSize
     , position = ( 0, 0 )
     , padding = TextRect.defaultPadding
     , onClick = onClick

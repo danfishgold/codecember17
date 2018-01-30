@@ -27,14 +27,16 @@ type alias TextRect a =
         | position : Point
         , padding : Size
         , text : String
+        , textSize : Int
     }
 
 
-rect : String -> TextRect {}
-rect text =
+rect : String -> Int -> TextRect {}
+rect text textSize =
     { position = ( 0, 0 )
     , padding = defaultPadding
     , text = text
+    , textSize = textSize
     }
 
 
@@ -43,17 +45,18 @@ defaultPadding =
     { width = 15, height = 15 }
 
 
-textText : String -> Text.Text
-textText text =
+textText : String -> Int -> Text.Text
+textText text size =
     text
         |> Text.fromString
+        |> Text.size size
 
 
 view : Color -> Color -> TextRect a -> Collage msg
-view background textColor { padding, text, position } =
+view background textColor { padding, text, position, textSize } =
     let
         textNode =
-            textText text
+            textText text textSize
                 |> Text.color textColor
                 |> rendered
 
@@ -69,10 +72,10 @@ view background textColor { padding, text, position } =
 
 
 size : TextRect a -> Size
-size { padding, text } =
+size { padding, text, textSize } =
     let
         textNode =
-            textText text |> rendered
+            textText text textSize |> rendered
     in
         { width = Layout.width textNode + padding.width
         , height = Layout.height textNode + padding.height

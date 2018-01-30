@@ -6,6 +6,7 @@ import Color exposing (Color)
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
 import TextRect
+import Util exposing (Direction(..))
 
 
 type alias Data =
@@ -56,7 +57,7 @@ dataFromKind kind =
 
 sourceFromKind : Kind -> Magnet Data
 sourceFromKind kind =
-    Magnet.Base.magnet (text kind) (dataFromKind kind)
+    Magnet.Base.magnet (text kind) 18 (dataFromKind kind)
 
 
 defaultBackground : Kind -> Color
@@ -286,7 +287,7 @@ split isSource a b =
                     Just
                         ( letters
                             |> List.map (Letter >> magnetFromKind)
-                            |> TextRect.organizeInRowAround compound.position 5
+                            |> TextRect.organizeInRowAround Ltr compound.position 5
                         , [ { name = "Special", sources = [ split ] } ]
                         )
 
@@ -294,7 +295,7 @@ split isSource a b =
                     Just
                         ( words
                             |> List.map (Word >> magnetFromKind)
-                            |> TextRect.organizeInRowAround compound.position 5
+                            |> TextRect.organizeInRowAround Ltr compound.position 5
                         , [ { name = "Special", sources = [ split ] } ]
                         )
 
@@ -362,6 +363,7 @@ magnetFromKind : Kind -> Magnet Data
 magnetFromKind kind =
     { data = dataFromKind kind
     , text = text kind
+    , textSize = 18
     , position = ( 0, 0 )
     , padding = TextRect.defaultPadding
     , highlighted = Nothing

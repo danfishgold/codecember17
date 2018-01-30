@@ -20,10 +20,10 @@ type alias Category data =
     }
 
 
-category : String -> List String -> Category {}
-category name strings =
-    strings
-        |> List.map (flip Base.magnet (Base.data Color.black Color.white))
+category : String -> List ( String, Int ) -> Category {}
+category name stringsAndSizes =
+    stringsAndSizes
+        |> List.map (\( str, sz ) -> Base.magnet str sz (Base.data Color.black Color.white))
         |> \sources -> { name = name, sources = sources }
 
 

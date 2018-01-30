@@ -154,6 +154,7 @@ simpleInteractor rPos _ a b =
         Just
             ( [ { data = a.data
                 , text = textOrSpace left.text ++ textOrSpace right.text
+                , textSize = max a.textSize b.textSize
                 , position = ( 0, 0 )
                 , padding = padding
                 , highlighted = Nothing

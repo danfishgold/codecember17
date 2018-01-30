@@ -75,7 +75,7 @@ dataFromKind kind =
 
 sourceFromKind : Kind -> Magnet Data
 sourceFromKind kind =
-    Magnet.Base.magnet (text kind) (dataFromKind kind)
+    Magnet.Base.magnet (text kind) (textSize kind) (dataFromKind kind)
 
 
 textColor : Kind -> Color
@@ -124,6 +124,19 @@ text magnet =
 
         Person person ->
             Person.toString person
+
+
+textSize : Kind -> Int
+textSize kind =
+    case kind of
+        Split ->
+            18
+
+        Delete ->
+            18
+
+        _ ->
+            60
 
 
 permutation : a -> a -> (a -> Bool) -> (a -> Bool) -> Maybe ( a, a )
@@ -278,6 +291,7 @@ magnetFromKind : Kind -> Magnet Data
 magnetFromKind kind =
     { data = dataFromKind kind
     , text = text kind
+    , textSize = textSize kind
     , position = ( 0, 0 )
     , padding = TextRect.defaultPadding
     , highlighted = Nothing

@@ -103,7 +103,7 @@ dataFromKind kind =
 
 sourceFromKind : Kind -> Magnet Data
 sourceFromKind kind =
-    Magnet.Base.magnet (text kind) (dataFromKind kind)
+    Magnet.Base.magnet (text kind) 18 (dataFromKind kind)
 
 
 defaultBackground : Kind -> Color
@@ -644,6 +644,7 @@ magnetFromKind : Kind -> Magnet Data
 magnetFromKind kind =
     { data = dataFromKind kind
     , text = text kind
+    , textSize = 18
     , position = ( 0, 0 )
     , padding = TextRect.defaultPadding
     , highlighted = Nothing

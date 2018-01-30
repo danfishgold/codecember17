@@ -32,16 +32,18 @@ type alias Data a =
 type alias Magnet data =
     { data : Data data
     , text : String
+    , textSize : Int
     , position : Point
     , padding : Size
     , highlighted : Maybe Color
     }
 
 
-magnet : String -> Data data -> Magnet data
-magnet text data =
+magnet : String -> Int -> Data data -> Magnet data
+magnet text textSize data =
     { data = data
     , text = text
+    , textSize = textSize
     , position = ( 0, 0 )
     , padding = TextRect.defaultPadding
     , highlighted = Nothing
