@@ -58,7 +58,7 @@ subscriptions model =
 
 
 update : Magnet.Environment data -> Msg -> Model data -> ( Model data, Cmd Msg )
-update { interaction, backgroundColor } msg model =
+update { interaction } msg model =
     case msg of
         SetSize size ->
             ( { model | size = size } |> refreshElements, Cmd.none )
@@ -103,18 +103,15 @@ update { interaction, backgroundColor } msg model =
 
                         Pointer.Move ->
                             Magnet.keepDragging interaction
-                                backgroundColor
                                 model.pointers
                                 remainingPointers
 
                         Pointer.End ->
                             Magnet.stopDragging interaction
-                                backgroundColor
                                 event.pointers
 
                         Pointer.Cancel ->
                             Magnet.stopDragging interaction
-                                backgroundColor
                                 event.pointers
 
                 newMagnets =

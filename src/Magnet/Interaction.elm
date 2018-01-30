@@ -8,7 +8,7 @@ module Magnet.Interaction
         , interactOrAdd
         )
 
-import Magnet.Base as Base exposing (Magnet, setBackground)
+import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
 import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
 import Util exposing (filterMapFirst, maybeOr)
@@ -41,15 +41,14 @@ willInteract interaction isSource a b =
 
 hover :
     Interaction data
-    -> (Magnet data -> Color)
     -> ( List (Magnet data), List (Category data) )
     -> Magnet data
     -> Magnet data
-hover interaction defaultBackground ( magnets, sources ) draggingMagnet =
+hover interaction ( magnets, sources ) draggingMagnet =
     Nothing
         |> maybeOr (\_ -> hoverNearMagnets interaction False magnets draggingMagnet)
         |> maybeOr (\_ -> hoverNearMagnets interaction True (Category.allSources sources) draggingMagnet)
-        |> Maybe.withDefault (setBackground (defaultBackground draggingMagnet) draggingMagnet)
+        |> Maybe.withDefault (setHighlight Nothing draggingMagnet)
 
 
 hoverNearMagnets :
@@ -64,7 +63,7 @@ hoverNearMagnets interaction areSources magnets draggingMagnet =
             Nothing
 
         ( _, Just ( _, ( _, color ) ) ) ->
-            Just <| setBackground color draggingMagnet
+            Just <| setHighlight (Just color) draggingMagnet
 
 
 interactOrAdd :
@@ -160,7 +159,6 @@ simpleInteractor rPos _ a b =
                 , highlighted = Nothing
                 }
                     |> keepEdgeInPlace (RelativePosition.opposite rPos) b
-                    |> setBackground Color.black
               ]
             , []
             )

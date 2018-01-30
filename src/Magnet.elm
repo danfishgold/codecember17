@@ -19,7 +19,6 @@ import TextRect exposing (contains, moveBy)
 import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
 import Magnet.Interaction as Interaction exposing (Interaction)
-import Color exposing (Color)
 
 
 type alias Magnets data =
@@ -32,7 +31,6 @@ type alias Magnets data =
 type alias Environment data =
     { sources : List (Category data)
     , interaction : Interaction data
-    , backgroundColor : Magnet data -> Color
     }
 
 
@@ -61,8 +59,8 @@ startDragging pointers magnets =
     Pointer.Mapping.foldl maybePickUp magnets pointers
 
 
-keepDragging : Interaction data -> (Magnet data -> Color) -> Mapping Pointer -> Mapping Pointer -> Magnets data -> Magnets data
-keepDragging interaction defaultBackground oldPointers newPointers magnets =
+keepDragging : Interaction data -> Mapping Pointer -> Mapping Pointer -> Magnets data -> Magnets data
+keepDragging interaction oldPointers newPointers magnets =
     { magnets
         | dragging =
             Pointer.Mapping.mutualMap3
@@ -75,19 +73,18 @@ keepDragging interaction defaultBackground oldPointers newPointers magnets =
                 |> Pointer.Mapping.map
                     (\_ m ->
                         Interaction.hover interaction
-                            defaultBackground
                             ( magnets.stationary, magnets.sources )
                             m
                     )
     }
 
 
-stopDragging : Interaction data -> (Magnet data -> Color) -> Mapping Pointer -> Magnets data -> Magnets data
-stopDragging interaction defaultBackground pointers magnets =
+stopDragging : Interaction data -> Mapping Pointer -> Magnets data -> Magnets data
+stopDragging interaction pointers magnets =
     let
         ( stillDragging, stoppedDragging ) =
             Pointer.Mapping.extract (Pointer.Mapping.ids pointers) magnets.dragging
-                |> Tuple.mapSecond (List.map (\m -> Base.setBackground (defaultBackground m) m))
+                |> Tuple.mapSecond (List.map (\m -> Base.setHighlight Nothing m))
 
         ( newStationary, newSources ) =
             stoppedDragging

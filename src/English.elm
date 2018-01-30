@@ -31,7 +31,6 @@ environment : Magnet.Environment Data
 environment =
     { sources = sources
     , interaction = interaction
-    , backgroundColor = .data >> .kind >> defaultBackground
     }
 
 
@@ -59,7 +58,7 @@ sources =
 dataFromKind : Kind -> Magnet.Base.Data Data
 dataFromKind kind =
     { kind = kind
-    , background = defaultBackground kind
+    , background = background kind
     , textColor = Color.white
     }
 
@@ -69,8 +68,8 @@ sourceFromKind kind =
     Magnet.Base.magnet (text kind) 18 (dataFromKind kind)
 
 
-defaultBackground : Kind -> Color
-defaultBackground magnet =
+background : Kind -> Color
+background magnet =
     case magnet of
         Split ->
             Color.darkBlue
@@ -341,7 +340,7 @@ join rPos isSource a b =
                         Just
                             ( [ magnetFromKind kind
                                     |> keepEdgeInPlace (RelativePosition.opposite rPos) b
-                                    |> setBackground (defaultBackground kind)
+                                    |> setBackground (background kind)
                               ]
                             , []
                             )
