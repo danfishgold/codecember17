@@ -16,8 +16,8 @@ import ElementSize
 import Emoji
 
 
-type alias Model =
-    { magnets : History (Magnets Emoji.Data)
+type alias Model data =
+    { magnets : History (Magnets data)
     , buttons : HistoryButtons Msg
     , size : Size
     , pointers : Mapping Pointer
@@ -32,30 +32,24 @@ type Msg
     | UpdateHistory History.Msg
 
 
-initialMagnets : History (Magnets Emoji.Data)
-initialMagnets =
-    History.initial
-        { stationary =
-            []
-        , dragging = Pointer.Mapping.empty
-        , sources = Emoji.sources
-        }
+init : Magnet.Environment data -> ( Model data, Cmd Msg )
+init env =
+    let
+        magnets =
+            History.initial (Magnet.initial env.sources)
+    in
+        ( { magnets = magnets
+          , buttons = History.Buttons.buttons UpdateHistory magnets
+          , size = { width = 0, height = 0 }
+          , pointers = Pointer.Mapping.empty
+          , ctrlDown = False
+          , mouseDown = False
+          }
+        , ElementSize.get
+        )
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { magnets = initialMagnets
-      , buttons = History.Buttons.buttons UpdateHistory initialMagnets
-      , size = { width = 0, height = 0 }
-      , pointers = Pointer.Mapping.empty
-      , ctrlDown = False
-      , mouseDown = False
-      }
-    , ElementSize.get
-    )
-
-
-subscriptions : Model -> Sub Msg
+subscriptions : Model data -> Sub Msg
 subscriptions model =
     Sub.batch
         [ ElementSize.changes SetSize
@@ -63,8 +57,8 @@ subscriptions model =
         ]
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Magnet.Environment data -> Msg -> Model data -> ( Model data, Cmd Msg )
+update { interaction, backgroundColor } msg model =
     case msg of
         SetSize size ->
             ( { model | size = size } |> refreshElements, Cmd.none )
@@ -108,19 +102,19 @@ update msg model =
                             Magnet.startDragging remainingPointers
 
                         Pointer.Move ->
-                            Magnet.keepDragging Emoji.interaction
-                                (.data >> .kind >> Emoji.defaultBackground)
+                            Magnet.keepDragging interaction
+                                backgroundColor
                                 model.pointers
                                 remainingPointers
 
                         Pointer.End ->
-                            Magnet.stopDragging Emoji.interaction
-                                (.data >> .kind >> Emoji.defaultBackground)
+                            Magnet.stopDragging interaction
+                                backgroundColor
                                 event.pointers
 
                         Pointer.Cancel ->
-                            Magnet.stopDragging Emoji.interaction
-                                (.data >> .kind >> Emoji.defaultBackground)
+                            Magnet.stopDragging interaction
+                                backgroundColor
                                 event.pointers
 
                 newMagnets =
@@ -147,7 +141,7 @@ update msg model =
             )
 
 
-refreshElements : Model -> Model
+refreshElements : Model data -> Model data
 refreshElements model =
     let
         newMagnets =
@@ -179,7 +173,7 @@ updatePointers event pointers =
             Pointer.Mapping.subtract pointers event.pointers
 
 
-view : Model -> Html Msg
+view : Model data -> Html Msg
 view model =
     let
         magnets =
@@ -196,11 +190,16 @@ view model =
             |> svgBox ( model.size.width, model.size.height )
 
 
-main : Program Never Model Msg
+main : Program Never (Model Emoji.Data) Msg
 main =
-    program
-        { init = init
+    program Emoji.environment
+
+
+program : Magnet.Environment data -> Program Never (Model data) Msg
+program env =
+    Html.program
+        { init = init env
         , subscriptions = subscriptions
-        , update = update
+        , update = update env
         , view = view
         }

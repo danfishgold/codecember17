@@ -5,6 +5,7 @@ import RelativePosition exposing (RelativePosition(..), keepEdgeInPlace)
 import Color exposing (Color)
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
+import Magnet
 import TextRect
 import Util exposing (Direction(..), maybeOr)
 import Emoji.Base as Emoji exposing (Part(..), Gender(..), SkinTone(..), Profession(..))
@@ -23,6 +24,14 @@ type Kind
     | Person Person
     | Split
     | Delete
+
+
+environment : Magnet.Environment Data
+environment =
+    { sources = sources
+    , interaction = interaction
+    , backgroundColor = .data >> .kind >> defaultBackground
+    }
 
 
 sources : List (Category Data)

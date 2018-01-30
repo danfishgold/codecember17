@@ -1,6 +1,8 @@
 module Magnet
     exposing
         ( Magnets
+        , Environment
+        , initial
         , repositionSources
         , magnetsView
         , startDragging
@@ -24,6 +26,21 @@ type alias Magnets data =
     { stationary : List (Magnet data)
     , dragging : Mapping (Magnet data)
     , sources : List (Category data)
+    }
+
+
+type alias Environment data =
+    { sources : List (Category data)
+    , interaction : Interaction data
+    , backgroundColor : Magnet data -> Color
+    }
+
+
+initial : List (Category data) -> Magnets data
+initial sources =
+    { stationary = []
+    , dragging = Pointer.Mapping.empty
+    , sources = sources
     }
 
 
