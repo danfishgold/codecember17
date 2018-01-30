@@ -1,4 +1,4 @@
-module BasicLetters exposing (..)
+module English exposing (..)
 
 import Magnet.Interaction exposing (Interaction, Interactor)
 import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
