@@ -19,6 +19,12 @@ type Profession
     | FactoryWorker
     | OfficeWorker
     | Scientist
+    | Technologist
+    | Singer
+    | Artist
+    | Pilot
+    | Astronaut
+    | Firefighter
 
 
 type Gender
@@ -90,6 +96,24 @@ professionToString prof =
 
         Scientist ->
             "🔬"
+
+        Technologist ->
+            "💻"
+
+        Singer ->
+            "🎤"
+
+        Artist ->
+            "🎨"
+
+        Pilot ->
+            "✈"
+
+        Astronaut ->
+            "🚀"
+
+        Firefighter ->
+            "🚒"
 
 
 skinToneToString : SkinTone -> String
