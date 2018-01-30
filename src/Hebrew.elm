@@ -1,5 +1,6 @@
 module Hebrew exposing (..)
 
+import Magnet
 import Magnet.Interaction exposing (Interaction, Interactor)
 import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
 import Color exposing (Color)
@@ -35,6 +36,14 @@ type Kind
     | ChangeConstructState
     | Split
     | Delete
+
+
+environment : Magnet.Environment Data
+environment =
+    { sources = sources
+    , interaction = interaction
+    , backgroundColor = .data >> .kind >> defaultBackground
+    }
 
 
 letters : List String
