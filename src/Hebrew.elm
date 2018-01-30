@@ -42,6 +42,7 @@ environment : Magnet.Environment Data
 environment =
     { sources = sources
     , interaction = interaction
+    , sourcesDirection = Rtl
     }
 
 

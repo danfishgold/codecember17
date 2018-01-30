@@ -58,10 +58,10 @@ subscriptions model =
 
 
 update : Magnet.Environment data -> Msg -> Model data -> ( Model data, Cmd Msg )
-update { interaction } msg model =
+update { interaction, sourcesDirection } msg model =
     case msg of
         SetSize size ->
-            ( { model | size = size } |> refreshElements, Cmd.none )
+            ( { model | size = size } |> refreshElements sourcesDirection, Cmd.none )
 
         PointerEvent event ->
             let
@@ -127,29 +127,29 @@ update { interaction } msg model =
                     , buttons =
                         History.Buttons.fromList newButtonList
                   }
-                    |> refreshElements
+                    |> refreshElements sourcesDirection
                 , buttonCmd
                 )
 
         UpdateHistory historyMsg ->
             ( { model | magnets = History.update historyMsg model.magnets }
-                |> refreshElements
+                |> refreshElements sourcesDirection
             , Cmd.none
             )
 
 
-refreshElements : Model data -> Model data
-refreshElements model =
+refreshElements : Direction -> Model data -> Model data
+refreshElements sourcesDirection model =
     let
         newMagnets =
             History.modifyInPlace
-                (Magnet.repositionSources Ltr model.size TextRect.defaultPadding)
+                (Magnet.repositionSources sourcesDirection model.size TextRect.defaultPadding)
                 model.magnets
     in
         { model
             | magnets = newMagnets
             , buttons =
-                History.Buttons.reposition Ltr model.size TextRect.defaultPadding model.buttons
+                History.Buttons.reposition sourcesDirection model.size TextRect.defaultPadding model.buttons
                     |> History.Buttons.updateEnabled newMagnets
         }
 

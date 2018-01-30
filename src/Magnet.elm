@@ -31,6 +31,7 @@ type alias Magnets data =
 type alias Environment data =
     { sources : List (Category data)
     , interaction : Interaction data
+    , sourcesDirection : Direction
     }
 
 
