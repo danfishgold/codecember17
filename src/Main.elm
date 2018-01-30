@@ -151,7 +151,7 @@ refreshElements sourcesDirection model =
         { model
             | magnets = newMagnets
             , buttons =
-                History.Buttons.reposition sourcesDirection model.size TextRect.defaultPadding model.buttons
+                History.Buttons.reposition Ltr model.size TextRect.defaultPadding model.buttons
                     |> History.Buttons.updateEnabled newMagnets
         }
 
