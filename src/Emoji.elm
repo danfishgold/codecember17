@@ -1,4 +1,4 @@
-module Emoji exposing (..)
+module Emoji exposing (Data, environment)
 
 import Magnet.Interaction exposing (Interaction, Interactor)
 import RelativePosition exposing (RelativePosition(..), keepEdgeInPlace)
@@ -7,7 +7,7 @@ import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
 import Magnet
 import TextRect
-import Util exposing (Direction(..), maybeOr)
+import Util exposing (Direction(..))
 import Emoji.Base as Emoji exposing (Part(..), Gender(..), SkinTone(..), Profession(..))
 import Emoji.Person as Person exposing (Person)
 
@@ -188,11 +188,11 @@ interaction =
 
 
 delete : RelativePosition -> Interactor Data
-delete pos isSource a b =
+delete pos _ a b =
     if pos == On then
         case permutation a b (is Delete) (always True) of
-            Just ( delete, _ ) ->
-                Just ( [], [ { name = "Special", sources = [ delete ] } ] )
+            Just ( del, _ ) ->
+                Just ( [], [ { name = "Special", sources = [ del ] } ] )
 
             Nothing ->
                 Nothing
@@ -201,16 +201,16 @@ delete pos isSource a b =
 
 
 split : Interactor Data
-split isSource a b =
+split _ a b =
     case permutation a b (is Split) (mapKind isCompound) of
-        Just ( split, compound ) ->
+        Just ( spl, compound ) ->
             case compound.data.kind of
                 Person person ->
                     Just
                         ( Person.parts person
                             |> List.map (Atom >> magnetFromKind)
                             |> TextRect.organizeInRowAround Ltr compound.position 5
-                        , [ { name = "Special", sources = [ split ] } ]
+                        , [ { name = "Special", sources = [ spl ] } ]
                         )
 
                 _ ->

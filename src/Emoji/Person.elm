@@ -1,6 +1,12 @@
-module Emoji.Person exposing (..)
+module Emoji.Person exposing (Person, default, parts, setPart, toString)
 
-import Emoji.Base as Emoji exposing (..)
+import Emoji.Base as Emoji
+    exposing
+        ( Part(..)
+        , Gender(..)
+        , SkinTone
+        , Profession
+        )
 
 
 type alias Person =

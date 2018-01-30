@@ -1,4 +1,20 @@
-module Hebrew.Base exposing (..)
+module Hebrew.Base
+    exposing
+        ( Tense(..)
+        , setTense
+        , tenseTitle
+        , Person(..)
+        , setPerson
+        , personTitle
+        , Sex(..)
+        , changeSex
+        , sexTitle
+        , Quantity(..)
+        , setQuantity
+        , changeQuantity
+        , quantityTitle
+        , withFinalLetters
+        )
 
 
 type Tense

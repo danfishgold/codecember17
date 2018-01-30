@@ -1,6 +1,15 @@
-module Hebrew.Verb exposing (..)
+module Hebrew.Verb
+    exposing
+        ( Verb
+        , verb
+        , Splits
+        , toString
+        , Conjugation(..)
+        , setConjugation
+        , conjugationTitle
+        )
 
-import Hebrew.Base as Base
+import Hebrew.Base
     exposing
         ( Tense(..)
         , Person(..)

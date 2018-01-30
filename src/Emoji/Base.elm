@@ -1,4 +1,13 @@
-module Emoji.Base exposing (..)
+module Emoji.Base
+    exposing
+        ( Part(..)
+        , Profession(..)
+        , Gender(..)
+        , SkinTone(..)
+        , toString
+        , title
+        , samePartTypes
+        )
 
 
 type Part
@@ -148,11 +157,6 @@ genderToString gender =
 zwjToString : String
 zwjToString =
     "\x200D"
-
-
-variationSelector16 : String
-variationSelector16 =
-    "️"
 
 
 samePartTypes : Part -> Part -> Bool

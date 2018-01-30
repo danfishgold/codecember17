@@ -42,7 +42,7 @@ insert cat cats =
                     newSources =
                         cat.sources
                             |> List.filter (not << flip List.member datas << .data)
-                            |> \newSources -> first.sources ++ newSources
+                            |> \new -> first.sources ++ new
                 in
                     { first | sources = newSources } :: rest
             else

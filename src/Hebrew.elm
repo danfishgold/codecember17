@@ -1,8 +1,8 @@
-module Hebrew exposing (..)
+module Hebrew exposing (Data, environment)
 
 import Magnet
 import Magnet.Interaction exposing (Interaction, Interactor)
-import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
+import RelativePosition exposing (RelativePosition(..), keepEdgeInPlace)
 import Color exposing (Color)
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
@@ -55,7 +55,7 @@ letters =
 sources : List (Category Data)
 sources =
     [ { name = "Letters"
-      , sources = (letters) |> List.map (Letter >> sourceFromKind)
+      , sources = letters |> List.map (Letter >> sourceFromKind)
       }
     , { name = "Special"
       , sources =
@@ -244,16 +244,6 @@ joinStrings left right =
             Nothing
 
 
-either : a -> a -> (a -> Bool) -> Bool
-either a b fn =
-    fn a || fn b
-
-
-both : a -> a -> (a -> Bool) -> Bool
-both a b fn =
-    fn a && fn b
-
-
 permutation : a -> a -> (a -> Bool) -> (a -> Bool) -> Maybe ( a, a )
 permutation a b fn1 fn2 =
     if fn1 a && fn2 b then
@@ -282,19 +272,6 @@ extractFromPermutation a b fn1 fn2 =
 mapKind : (Kind -> a) -> Magnet Data -> a
 mapKind fn magnet =
     fn magnet.data.kind
-
-
-isString : Kind -> Bool
-isString kind =
-    case kind of
-        Letter _ ->
-            True
-
-        Root _ ->
-            True
-
-        _ ->
-            False
 
 
 is : Kind -> Magnet Data -> Bool
@@ -364,11 +341,11 @@ wordInteractors =
 
 
 delete : RelativePosition -> Interactor Data
-delete pos isSource a b =
+delete pos _ a b =
     if pos == On then
         case permutation a b (is Delete) (always True) of
-            Just ( delete, _ ) ->
-                Just ( [], [ { name = "Special", sources = [ delete ] } ] )
+            Just ( del, _ ) ->
+                Just ( [], [ { name = "Special", sources = [ del ] } ] )
 
             Nothing ->
                 Nothing
@@ -377,16 +354,16 @@ delete pos isSource a b =
 
 
 split : Interactor Data
-split isSource a b =
+split _ a b =
     case permutation a b (is Split) (mapKind isCompound) of
-        Just ( split, compound ) ->
+        Just ( spl, compound ) ->
             case compound.data.kind of
                 Root letters ->
                     Just
                         ( letters
                             |> List.map (Letter >> magnetFromKind)
                             |> TextRect.organizeInRowAround Rtl compound.position 5
-                        , [ { name = "Special", sources = [ split ] } ]
+                        , [ { name = "Special", sources = [ spl ] } ]
                         )
 
                 Construct construct ->
@@ -394,7 +371,7 @@ split isSource a b =
                         ( Noun.split construct
                             |> List.map (Noun >> magnetFromKind)
                             |> TextRect.organizeInRowAround Rtl compound.position 5
-                        , [ { name = "Special", sources = [ split ] } ]
+                        , [ { name = "Special", sources = [ spl ] } ]
                         )
 
                 _ ->
@@ -449,7 +426,7 @@ effectInteractor effectFromKind wordFromKind wordKind setEffect isSource a b =
                 setEffect effect verb
                     |> wordKind
                     |> magnetFromKind
-                    |> (keepEdgeInPlace RelativePosition.On verbMagnet)
+                    |> keepEdgeInPlace RelativePosition.On verbMagnet
                     |> (\m -> ( [ m ], [ { name = "Effects", sources = [ effectMagnet ] } ] ))
                     |> Just
 
@@ -605,48 +582,6 @@ constructFromKind kind =
 
         _ ->
             Nothing
-
-
-isRootOrVerb : Kind -> Bool
-isRootOrVerb kind =
-    case kind of
-        Root _ ->
-            True
-
-        Verb _ ->
-            True
-
-        _ ->
-            False
-
-
-isRootOrNoun : Kind -> Bool
-isRootOrNoun kind =
-    case kind of
-        Root _ ->
-            True
-
-        Noun _ ->
-            True
-
-        _ ->
-            False
-
-
-isRootOrNounOrVerb : Kind -> Bool
-isRootOrNounOrVerb kind =
-    case kind of
-        Root _ ->
-            True
-
-        Noun _ ->
-            True
-
-        Verb _ ->
-            True
-
-        _ ->
-            False
 
 
 magnetFromKind : Kind -> Magnet Data

@@ -1,8 +1,8 @@
-module English exposing (..)
+module English exposing (Data, environment)
 
 import Magnet
 import Magnet.Interaction exposing (Interaction, Interactor)
-import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
+import RelativePosition exposing (RelativePosition(..), keepEdgeInPlace)
 import Color exposing (Color)
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
@@ -43,7 +43,7 @@ letters =
 sources : List (Category Data)
 sources =
     [ { name = "Letters"
-      , sources = (letters) |> List.map (Letter >> sourceFromKind)
+      , sources = letters |> List.map (Letter >> sourceFromKind)
       }
     , { name = "Special"
       , sources =
@@ -192,16 +192,6 @@ transformTransform kind =
             Nothing
 
 
-either : a -> a -> (a -> Bool) -> Bool
-either a b fn =
-    fn a || fn b
-
-
-both : a -> a -> (a -> Bool) -> Bool
-both a b fn =
-    fn a && fn b
-
-
 permutation : a -> a -> (a -> Bool) -> (a -> Bool) -> Maybe ( a, a )
 permutation a b fn1 fn2 =
     if fn1 a && fn2 b then
@@ -275,11 +265,11 @@ interaction =
 
 
 delete : RelativePosition -> Interactor Data
-delete pos isSource a b =
+delete pos _ a b =
     if pos == On then
         case permutation a b (is Delete) (always True) of
-            Just ( delete, _ ) ->
-                Just ( [], [ { name = "Special", sources = [ delete ] } ] )
+            Just ( del, _ ) ->
+                Just ( [], [ { name = "Special", sources = [ del ] } ] )
 
             Nothing ->
                 Nothing
@@ -288,16 +278,16 @@ delete pos isSource a b =
 
 
 split : Interactor Data
-split isSource a b =
+split _ a b =
     case permutation a b (is Split) (mapKind isCompound) of
-        Just ( split, compound ) ->
+        Just ( spl, compound ) ->
             case compound.data.kind of
                 Word letters ->
                     Just
                         ( letters
                             |> List.map (Letter >> magnetFromKind)
                             |> TextRect.organizeInRowAround Ltr compound.position 5
-                        , [ { name = "Special", sources = [ split ] } ]
+                        , [ { name = "Special", sources = [ spl ] } ]
                         )
 
                 Sentence words ->
@@ -305,7 +295,7 @@ split isSource a b =
                         ( words
                             |> List.map (Word >> magnetFromKind)
                             |> TextRect.organizeInRowAround Ltr compound.position 5
-                        , [ { name = "Special", sources = [ split ] } ]
+                        , [ { name = "Special", sources = [ spl ] } ]
                         )
 
                 _ ->

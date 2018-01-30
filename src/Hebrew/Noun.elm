@@ -1,7 +1,23 @@
-module Hebrew.Noun exposing (..)
+module Hebrew.Noun
+    exposing
+        ( Noun
+        , noun
+        , toString
+        , Construct
+        , construct
+        , constructToString
+        , split
+        , ConstructState
+        , changeConstructState
+        , Form(..)
+        , formTitle
+        , setForm
+        , constructStateTitle
+        , changeDefinite
+        )
 
-import Util exposing (between, (?>), mapLast)
-import Hebrew.Base as Base exposing (Quantity(..))
+import Util exposing (mapLast)
+import Hebrew.Base exposing (Quantity(..))
 
 
 type ConstructState

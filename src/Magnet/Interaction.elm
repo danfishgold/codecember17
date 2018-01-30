@@ -8,7 +8,7 @@ module Magnet.Interaction
         , interactOrAdd
         )
 
-import Magnet.Base as Base exposing (Magnet, setHighlight)
+import Magnet.Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
 import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
 import Util exposing (filterMapFirst, maybeOr)
