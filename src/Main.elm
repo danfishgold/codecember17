@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Magnet exposing (Magnets)
-import Html exposing (Html, program)
+import Html exposing (Html, programWithFlags)
 import Collage exposing (group, rectangle, filled, uniform)
 import Collage.Render exposing (svgBox)
 import Color
@@ -13,6 +13,8 @@ import History.Buttons exposing (HistoryButtons)
 import TextRect
 import Button
 import ElementSize
+import English
+import Hebrew
 import Emoji
 
 
@@ -187,16 +189,69 @@ view model =
             |> svgBox ( model.size.width, model.size.height )
 
 
-main : Program Never (Model Emoji.Data) Msg
+type ModelWrapper
+    = English (Model English.Data)
+    | Hebrew (Model Hebrew.Data)
+    | Emoji (Model Emoji.Data)
+
+
+initWrapper : String -> ( ModelWrapper, Cmd Msg )
+initWrapper flag =
+    case flag of
+        "english" ->
+            init English.environment |> Tuple.mapFirst English
+
+        "hebrew" ->
+            init Hebrew.environment |> Tuple.mapFirst Hebrew
+
+        _ ->
+            init Emoji.environment |> Tuple.mapFirst Emoji
+
+
+subscriptionsWrapper : ModelWrapper -> Sub Msg
+subscriptionsWrapper wrapper =
+    case wrapper of
+        English model ->
+            subscriptions model
+
+        Hebrew model ->
+            subscriptions model
+
+        Emoji model ->
+            subscriptions model
+
+
+updateWrapper : Msg -> ModelWrapper -> ( ModelWrapper, Cmd Msg )
+updateWrapper msg wrapper =
+    case wrapper of
+        English model ->
+            update English.environment msg model |> Tuple.mapFirst English
+
+        Hebrew model ->
+            update Hebrew.environment msg model |> Tuple.mapFirst Hebrew
+
+        Emoji model ->
+            update Emoji.environment msg model |> Tuple.mapFirst Emoji
+
+
+viewWrapper : ModelWrapper -> Html Msg
+viewWrapper wrapper =
+    case wrapper of
+        English model ->
+            view model
+
+        Hebrew model ->
+            view model
+
+        Emoji model ->
+            view model
+
+
+main : Program String ModelWrapper Msg
 main =
-    program Emoji.environment
-
-
-program : Magnet.Environment data -> Program Never (Model data) Msg
-program env =
-    Html.program
-        { init = init env
-        , subscriptions = subscriptions
-        , update = update env
-        , view = view
+    programWithFlags
+        { init = initWrapper
+        , subscriptions = subscriptionsWrapper
+        , update = updateWrapper
+        , view = viewWrapper
         }
