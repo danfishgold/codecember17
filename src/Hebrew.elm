@@ -80,6 +80,7 @@ sources =
             , Form Katelet
             , Form Miktala
             , Form Katlia
+            , Form Taktil
             , Tense Past
             , Tense Present
             , Tense Future

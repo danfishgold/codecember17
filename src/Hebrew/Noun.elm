@@ -30,6 +30,7 @@ type Form
     | Katelet
     | Miktala
     | Katlia
+    | Taktil
 
 
 type alias Noun =
@@ -45,6 +46,10 @@ type alias Construct =
     { nouns : List Noun
     , isDefinite : Bool
     }
+
+
+type alias Splits =
+    { ktl : String, kt : String, l : String }
 
 
 noun : List String -> Noun
@@ -105,6 +110,9 @@ formTitle form =
         Katlia ->
             "קטליה"
 
+        Taktil ->
+            "תקטיל"
+
 
 constructStateTitle : ConstructState -> String
 constructStateTitle state =
@@ -138,21 +146,21 @@ constructToString construct =
         |> String.join " "
 
 
-ktl : List String -> Maybe String
-ktl root =
-    let
-        len =
-            List.length root
-    in
-    if 3 <= len && len <= 4 then
-        Just <| String.join "" root
+splits : List String -> Maybe Splits
+splits root =
+    case root of
+        [ k, t, l ] ->
+            Just { ktl = k ++ t ++ l, kt = k ++ t, l = l }
 
-    else
-        Nothing
+        [ k, a, t, l ] ->
+            Just { ktl = k ++ a ++ t ++ l, kt = k ++ a ++ t, l = l }
+
+        _ ->
+            Nothing
 
 
-makeString : Form -> ConstructState -> Quantity -> String -> String
-makeString form constructState quantity ktl =
+makeString : Form -> ConstructState -> Quantity -> Splits -> String
+makeString form constructState quantity { ktl, kt, l } =
     case ( form, constructState, quantity ) of
         ( Katal, _, Singular ) ->
             ktl
@@ -196,17 +204,26 @@ makeString form constructState quantity ktl =
         ( Katlia, _, Plural ) ->
             ktl ++ "יות"
 
+        ( Taktil, _, Singular ) ->
+            "ת" ++ kt ++ "י" ++ l
+
+        ( Taktil, Possessor, Plural ) ->
+            "ת" ++ kt ++ "י" ++ l ++ "ים"
+
+        ( Taktil, Possessed, Plural ) ->
+            "ת" ++ kt ++ "י" ++ l ++ "י"
+
 
 toString : Noun -> String
 toString noun =
-    case ktl noun.root of
+    case splits noun.root of
         Nothing ->
             "NOT SUPPORTED"
 
-        Just ktl_ ->
+        Just splits ->
             let
                 string =
-                    makeString noun.form noun.constructState noun.quantity ktl_
+                    makeString noun.form noun.constructState noun.quantity splits
             in
             if noun.constructState == Possessor && noun.isDefinite then
                 "ה" ++ string
