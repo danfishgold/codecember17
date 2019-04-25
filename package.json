@@ -13,7 +13,7 @@
     "elm-live": "^2.7.5"
   },
   "scripts": {
-    "start": "elm-make src/Main.elm --output=elm.js",
+    "make": "elm-make src/Main.elm --output=elm.js",
     "live": "elm-live src/Main.elm --output=elm.js"
   },
   "repository": {
