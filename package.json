@@ -1,0 +1,29 @@
+{
+  "name": "magnets",
+  "version": "1.0.0",
+  "description": "",
+  "main": "elm.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "elm": "^0.18.0"
+  },
+  "devDependencies": {
+    "elm-live": "^2.7.5"
+  },
+  "scripts": {
+    "start": "elm-make src/Main.elm --output=elm.js",
+    "live": "elm-live src/Main.elm --output=elm.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danfishgold/codecember17.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danfishgold/codecember17/issues"
+  },
+  "homepage": "https://github.com/danfishgold/codecember17#readme"
+}
