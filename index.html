@@ -22,22 +22,28 @@
       padding: 0;
   }
 
-  #main {
+  .app-container {
       height: 100%;
+      margin-bottom: 50px;
   }
 
 </style>
 <body>
-  <div id="main"></div>
+  <div class="app-container" id="english"></div>
+  <div class="app-container" id="hebrew"></div>
+  <div class="app-container" id="emoji"></div>
   <script src="elm.js"></script>
   <script src="pointer.js"></script>
   <script src="size.js"></script>
   <script>
     
-    var node = document.getElementById('main')
-    var app = Elm.Main.embed(node, 'hebrew')
-    addPointerEventListeners(app, node)
-    addSizeEventListeners(app, node)
+    ['english', 'hebrew', 'emoji'].map(function(example) {
+      var node = document.getElementById(example)
+      var app = Elm.Main.embed(node, example)
+      addPointerEventListeners(app, node)
+      addSizeEventListeners(app, node)
+    })
+    
 
     </script>
   </body>
