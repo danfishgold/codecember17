@@ -36,6 +36,7 @@ type Kind
     | ChangeConstructState
     | Split
     | Delete
+    | Duplicate
 
 
 environment : Magnet.Environment Data
@@ -61,6 +62,7 @@ sources =
       , sources =
             [ Delete
             , Split
+            , Duplicate
             ]
                 |> List.map sourceFromKind
       }
@@ -124,6 +126,9 @@ background magnet =
         Delete ->
             Color.darkRed
 
+        Duplicate ->
+            Color.darkGreen
+
         Letter _ ->
             Color.black
 
@@ -172,6 +177,9 @@ text magnet =
 
         Delete ->
             "[מחיקה]"
+
+        Duplicate ->
+            "[שכפול]"
 
         Letter letter ->
             letter
@@ -300,6 +308,7 @@ interaction =
         List.concat
             [ [ ( delete, Color.lightRed )
               , ( always split, Color.darkGreen )
+              , ( always duplicate, Color.lightGreen )
               , ( join, Color.darkGreen )
               ]
             , List.concat
@@ -354,6 +363,20 @@ delete pos _ a b =
 
     else
         Nothing
+
+
+duplicate : Interactor Data
+duplicate _ a b =
+    case permutation a b (is Duplicate) (always True) of
+        Just ( dup, magnet ) ->
+            Just
+                ( [ magnet, magnet ]
+                    |> TextRect.organizeInRowAround Rtl magnet.position 5
+                , [ { name = "Special", sources = [ dup ] } ]
+                )
+
+        Nothing ->
+            Nothing
 
 
 split : Interactor Data
