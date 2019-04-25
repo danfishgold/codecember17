@@ -353,8 +353,8 @@ wordInteractors =
 
 
 delete : RelativePosition -> Interactor Data
-delete pos _ a b =
-    if pos == On then
+delete pos isSource a b =
+    if pos == On && not isSource then
         case permutation a b (is Delete) (always True) of
             Just ( del, _ ) ->
                 Just ( [], [ { name = "Special", sources = [ del ] } ] )
@@ -367,45 +367,53 @@ delete pos _ a b =
 
 
 duplicate : Interactor Data
-duplicate _ a b =
-    case permutation a b (is Duplicate) (always True) of
-        Just ( dup, magnet ) ->
-            Just
-                ( [ magnet, magnet ]
-                    |> TextRect.organizeInRowAround Rtl magnet.position 5
-                , [ { name = "Special", sources = [ dup ] } ]
-                )
+duplicate isSource a b =
+    if not isSource then
+        case permutation a b (is Duplicate) (always True) of
+            Just ( dup, magnet ) ->
+                Just
+                    ( [ magnet, magnet ]
+                        |> TextRect.organizeInRowAround Rtl magnet.position 5
+                    , [ { name = "Special", sources = [ dup ] } ]
+                    )
 
-        Nothing ->
-            Nothing
+            Nothing ->
+                Nothing
+
+    else
+        Nothing
 
 
 split : Interactor Data
-split _ a b =
-    case permutation a b (is Split) (mapKind isCompound) of
-        Just ( spl, compound ) ->
-            case compound.data.kind of
-                Root letters ->
-                    Just
-                        ( letters
-                            |> List.map (Letter >> magnetFromKind)
-                            |> TextRect.organizeInRowAround Rtl compound.position 5
-                        , [ { name = "Special", sources = [ spl ] } ]
-                        )
+split isSource a b =
+    if not isSource then
+        case permutation a b (is Split) (mapKind isCompound) of
+            Just ( spl, compound ) ->
+                case compound.data.kind of
+                    Root letters ->
+                        Just
+                            ( letters
+                                |> List.map (Letter >> magnetFromKind)
+                                |> TextRect.organizeInRowAround Rtl compound.position 5
+                            , [ { name = "Special", sources = [ spl ] } ]
+                            )
 
-                Construct construct ->
-                    Just
-                        ( Noun.split construct
-                            |> List.map (Noun >> magnetFromKind)
-                            |> TextRect.organizeInRowAround Rtl compound.position 5
-                        , [ { name = "Special", sources = [ spl ] } ]
-                        )
+                    Construct construct ->
+                        Just
+                            ( Noun.split construct
+                                |> List.map (Noun >> magnetFromKind)
+                                |> TextRect.organizeInRowAround Rtl compound.position 5
+                            , [ { name = "Special", sources = [ spl ] } ]
+                            )
 
-                _ ->
-                    Nothing
+                    _ ->
+                        Nothing
 
-        Nothing ->
-            Nothing
+            Nothing ->
+                Nothing
+
+    else
+        Nothing
 
 
 leftRight : RelativePosition -> Magnet Data -> Magnet Data -> Maybe ( Magnet Data, Magnet Data )
