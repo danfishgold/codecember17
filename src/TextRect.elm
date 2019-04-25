@@ -1,25 +1,24 @@
-module TextRect
-    exposing
-        ( TextRect
-        , rect
-        , defaultPadding
-        , view
-        , size
-        , edges
-        , contains
-        , moveBy
-        , centerPositionsForRows
-        , organizeInRows
-        , listCenter
-        , organizeInRowAround
-        )
+module TextRect exposing
+    ( TextRect
+    , centerPositionsForRows
+    , contains
+    , defaultPadding
+    , edges
+    , listCenter
+    , moveBy
+    , organizeInRowAround
+    , organizeInRows
+    , rect
+    , size
+    , view
+    )
 
-import Collage exposing (Collage, group, rendered, rectangle, filled, uniform, shift)
-import Collage.Text as Text
+import Collage exposing (Collage, filled, group, rectangle, rendered, shift, uniform)
 import Collage.Layout as Layout
-import Util exposing (Size, Edges, Direction(..))
+import Collage.Text as Text
 import Color exposing (Color)
 import Point exposing (Point)
+import Util exposing (Direction(..), Edges, Size)
 
 
 type alias TextRect a =
@@ -66,9 +65,9 @@ view background textColor { padding, text, position, textSize } =
                 (Layout.height textNode + padding.height)
                 |> filled (uniform background)
     in
-        group
-            [ textNode, bgNode ]
-            |> shift position
+    group
+        [ textNode, bgNode ]
+        |> shift position
 
 
 size : TextRect a -> Size
@@ -77,9 +76,9 @@ size { padding, text, textSize } =
         textNode =
             textText text textSize |> rendered
     in
-        { width = Layout.width textNode + padding.width
-        , height = Layout.height textNode + padding.height
-        }
+    { width = Layout.width textNode + padding.width
+    , height = Layout.height textNode + padding.height
+    }
 
 
 edges : TextRect a -> Edges
@@ -91,11 +90,11 @@ edges rect =
         ( x0, y0 ) =
             rect.position
     in
-        { minX = x0 - width / 2
-        , maxX = x0 + width / 2
-        , minY = y0 - height / 2
-        , maxY = y0 + height / 2
-        }
+    { minX = x0 - width / 2
+    , maxX = x0 + width / 2
+    , minY = y0 - height / 2
+    , maxY = y0 + height / 2
+    }
 
 
 contains : Point -> TextRect a -> Bool
@@ -104,7 +103,7 @@ contains ( x, y ) rect =
         r =
             edges rect
     in
-        r.minX <= x && x <= r.maxX && r.minY <= y && y <= r.maxY
+    r.minX <= x && x <= r.maxX && r.minY <= y && y <= r.maxY
 
 
 moveBy : Point -> TextRect a -> TextRect a
@@ -141,8 +140,7 @@ centerPositionsForRows dir offsetY area padding rects =
             -- can fit in current row
             (currentX + 2 * padding.width + size.width <= area.width)
                 -- or (can or can't fit && at beginning of row)
-                ||
-                    (currentX == 0)
+                || (currentX == 0)
 
         recurse : Point -> List Point -> List Size -> ( List Point, Float )
         recurse ( currentX, currentY ) finished remaining =
@@ -157,19 +155,21 @@ centerPositionsForRows dir offsetY area padding rects =
                                 :: finished
                             )
                             rest
+
                     else
                         recurse
                             ( 0, currentY + rowHeight )
                             finished
                             remaining
     in
-        recurse ( 0, padding.height ) [] sizes |> Tuple.mapFirst List.reverse
+    recurse ( 0, padding.height ) [] sizes |> Tuple.mapFirst List.reverse
 
 
 organizeInRows : Direction -> Float -> Size -> Size -> List (TextRect a) -> ( List (TextRect a), Float )
 organizeInRows dir offsetY area padding rects =
     if List.isEmpty rects then
         ( [], offsetY )
+
     else
         let
             ( positions, nextY ) =
@@ -179,11 +179,11 @@ organizeInRows dir offsetY area padding rects =
                     padding
                     rects
         in
-            ( List.map2 (\rect position -> { rect | position = position })
-                rects
-                positions
-            , nextY
-            )
+        ( List.map2 (\rect position -> { rect | position = position })
+            rects
+            positions
+        , nextY
+        )
 
 
 listCenter : List (TextRect a) -> Point
@@ -207,8 +207,8 @@ listCenter rects =
         center x0 x1 y0 y1 =
             ( (x0 + x1) / 2, (y0 + y1) / 2 )
     in
-        Maybe.map4 center minX maxX minY maxY
-            |> Maybe.withDefault ( 0, 0 )
+    Maybe.map4 center minX maxX minY maxY
+        |> Maybe.withDefault ( 0, 0 )
 
 
 organizeInRowAround : Direction -> Point -> Float -> List (TextRect a) -> List (TextRect a)
@@ -234,4 +234,4 @@ organizeInRowAround dir ( x0, y0 ) padding rects =
                 centerXs =
                     List.map2 (\right width -> right + width / 2) rights widths
             in
-                List.map2 (\x rect -> { rect | position = ( x, y0 ) }) centerXs rects
+            List.map2 (\x rect -> { rect | position = ( x, y0 ) }) centerXs rects

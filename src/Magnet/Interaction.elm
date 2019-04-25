@@ -1,32 +1,29 @@
-module Magnet.Interaction
-    exposing
-        ( Interaction
-        , Interactor
-        , fromInteractors
-        , willInteract
-        , hover
-        , interactOrAdd
-        )
+module Magnet.Interaction exposing
+    ( Interaction
+    , Interactor
+    , fromInteractors
+    , hover
+    , interactOrAdd
+    , willInteract
+    )
 
+import Color exposing (Color)
 import Magnet.Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
-import RelativePosition exposing (RelativePosition(..), relativePosition, keepEdgeInPlace)
+import RelativePosition exposing (RelativePosition(..), keepEdgeInPlace, relativePosition)
 import Util exposing (filterMapFirst, maybeOr)
-import Color exposing (Color)
 
 
-{-|
-Interactor isTheOtherASource droppedMagnet other =
-    Just (magnets to add, sources to add)
-   or
-    Nothing -- the interaction failed
+{-| Interactor isTheOtherASource droppedMagnet other =
+Just (magnets to add, sources to add)
+or
+Nothing -- the interaction failed
 -}
 type alias Interactor data =
     Bool -> Magnet data -> Magnet data -> Maybe ( List (Magnet data), List (Category data) )
 
 
-{-|
-I want to highlight magnets which can interact, so instead of calculating the result
+{-| I want to highlight magnets which can interact, so instead of calculating the result
 each time while the dragged magnet is still dragging, I can just check whether
 there's an interactor function at all
 -}
@@ -118,6 +115,7 @@ horizontal : Interaction data
 horizontal isSource a b =
     if isSource then
         Nothing
+
     else
         case relativePosition a b of
             Just Left ->
@@ -141,27 +139,29 @@ simpleInteractor rPos _ a b =
         ( left, right ) =
             if rPos == Left then
                 ( a, b )
+
             else
                 ( b, a )
 
         textOrSpace text =
             if text == "[space]" then
                 " "
+
             else
                 text
     in
-        Just
-            ( [ { data = a.data
-                , text = textOrSpace left.text ++ textOrSpace right.text
-                , textSize = max a.textSize b.textSize
-                , position = ( 0, 0 )
-                , padding = padding
-                , highlighted = Nothing
-                }
-                    |> keepEdgeInPlace (RelativePosition.opposite rPos) b
-              ]
-            , []
-            )
+    Just
+        ( [ { data = a.data
+            , text = textOrSpace left.text ++ textOrSpace right.text
+            , textSize = max a.textSize b.textSize
+            , position = ( 0, 0 )
+            , padding = padding
+            , highlighted = Nothing
+            }
+                |> keepEdgeInPlace (RelativePosition.opposite rPos) b
+          ]
+        , []
+        )
 
 
 fromInteractors : List ( RelativePosition -> Interactor data, Color ) -> Interaction data
@@ -175,9 +175,10 @@ fromInteractors pairs isSource a b =
                 lazyInteraction ( interactor, color ) () =
                     if interactor rPos isSource a b /= Nothing then
                         Just ( interactor rPos, color )
+
                     else
                         Nothing
             in
-                pairs
-                    |> List.map lazyInteraction
-                    |> List.foldl Util.maybeOr Nothing
+            pairs
+                |> List.map lazyInteraction
+                |> List.foldl Util.maybeOr Nothing

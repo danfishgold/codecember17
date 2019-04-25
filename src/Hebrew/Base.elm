@@ -1,20 +1,19 @@
-module Hebrew.Base
-    exposing
-        ( Tense(..)
-        , setTense
-        , tenseTitle
-        , Person(..)
-        , setPerson
-        , personTitle
-        , Sex(..)
-        , changeSex
-        , sexTitle
-        , Quantity(..)
-        , setQuantity
-        , changeQuantity
-        , quantityTitle
-        , withFinalLetters
-        )
+module Hebrew.Base exposing
+    ( Person(..)
+    , Quantity(..)
+    , Sex(..)
+    , Tense(..)
+    , changeQuantity
+    , changeSex
+    , personTitle
+    , quantityTitle
+    , setPerson
+    , setQuantity
+    , setTense
+    , sexTitle
+    , tenseTitle
+    , withFinalLetters
+    )
 
 
 type Tense
@@ -98,24 +97,24 @@ withFinalLetters word =
         ( start, end ) =
             ( String.slice 0 -1 word, String.slice -1 len word )
     in
-        case end of
-            "כ" ->
-                start ++ "ך"
+    case end of
+        "כ" ->
+            start ++ "ך"
 
-            "מ" ->
-                start ++ "ם"
+        "מ" ->
+            start ++ "ם"
 
-            "נ" ->
-                start ++ "ן"
+        "נ" ->
+            start ++ "ן"
 
-            "פ" ->
-                start ++ "ף"
+        "פ" ->
+            start ++ "ף"
 
-            "צ" ->
-                start ++ "ץ"
+        "צ" ->
+            start ++ "ץ"
 
-            _ ->
-                word
+        _ ->
+            word
 
 
 setQuantity : Quantity -> { word | quantity : Quantity } -> { word | quantity : Quantity }

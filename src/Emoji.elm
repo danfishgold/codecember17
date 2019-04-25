@@ -1,15 +1,15 @@
 module Emoji exposing (Data, environment)
 
-import Magnet.Interaction exposing (Interaction, Interactor)
-import RelativePosition exposing (RelativePosition(..), keepEdgeInPlace)
 import Color exposing (Color)
+import Emoji.Base as Emoji exposing (Gender(..), Part(..), Profession(..), SkinTone(..))
+import Emoji.Person as Person exposing (Person)
+import Magnet
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
-import Magnet
+import Magnet.Interaction exposing (Interaction, Interactor)
+import RelativePosition exposing (RelativePosition(..), keepEdgeInPlace)
 import TextRect
 import Util exposing (Direction(..))
-import Emoji.Base as Emoji exposing (Part(..), Gender(..), SkinTone(..), Profession(..))
-import Emoji.Person as Person exposing (Person)
 
 
 type alias Data =
@@ -152,8 +152,10 @@ permutation : a -> a -> (a -> Bool) -> (a -> Bool) -> Maybe ( a, a )
 permutation a b fn1 fn2 =
     if fn1 a && fn2 b then
         Just ( a, b )
+
     else if fn1 b && fn2 a then
         Just ( b, a )
+
     else
         Nothing
 
@@ -196,6 +198,7 @@ delete pos _ a b =
 
             Nothing ->
                 Nothing
+
     else
         Nothing
 
@@ -235,6 +238,7 @@ join rPos isSource a b =
 
             _ ->
                 Nothing
+
     else
         Nothing
 
@@ -245,6 +249,7 @@ joiner a b =
         Just ( ( _, part1 ), ( _, part2 ) ) ->
             if Emoji.samePartTypes part1 part2 then
                 Nothing
+
             else
                 Person.default
                     |> Person.setPart part1

@@ -1,20 +1,19 @@
-module Hebrew.Verb
-    exposing
-        ( Verb
-        , verb
-        , Splits
-        , toString
-        , Conjugation(..)
-        , setConjugation
-        , conjugationTitle
-        )
+module Hebrew.Verb exposing
+    ( Conjugation(..)
+    , Splits
+    , Verb
+    , conjugationTitle
+    , setConjugation
+    , toString
+    , verb
+    )
 
 import Hebrew.Base
     exposing
-        ( Tense(..)
-        , Person(..)
-        , Sex(..)
+        ( Person(..)
         , Quantity(..)
+        , Sex(..)
+        , Tense(..)
         )
 
 
@@ -247,10 +246,11 @@ paalToString { pal, p, al } tense person sex quantity =
         ( beginning, end ) =
             beginningAndEnd tense person sex quantity
     in
-        if tense == Present then
-            beginning ++ poel ++ end
-        else
-            beginning ++ pal ++ end
+    if tense == Present then
+        beginning ++ poel ++ end
+
+    else
+        beginning ++ pal ++ end
 
 
 nifalToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
@@ -259,18 +259,18 @@ nifalToString { pal } tense person sex quantity =
         ( beginning, end ) =
             beginningAndEnd tense person sex quantity
     in
-        case tense of
-            Past ->
-                "נ" ++ pal ++ end
+    case tense of
+        Past ->
+            "נ" ++ pal ++ end
 
-            Present ->
-                "נ" ++ pal ++ end
+        Present ->
+            "נ" ++ pal ++ end
 
-            Future ->
-                beginning ++ pal ++ end
+        Future ->
+            beginning ++ pal ++ end
 
-            Imperative ->
-                "ה" ++ pal ++ end
+        Imperative ->
+            "ה" ++ pal ++ end
 
 
 hifilToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
@@ -282,35 +282,37 @@ hifilToString { pal, pa, l } tense person sex quantity =
         ( beginning, end ) =
             beginningAndEnd tense person sex quantity
     in
-        case tense of
-            Past ->
-                if person == Third then
-                    "ה" ++ pail ++ end
-                else
+    case tense of
+        Past ->
+            if person == Third then
+                "ה" ++ pail ++ end
+
+            else
+                "ה" ++ pal ++ end
+
+        Present ->
+            if ( sex, quantity ) == ( Female, Singular ) then
+                "מ" ++ pail ++ "ה"
+
+            else
+                "מ" ++ pail ++ end
+
+        Future ->
+            beginning ++ pail ++ end
+
+        Imperative ->
+            case ( sex, quantity ) of
+                ( Male, Singular ) ->
                     "ה" ++ pal ++ end
 
-            Present ->
-                if ( sex, quantity ) == ( Female, Singular ) then
-                    "מ" ++ pail ++ "ה"
-                else
-                    "מ" ++ pail ++ end
+                ( Female, Singular ) ->
+                    "ה" ++ pail ++ end
 
-            Future ->
-                beginning ++ pail ++ end
+                ( Male, Plural ) ->
+                    "ה" ++ pail ++ end
 
-            Imperative ->
-                case ( sex, quantity ) of
-                    ( Male, Singular ) ->
-                        "ה" ++ pal ++ end
-
-                    ( Female, Singular ) ->
-                        "ה" ++ pail ++ end
-
-                    ( Male, Plural ) ->
-                        "ה" ++ pail ++ end
-
-                    ( Female, Plural ) ->
-                        "ה" ++ pal ++ end
+                ( Female, Plural ) ->
+                    "ה" ++ pal ++ end
 
 
 hufalToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
@@ -319,18 +321,18 @@ hufalToString { pal } tense person sex quantity =
         ( beginning, end ) =
             beginningAndEnd tense person sex quantity
     in
-        case tense of
-            Past ->
-                "הו" ++ pal ++ end
+    case tense of
+        Past ->
+            "הו" ++ pal ++ end
 
-            Present ->
-                "מו" ++ pal ++ end
+        Present ->
+            "מו" ++ pal ++ end
 
-            Future ->
-                beginning ++ "ו" ++ pal ++ end
+        Future ->
+            beginning ++ "ו" ++ pal ++ end
 
-            Imperative ->
-                "אין ציווי לפועל סביל"
+        Imperative ->
+            "אין ציווי לפועל סביל"
 
 
 pielToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
@@ -342,18 +344,18 @@ pielToString { p, al, pal } tense person sex quantity =
         ( beginning, end ) =
             beginningAndEnd tense person sex quantity
     in
-        case tense of
-            Past ->
-                beginning ++ pial ++ end
+    case tense of
+        Past ->
+            beginning ++ pial ++ end
 
-            Present ->
-                "מ" ++ pal ++ end
+        Present ->
+            "מ" ++ pal ++ end
 
-            Future ->
-                beginning ++ pal ++ end
+        Future ->
+            beginning ++ pal ++ end
 
-            Imperative ->
-                beginning ++ pal ++ end
+        Imperative ->
+            beginning ++ pal ++ end
 
 
 pualToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
@@ -365,18 +367,18 @@ pualToString { p, al } tense person sex quantity =
         ( beginning, end ) =
             beginningAndEnd tense person sex quantity
     in
-        case tense of
-            Past ->
-                beginning ++ pual ++ end
+    case tense of
+        Past ->
+            beginning ++ pual ++ end
 
-            Present ->
-                "מ" ++ pual ++ end
+        Present ->
+            "מ" ++ pual ++ end
 
-            Future ->
-                beginning ++ pual ++ end
+        Future ->
+            beginning ++ pual ++ end
 
-            Imperative ->
-                "אין ציווי לפועל סביל"
+        Imperative ->
+            "אין ציווי לפועל סביל"
 
 
 hitpaelToString : Splits -> Tense -> Person -> Sex -> Quantity -> String
@@ -391,31 +393,36 @@ hitpaelToString { p, al } tense person sex quantity =
         ( beginning, end ) =
             beginningAndEnd tense person sex quantity
     in
-        case tense of
-            Past ->
-                "ה" ++ tpael ++ end
+    case tense of
+        Past ->
+            "ה" ++ tpael ++ end
 
-            Present ->
-                "מ" ++ tpael ++ end
+        Present ->
+            "מ" ++ tpael ++ end
 
-            Future ->
-                beginning ++ tpael ++ end
+        Future ->
+            beginning ++ tpael ++ end
 
-            Imperative ->
-                "ה" ++ tpael ++ end
+        Imperative ->
+            "ה" ++ tpael ++ end
 
 
 hitpaelHelper : String -> ( String, String )
 hitpaelHelper p =
     if p == "ס" || p == "ש" then
         ( p, "ת" )
+
     else if p == "ז" then
         ( p, "ד" )
+
     else if p == "צ" then
         ( p, "ט" )
+
     else if p == "ת" then
         ( "", p )
+
     else if p == "ד" || p == "ט" then
         ( "", p )
+
     else
         ( "ת", p )

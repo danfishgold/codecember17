@@ -1,16 +1,15 @@
-module Util
-    exposing
-        ( Size
-        , Edges
-        , Collage
-        , Direction(..)
-        , filterFirst
-        , filterMapFirst
-        , maybeOr
-        , between
-        , (?>)
-        , mapLast
-        )
+module Util exposing
+    ( (?>)
+    , Collage
+    , Direction(..)
+    , Edges
+    , Size
+    , between
+    , filterFirst
+    , filterMapFirst
+    , mapLast
+    , maybeOr
+    )
 
 
 type alias Size =
@@ -50,10 +49,11 @@ filterFirst fn xs =
                 head :: rest ->
                     if fn head then
                         ( List.reverse falses ++ rest, Just head )
+
                     else
                         recurse rest (head :: falses)
     in
-        recurse xs []
+    recurse xs []
 
 
 filterMapFirst : (a -> Maybe b) -> List a -> ( List a, Maybe ( a, b ) )
@@ -72,13 +72,14 @@ filterMapFirst fn xs =
                         Nothing ->
                             recurse rest (head :: falses)
     in
-        recurse xs []
+    recurse xs []
 
 
 maybeOr : (() -> Maybe a) -> Maybe a -> Maybe a
 maybeOr lazyOther current =
     if current == Nothing then
         lazyOther ()
+
     else
         current
 
@@ -104,4 +105,4 @@ mapLast fn xs =
             , List.head <| List.drop (len - 1) xs
             )
     in
-        end ?> fn |> Maybe.withDefault [] |> \newEnd -> start ++ newEnd
+    end ?> fn |> Maybe.withDefault [] |> (\newEnd -> start ++ newEnd)

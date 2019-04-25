@@ -1,15 +1,14 @@
-module History
-    exposing
-        ( History
-        , Msg(..)
-        , initial
-        , update
-        , modify
-        , modifyInPlace
-        , canUndo
-        , canRedo
-        , isInitial
-        )
+module History exposing
+    ( History
+    , Msg(..)
+    , canRedo
+    , canUndo
+    , initial
+    , isInitial
+    , modify
+    , modifyInPlace
+    , update
+    )
 
 
 type alias History a =
@@ -69,6 +68,7 @@ add latest history =
             , current = latest
             , next = []
         }
+
     else
         history
 

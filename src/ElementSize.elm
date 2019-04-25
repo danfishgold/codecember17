@@ -1,4 +1,4 @@
-port module ElementSize exposing (get, changes)
+port module ElementSize exposing (changes, get)
 
 import Util exposing (Size)
 

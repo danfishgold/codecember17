@@ -1,19 +1,18 @@
-module History.Buttons
-    exposing
-        ( HistoryButtons
-        , buttons
-        , toList
-        , fromList
-        , updateEnabled
-        , reposition
-        , view
-        )
+module History.Buttons exposing
+    ( HistoryButtons
+    , buttons
+    , fromList
+    , reposition
+    , toList
+    , updateEnabled
+    , view
+    )
 
-import History exposing (History)
 import Button exposing (Button)
-import Util exposing (Size, Direction(..))
-import TextRect
 import Collage exposing (Collage, group)
+import History exposing (History)
+import TextRect
+import Util exposing (Direction(..), Size)
 
 
 type alias HistoryButtons msg =
@@ -77,13 +76,13 @@ reposition dir area padding buttons =
                 |> Maybe.withDefault 0
                 |> (+) (2 * padding.height)
     in
-        TextRect.organizeInRows dir
-            (area.height - y0)
-            area
-            padding
-            (toList buttons)
-            |> Tuple.first
-            |> fromList
+    TextRect.organizeInRows dir
+        (area.height - y0)
+        area
+        padding
+        (toList buttons)
+        |> Tuple.first
+        |> fromList
 
 
 view : HistoryButtons msg -> Collage msg

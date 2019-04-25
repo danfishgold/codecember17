@@ -1,16 +1,15 @@
-module Magnet.Category
-    exposing
-        ( Category
-        , category
-        , insert
-        , merge
-        , allSources
-        , filterFirst
-        , filterMapFirst
-        )
+module Magnet.Category exposing
+    ( Category
+    , allSources
+    , category
+    , filterFirst
+    , filterMapFirst
+    , insert
+    , merge
+    )
 
-import Magnet.Base as Base exposing (Magnet)
 import Color
+import Magnet.Base as Base exposing (Magnet)
 import Util
 
 
@@ -24,7 +23,7 @@ category : String -> List ( String, Int ) -> Category {}
 category name stringsAndSizes =
     stringsAndSizes
         |> List.map (\( str, sz ) -> Base.magnet str sz (Base.data Color.black Color.white))
-        |> \sources -> { name = name, sources = sources }
+        |> (\sources -> { name = name, sources = sources })
 
 
 insert : Category data -> List (Category data) -> List (Category data)
@@ -42,9 +41,10 @@ insert cat cats =
                     newSources =
                         cat.sources
                             |> List.filter (not << flip List.member datas << .data)
-                            |> \new -> first.sources ++ new
+                            |> (\new -> first.sources ++ new)
                 in
-                    { first | sources = newSources } :: rest
+                { first | sources = newSources } :: rest
+
             else
                 first :: insert cat rest
 
@@ -81,7 +81,7 @@ filterFirst fn categories =
                             , Just successfulSource
                             )
     in
-        recurse categories []
+    recurse categories []
 
 
 filterMapFirst : (Magnet data -> Maybe b) -> List (Category data) -> ( List (Category data), Maybe ( Magnet data, b ) )
@@ -106,4 +106,4 @@ filterMapFirst fn categories =
                             , Just success
                             )
     in
-        recurse categories []
+    recurse categories []

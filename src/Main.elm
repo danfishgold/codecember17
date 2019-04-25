@@ -1,21 +1,21 @@
 module Main exposing (main)
 
-import Magnet exposing (Magnets)
-import Html exposing (Html, programWithFlags)
-import Collage exposing (group, rectangle, filled, uniform)
+import Button
+import Collage exposing (filled, group, rectangle, uniform)
 import Collage.Render exposing (svgBox)
 import Color
-import Pointer exposing (Pointer)
-import Pointer.Mapping exposing (Mapping)
-import Util exposing (Size, Direction(..))
-import History exposing (History)
-import History.Buttons exposing (HistoryButtons)
-import TextRect
-import Button
 import ElementSize
+import Emoji
 import English
 import Hebrew
-import Emoji
+import History exposing (History)
+import History.Buttons exposing (HistoryButtons)
+import Html exposing (Html, programWithFlags)
+import Magnet exposing (Magnets)
+import Pointer exposing (Pointer)
+import Pointer.Mapping exposing (Mapping)
+import TextRect
+import Util exposing (Direction(..), Size)
 
 
 type alias Model data =
@@ -40,15 +40,15 @@ init env =
         magnets =
             History.initial (Magnet.initial env.sources)
     in
-        ( { magnets = magnets
-          , buttons = History.Buttons.buttons UpdateHistory magnets
-          , size = { width = 0, height = 0 }
-          , pointers = Pointer.Mapping.empty
-          , ctrlDown = False
-          , mouseDown = False
-          }
-        , ElementSize.get
-        )
+    ( { magnets = magnets
+      , buttons = History.Buttons.buttons UpdateHistory magnets
+      , size = { width = 0, height = 0 }
+      , pointers = Pointer.Mapping.empty
+      , ctrlDown = False
+      , mouseDown = False
+      }
+    , ElementSize.get
+    )
 
 
 subscriptions : Model data -> Sub Msg
@@ -119,19 +119,20 @@ update { interaction, sourcesDirection } msg model =
                 newMagnets =
                     if event.state == Pointer.Start then
                         History.modify magnetModifier model.magnets
+
                     else
                         History.modifyInPlace magnetModifier model.magnets
             in
-                ( { model
-                    | mouseDown = mouseDown
-                    , pointers = newPointers
-                    , magnets = newMagnets
-                    , buttons =
-                        History.Buttons.fromList newButtonList
-                  }
-                    |> refreshElements sourcesDirection
-                , buttonCmd
-                )
+            ( { model
+                | mouseDown = mouseDown
+                , pointers = newPointers
+                , magnets = newMagnets
+                , buttons =
+                    History.Buttons.fromList newButtonList
+              }
+                |> refreshElements sourcesDirection
+            , buttonCmd
+            )
 
         UpdateHistory historyMsg ->
             ( { model | magnets = History.update historyMsg model.magnets }
@@ -148,12 +149,12 @@ refreshElements sourcesDirection model =
                 (Magnet.repositionSources sourcesDirection model.size TextRect.defaultPadding)
                 model.magnets
     in
-        { model
-            | magnets = newMagnets
-            , buttons =
-                History.Buttons.reposition Ltr model.size TextRect.defaultPadding model.buttons
-                    |> History.Buttons.updateEnabled newMagnets
-        }
+    { model
+        | magnets = newMagnets
+        , buttons =
+            History.Buttons.reposition Ltr model.size TextRect.defaultPadding model.buttons
+                |> History.Buttons.updateEnabled newMagnets
+    }
 
 
 updatePointers : Pointer.Event -> Mapping Pointer -> Mapping Pointer
@@ -185,8 +186,8 @@ view model =
         buttons =
             History.Buttons.view model.buttons
     in
-        group [ magnets, buttons, bg ]
-            |> svgBox ( model.size.width, model.size.height )
+    group [ magnets, buttons, bg ]
+        |> svgBox ( model.size.width, model.size.height )
 
 
 type ModelWrapper

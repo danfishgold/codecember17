@@ -1,19 +1,19 @@
-port module Pointer
-    exposing
-        ( Event
-        , DragState(..)
-        , Source(..)
-        , Pointer
-        , Id
-        , inCollage
-        , events
-        , eventsInCollage
-        )
+port module Pointer exposing
+    ( DragState(..)
+    , Event
+    , Id
+    , Pointer
+    , Source(..)
+    , events
+    , eventsInCollage
+    , inCollage
+    )
 
 import Point exposing (Point)
 import Pointer.Id as Id
 import Pointer.Mapping as Mapping exposing (Mapping)
 import Util exposing (Collage)
+
 
 
 --

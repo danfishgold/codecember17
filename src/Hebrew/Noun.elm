@@ -1,23 +1,22 @@
-module Hebrew.Noun
-    exposing
-        ( Noun
-        , noun
-        , toString
-        , Construct
-        , construct
-        , constructToString
-        , split
-        , ConstructState
-        , changeConstructState
-        , Form(..)
-        , formTitle
-        , setForm
-        , constructStateTitle
-        , changeDefinite
-        )
+module Hebrew.Noun exposing
+    ( Construct
+    , ConstructState
+    , Form(..)
+    , Noun
+    , changeConstructState
+    , changeDefinite
+    , construct
+    , constructStateTitle
+    , constructToString
+    , formTitle
+    , noun
+    , setForm
+    , split
+    , toString
+    )
 
-import Util exposing (mapLast)
 import Hebrew.Base exposing (Quantity(..))
+import Util exposing (mapLast)
 
 
 type ConstructState
@@ -145,10 +144,11 @@ ktl root =
         len =
             List.length root
     in
-        if 3 <= len && len <= 4 then
-            Just <| String.join "" root
-        else
-            Nothing
+    if 3 <= len && len <= 4 then
+        Just <| String.join "" root
+
+    else
+        Nothing
 
 
 makeString : Form -> ConstructState -> Quantity -> String -> String
@@ -208,7 +208,8 @@ toString noun =
                 string =
                     makeString noun.form noun.constructState noun.quantity ktl_
             in
-                if noun.constructState == Possessor && noun.isDefinite then
-                    "ה" ++ string
-                else
-                    string
+            if noun.constructState == Possessor && noun.isDefinite then
+                "ה" ++ string
+
+            else
+                string

@@ -1,13 +1,12 @@
-module RelativePosition
-    exposing
-        ( RelativePosition(..)
-        , relativePosition
-        , opposite
-        , keepEdgeInPlace
-        )
+module RelativePosition exposing
+    ( RelativePosition(..)
+    , keepEdgeInPlace
+    , opposite
+    , relativePosition
+    )
 
-import Util exposing (Edges, between)
 import TextRect exposing (TextRect, edges, size)
+import Util exposing (Edges, between)
 
 
 type RelativePosition
@@ -53,27 +52,30 @@ relativePosition a b =
             , aY |> between bEdges.minY bEdges.maxY
             )
     in
-        if near aEdges bEdges then
-            case ( insideX, insideY ) of
-                ( True, True ) ->
-                    Just On
+    if near aEdges bEdges then
+        case ( insideX, insideY ) of
+            ( True, True ) ->
+                Just On
 
-                ( True, False ) ->
-                    if aY > bY then
-                        Just Up
-                    else
-                        Just Down
+            ( True, False ) ->
+                if aY > bY then
+                    Just Up
 
-                ( False, True ) ->
-                    if aX > bX then
-                        Just Right
-                    else
-                        Just Left
+                else
+                    Just Down
 
-                ( False, False ) ->
-                    Nothing
-        else
-            Nothing
+            ( False, True ) ->
+                if aX > bX then
+                    Just Right
+
+                else
+                    Just Left
+
+            ( False, False ) ->
+                Nothing
+
+    else
+        Nothing
 
 
 near : Edges -> Edges -> Bool
@@ -85,8 +87,8 @@ near a b =
         betweenY =
             between (b.minY - 30) (b.maxY + 30)
     in
-        (betweenX a.minX || betweenX a.maxX)
-            && (betweenY a.minY || betweenY a.maxY)
+    (betweenX a.minX || betweenX a.maxX)
+        && (betweenY a.minY || betweenY a.maxY)
 
 
 keepEdgeInPlace : RelativePosition -> TextRect a -> TextRect a -> TextRect a
@@ -98,18 +100,18 @@ keepEdgeInPlace edge old new =
         ( x0, y0 ) =
             old.position
     in
-        case edge of
-            On ->
-                { new | position = old.position }
+    case edge of
+        On ->
+            { new | position = old.position }
 
-            Left ->
-                { new | position = ( x0 - oldSize.width / 2 + newSize.width / 2, y0 ) }
+        Left ->
+            { new | position = ( x0 - oldSize.width / 2 + newSize.width / 2, y0 ) }
 
-            Right ->
-                { new | position = ( x0 + oldSize.width / 2 - newSize.width / 2, y0 ) }
+        Right ->
+            { new | position = ( x0 + oldSize.width / 2 - newSize.width / 2, y0 ) }
 
-            Up ->
-                { new | position = ( x0, y0 - oldSize.height / 2 + newSize.height / 2 ) }
+        Up ->
+            { new | position = ( x0, y0 - oldSize.height / 2 + newSize.height / 2 ) }
 
-            Down ->
-                { new | position = ( x0, y0 + oldSize.height / 2 - newSize.height / 2 ) }
+        Down ->
+            { new | position = ( x0, y0 + oldSize.height / 2 - newSize.height / 2 ) }

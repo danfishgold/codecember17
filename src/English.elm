@@ -1,11 +1,11 @@
 module English exposing (Data, environment)
 
-import Magnet
-import Magnet.Interaction exposing (Interaction, Interactor)
-import RelativePosition exposing (RelativePosition(..), keepEdgeInPlace)
 import Color exposing (Color)
+import Magnet
 import Magnet.Base exposing (Magnet, setBackground)
 import Magnet.Category exposing (Category)
+import Magnet.Interaction exposing (Interaction, Interactor)
+import RelativePosition exposing (RelativePosition(..), keepEdgeInPlace)
 import TextRect
 import Util exposing (Direction(..))
 
@@ -196,8 +196,10 @@ permutation : a -> a -> (a -> Bool) -> (a -> Bool) -> Maybe ( a, a )
 permutation a b fn1 fn2 =
     if fn1 a && fn2 b then
         Just ( a, b )
+
     else if fn1 b && fn2 a then
         Just ( b, a )
+
     else
         Nothing
 
@@ -273,6 +275,7 @@ delete pos _ a b =
 
             Nothing ->
                 Nothing
+
     else
         Nothing
 
@@ -338,6 +341,7 @@ join rPos isSource a b =
 
             Nothing ->
                 Nothing
+
     else
         Nothing
 
@@ -354,6 +358,7 @@ transform isSource a b =
 
             Nothing ->
                 Nothing
+
     else
         Nothing
 

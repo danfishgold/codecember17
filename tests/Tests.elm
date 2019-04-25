@@ -1,9 +1,9 @@
-module Tests exposing (..)
+module Tests exposing (describeVerb, main, suite, testVerb)
 
 import Expect exposing (Expectation)
+import Hebrew.Base as Base exposing (Person(..), Quantity(..), Sex(..), Tense(..))
+import Hebrew.Verb as Verb exposing (Conjugation(..), Verb)
 import Test exposing (..)
-import Hebrew.Verb as Verb exposing (Verb, Conjugation(..))
-import Hebrew.Base as Base exposing (Tense(..), Person(..), Sex(..), Quantity(..))
 import Test.Runner.Html
 
 
@@ -31,7 +31,7 @@ testVerb rootString conj tense sex quantity person word =
             , person = person
             }
     in
-        test (describeVerb verb) <| \_ -> Expect.equal (Verb.toString verb) word
+    test (describeVerb verb) <| \_ -> Expect.equal (Verb.toString verb) word
 
 
 suite : Test

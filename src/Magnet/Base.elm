@@ -1,21 +1,20 @@
-module Magnet.Base
-    exposing
-        ( Data
-        , Magnet
-        , magnet
-        , data
-        , addPadding
-        , setAlpha
-        , setHighlight
-        , setBackground
-        , element
-        )
+module Magnet.Base exposing
+    ( Data
+    , Magnet
+    , addPadding
+    , data
+    , element
+    , magnet
+    , setAlpha
+    , setBackground
+    , setHighlight
+    )
 
 import Collage exposing (Collage)
 import Color exposing (Color)
 import Point
-import Util exposing (Size)
 import TextRect
+import Util exposing (Size)
 
 
 type alias Point =
@@ -73,7 +72,7 @@ setAlpha alpha c =
         { red, green, blue } =
             Color.toRgb c
     in
-        Color.rgba red green blue alpha
+    Color.rgba red green blue alpha
 
 
 setHighlight : Maybe Color -> Magnet data -> Magnet data
@@ -87,7 +86,7 @@ setBackground bg magnet =
         data =
             magnet.data
     in
-        { magnet | data = { data | background = bg } }
+    { magnet | data = { data | background = bg } }
 
 
 element : Bool -> Magnet data -> Collage msg
@@ -96,7 +95,8 @@ element isDragging magnet =
         bg =
             magnet.highlighted |> Maybe.withDefault magnet.data.background
     in
-        if isDragging then
-            TextRect.view (setAlpha 0.8 bg) magnet.data.textColor (addPadding 5 magnet)
-        else
-            TextRect.view bg magnet.data.textColor magnet
+    if isDragging then
+        TextRect.view (setAlpha 0.8 bg) magnet.data.textColor (addPadding 5 magnet)
+
+    else
+        TextRect.view bg magnet.data.textColor magnet

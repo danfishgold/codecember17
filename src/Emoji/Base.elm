@@ -1,13 +1,12 @@
-module Emoji.Base
-    exposing
-        ( Part(..)
-        , Profession(..)
-        , Gender(..)
-        , SkinTone(..)
-        , toString
-        , title
-        , samePartTypes
-        )
+module Emoji.Base exposing
+    ( Gender(..)
+    , Part(..)
+    , Profession(..)
+    , SkinTone(..)
+    , samePartTypes
+    , title
+    , toString
+    )
 
 
 type Part
@@ -69,6 +68,7 @@ title : Part -> String
 title part =
     if part == Zwj then
         "[zwj]"
+
     else
         toString part
 

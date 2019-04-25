@@ -2,10 +2,10 @@ module Emoji.Person exposing (Person, default, parts, setPart, toString)
 
 import Emoji.Base as Emoji
     exposing
-        ( Part(..)
-        , Gender(..)
-        , SkinTone
+        ( Gender(..)
+        , Part(..)
         , Profession
+        , SkinTone
         )
 
 

@@ -1,23 +1,22 @@
-module Pointer.Mapping
-    exposing
-        ( Mapping
-        , fromDict
-        , fromList
-        , add
-        , remove
-        , extract
-        , toList
-        , map
-        , mutualMap3
-        , empty
-        , foldl
-        , ids
-        , union
-        , subtract
-        )
+module Pointer.Mapping exposing
+    ( Mapping
+    , add
+    , empty
+    , extract
+    , foldl
+    , fromDict
+    , fromList
+    , ids
+    , map
+    , mutualMap3
+    , remove
+    , subtract
+    , toList
+    , union
+    )
 
-import Pointer.Id exposing (Id)
 import Dict exposing (Dict)
+import Pointer.Id exposing (Id)
 
 
 type Mapping a
@@ -48,7 +47,7 @@ extract ids (Inner dict) =
         ( extracted, remaining ) =
             Dict.partition (\stringId _ -> List.member stringId stringIds) dict
     in
-        ( Inner remaining, Dict.values extracted )
+    ( Inner remaining, Dict.values extracted )
 
 
 toList : Mapping a -> List a
@@ -101,7 +100,7 @@ foldl folder initial (Inner dict) =
         newFolder stringId a b =
             folder (Pointer.Id.fromString stringId) a b
     in
-        Dict.foldl newFolder initial dict
+    Dict.foldl newFolder initial dict
 
 
 ids : Mapping a -> List Id

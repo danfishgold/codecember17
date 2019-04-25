@@ -1,24 +1,23 @@
-module Magnet
-    exposing
-        ( Magnets
-        , Environment
-        , initial
-        , repositionSources
-        , magnetsView
-        , startDragging
-        , keepDragging
-        , stopDragging
-        )
+module Magnet exposing
+    ( Environment
+    , Magnets
+    , initial
+    , keepDragging
+    , magnetsView
+    , repositionSources
+    , startDragging
+    , stopDragging
+    )
 
 import Collage exposing (Collage, group)
-import Point
-import Pointer exposing (Pointer)
-import Pointer.Mapping exposing (Mapping)
-import Util exposing (Size, Direction(..), filterFirst)
-import TextRect exposing (contains, moveBy)
 import Magnet.Base as Base exposing (Magnet, setHighlight)
 import Magnet.Category as Category exposing (Category)
 import Magnet.Interaction as Interaction exposing (Interaction)
+import Point
+import Pointer exposing (Pointer)
+import Pointer.Mapping exposing (Mapping)
+import TextRect exposing (contains, moveBy)
+import Util exposing (Direction(..), Size, filterFirst)
 
 
 type alias Magnets data =
@@ -93,10 +92,10 @@ stopDragging interaction pointers magnets =
                 |> List.foldl (Interaction.interactOrAdd interaction)
                     ( magnets.stationary, magnets.sources )
     in
-        { stationary = newStationary
-        , sources = newSources
-        , dragging = stillDragging
-        }
+    { stationary = newStationary
+    , sources = newSources
+    , dragging = stillDragging
+    }
 
 
 maybePickUp : Pointer.Id -> Pointer -> Magnets data -> Magnets data
@@ -109,30 +108,31 @@ maybePickUp identifier pointer magnets =
             if draggingFromStationary == Nothing then
                 filterFirst (contains pointer.position) (Category.allSources magnets.sources)
                     |> Tuple.second
+
             else
                 draggingFromStationary
     in
-        case dragging of
-            Nothing ->
-                magnets
+    case dragging of
+        Nothing ->
+            magnets
 
-            Just m ->
-                let
-                    pickedUp =
-                        case pointer.source of
-                            Pointer.Mouse ->
-                                m
+        Just m ->
+            let
+                pickedUp =
+                    case pointer.source of
+                        Pointer.Mouse ->
+                            m
 
-                            Pointer.Touch ->
-                                moveBy ( 0, 25 ) m
-                in
-                    { magnets
-                        | stationary = newStationary
-                        , dragging =
-                            Pointer.Mapping.add identifier
-                                pickedUp
-                                magnets.dragging
-                    }
+                        Pointer.Touch ->
+                            moveBy ( 0, 25 ) m
+            in
+            { magnets
+                | stationary = newStationary
+                , dragging =
+                    Pointer.Mapping.add identifier
+                        pickedUp
+                        magnets.dragging
+            }
 
 
 repositionSources : Direction -> Size -> Size -> Magnets data -> Magnets data
@@ -143,11 +143,11 @@ repositionSources dir area padding magnets =
                 ( organized, nextY ) =
                     TextRect.organizeInRows dir currentY area padding category.sources
             in
-                ( { category | sources = organized } :: previous, nextY )
+            ( { category | sources = organized } :: previous, nextY )
     in
-        { magnets
-            | sources =
-                List.foldl folder ( [], 0 ) magnets.sources
-                    |> Tuple.first
-                    |> List.reverse
-        }
+    { magnets
+        | sources =
+            List.foldl folder ( [], 0 ) magnets.sources
+                |> Tuple.first
+                |> List.reverse
+    }
