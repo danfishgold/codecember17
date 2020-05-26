@@ -49,6 +49,7 @@ textText text size =
     text
         |> Text.fromString
         |> Text.size size
+        |> Text.typeface (Text.Font "Arial")
 
 
 view : Color -> Color -> TextRect a -> Collage msg

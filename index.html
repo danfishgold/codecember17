@@ -1,49 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <head>
   <title>Magnets</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
 </head>
 <style>
-
   svg text {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    
     cursor: default;
   }
 
   /* https://stackoverflow.com/questions/1719452/how-to-make-a-div-always-full-screen */
-  html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   .app-container {
-      height: 100%;
-      margin-bottom: 50px;
+    height: 100%;
+    margin-bottom: 50px;
   }
-
 </style>
 <body>
-  <div class="app-container" id="english"></div>
+  <!-- <div class="app-container" id="english"></div> -->
   <div class="app-container" id="hebrew"></div>
-  <div class="app-container" id="emoji"></div>
+  <!-- <div class="app-container" id="emoji"></div> -->
   <script src="elm.js"></script>
   <script src="pointer.js"></script>
   <script src="size.js"></script>
   <script>
-    
-    ['english', 'hebrew', 'emoji'].map(function(example) {
-      var node = document.getElementById(example)
-      var app = Elm.Main.embed(node, example)
+    const examples = ['hebrew']
+    // const examples = ['english', 'hebrew', 'emoji']
+    examples.map(function (example) {
+      const node = document.getElementById(example)
+      const app = Elm.Main.embed(node, example)
       addPointerEventListeners(app, node)
       addSizeEventListeners(app, node)
     })
-    
-
-    </script>
-  </body>
+  </script>
+</body>
